@@ -1,0 +1,37 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  FarmCart.Core -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\bin\Debug\net10.0\FarmCart.Core.dll
+  FarmCart.Core.Tests -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.49]   Discovering: FarmCart.Core.Tests
+[xUnit.net 00:00:00.53]   Discovered:  FarmCart.Core.Tests
+[xUnit.net 00:00:00.55]   Starting:    FarmCart.Core.Tests
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(input: "0671234567") [10 s]
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(input: "+38 (067) 123-45-67") [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(input: "380671234567") [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(input: "+380671234567") [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "+14155552671") [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "") [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "12345") [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "+3806712345678") [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "+38067123456a") [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WrongCode_ReportsRemainingAttempts [10 s]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_ForKnownPhone_ReturnsSameAccount [7 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.FailedAttempts_AreNotResetByRequestingNewCode [2 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_ExactlyFiveMinutesAfterRequest_CodeIsStillValid [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_CodeOlderThanFiveMinutes_IsExpired [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Lockout_OneSecondBeforeFifteenMinutes_IsStillActive [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.RequestCode_SendsSixDigitCodeBySms [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Login_AfterLockoutExpires_IsAllowedAgain [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.FindByToken_UnknownToken_ReturnsNull [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WithoutRequestedCode_IsRejected [< 1 ms]
+[xUnit.net 00:00:10.65]   Finished:    FarmCart.Core.Tests
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_FifthWrongCode_LocksLoginForFifteenMinutes [< 1 ms]
+  Passed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WithCorrectCode_RegistersNewBuyer [1 ms]
+
+Test Run Successful.
+Total tests: 21
+     Passed: 21
+ Total time: 11,0010 Seconds

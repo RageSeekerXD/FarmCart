@@ -1,0 +1,14 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  FarmCart.Core -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\bin\Debug\net10.0\FarmCart.Core.dll
+  FarmCart.Core.Tests -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+  FarmCart.Api -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Api\bin\Debug\net10.0\FarmCart.Api.dll
+A total of 1 test files matched the specified pattern.
+  FarmCart.AcceptanceTests -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.AcceptanceTests\bin\Debug\net10.0\FarmCart.AcceptanceTests.dll
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.AcceptanceTests\bin\Debug\net10.0\FarmCart.AcceptanceTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   146, Skipped:     0, Total:   146, Duration: 205 ms - FarmCart.Core.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:    26, Skipped:     0, Total:    26, Duration: 1 s - FarmCart.AcceptanceTests.dll (net10.0)

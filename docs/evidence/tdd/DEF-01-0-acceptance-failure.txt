@@ -1,0 +1,15 @@
+DEF-01. Приймальний тест US-06.3 під час повного прогону тестів перед інтеграцією ітерації 2 (фрагмент виводу dotnet test):
+
+[xUnit.net 00:00:00.81]     US-06.3 Запит із номером картки відхиляється, і номер не потрапляє в систему [FAIL]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+  Expected: BadRequest
+  Actual:   Created
+  Stack Trace:
+     at FarmCart.AcceptanceTests.PaymentTests.CardNumberNeverReachesServer() in \tests\FarmCart.AcceptanceTests\PaymentTests.cs:line 44
+Failed!  - Failed:     2, Passed:    24, Skipped:     0, Total:    26, Duration: 1 s - FarmCart.AcceptanceTests.dll (net10.0)
+
+Причина: System.Text.Json екранує кирилицю коментаря як ка, тому перед номером картки
+стоять цифри «0430». Регулярний вираз повертав непересічні збіги, і хибний кандидат «0430 4111 1111 1111»
+поглинав справжній номер. Модульні тести цього не виявили, бо в них текст не був екранований.
+Другий збій (US-05.3) - помилка самого тесту: тіло відповіді читалося двічі.

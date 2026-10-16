@@ -1,0 +1,34 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  FarmCart.Core -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\bin\Debug\net10.0\FarmCart.Core.dll
+  FarmCart.Core.Tests -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.89]   Discovering: FarmCart.Core.Tests
+[xUnit.net 00:00:00.94]   Discovered:  FarmCart.Core.Tests
+[xUnit.net 00:00:00.96]   Starting:    FarmCart.Core.Tests
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: null) [2 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "4111 1111 1111 1112") [1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "Замовлення №1001, код вручення 4821") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "tok_visa") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "41111111111111111111111") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "+380 67 123 45 67") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "{\"comment\":\"5555-5555-5555-4444\"}") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "amex 3782 822463 10005") [< 1 ms]
+[xUnit.net 00:00:01.01]   Finished:    FarmCart.Core.Tests
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "Оплачу карткою 4111 1111 1111 1111, передзвоніть") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "4111111111111111") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "{\"token\":4111111111111111}") [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "5555555555554443", expected: False) [2 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "4111111111111111", expected: True) [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "79927398713", expected: True) [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "378282246310005", expected: True) [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "5555555555554444", expected: True) [< 1 ms]
+  Passed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "4111111111111112", expected: False) [< 1 ms]
+
+Test Run Successful.
+Total tests: 18
+     Passed: 18
+ Total time: 1,3575 Seconds

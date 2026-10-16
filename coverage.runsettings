@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Покриття коду для ci.ps1: Microsoft Code Coverage з динамічною інструментацією в пам'яті.
+     Збірки на диску не переписуються, тому Windows Smart App Control не блокує тести. -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <CodeCoverage>
+            <EnableStaticManagedInstrumentation>False</EnableStaticManagedInstrumentation>
+            <EnableDynamicManagedInstrumentation>True</EnableDynamicManagedInstrumentation>
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*FarmCart\.Core\.dll$</ModulePath>
+                <ModulePath>.*FarmCart\.Api\.dll$</ModulePath>
+              </Include>
+            </ModulePaths>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

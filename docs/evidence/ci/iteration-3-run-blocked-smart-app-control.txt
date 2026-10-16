@@ -1,0 +1,25 @@
+﻿==> 1/5 Відновлення залежностей
+==> 2/5 Стандарт кодування (dotnet format --verify-no-changes)
+==> 3/5 Збірка Release (попередження = помилки)
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.85
+==> 4/5 Модульні й приймальні тести з покриттям
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.AcceptanceTests\bin\Release\net10.0\FarmCart.AcceptanceTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+No test is available in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll. Make sure that test discoverer & executors are registered and platform & framework version settings are appropriate and try again.
+Results File: C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\Rageseeker_RAGESEEKER_2026-10-16_20_34_29_net10.0.trx
+
+No test is available in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.AcceptanceTests\bin\Release\net10.0\FarmCart.AcceptanceTests.dll. Make sure that test discoverer & executors are registered and platform & framework version settings are appropriate and try again.
+Results File: C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\Rageseeker_RAGESEEKER_2026-10-16_20_34_29_net10.0[1].trx
+
+
+Attachments:
+  C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\73124332-d485-4211-bfcc-390cd3632da9\coverage.cobertura.xml
+  C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\a3e157d9-10bd-4b34-b9cb-16e7d591cf37\coverage.cobertura.xml
+ІНТЕГРАЦІЮ ВІДХИЛЕНО на кроці: 4/5 Модульні й приймальні тести з покриттям

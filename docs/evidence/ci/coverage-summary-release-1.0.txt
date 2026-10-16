@@ -1,0 +1,101 @@
+Summary
+  Generated on: 16.10.2026 - 20:41:24
+  Parser: MultiReport (3x Cobertura)
+  Assemblies: 2
+  Classes: 78
+  Files: 31
+  Line coverage: 99%
+  Covered lines: 1091
+  Uncovered lines: 10
+  Coverable lines: 1101
+  Total lines: 2193
+  Branch coverage: 97.3% (512 of 526)
+  Covered branches: 512
+  Total branches: 526
+  Method coverage: 99.8% (723 of 724)
+  Full method coverage: 99.1% (718 of 724)
+  Covered methods: 723
+  Fully covered methods: 718
+  Total methods: 724
+
+FarmCart.Api                            98.7%
+  FarmCart.Api.AcceptRequest             100%
+  FarmCart.Api.ApiError                  100%
+  FarmCart.Api.Caller                    100%
+  FarmCart.Api.CartItemRequest           100%
+  FarmCart.Api.CatalogRequest            100%
+  FarmCart.Api.ConfirmRequest            100%
+  FarmCart.Api.CourierDto                100%
+  FarmCart.Api.DemoData                  100%
+  FarmCart.Api.Endpoints                 100%
+  FarmCart.Api.FarmerDto                 100%
+  FarmCart.Api.FarmerRegistration        100%
+  FarmCart.Api.HandOverRequest           100%
+  FarmCart.Api.Middleware               98.3%
+  FarmCart.Api.ModerationRequest         100%
+  FarmCart.Api.OrderDto                  100%
+  FarmCart.Api.OrderLineDto              100%
+  FarmCart.Api.PhoneRequest              100%
+  FarmCart.Api.PromoRequest              100%
+  FarmCart.Api.RejectRequest             100%
+  FarmCart.Api.ReviewDto                 100%
+  FarmCart.Api.ReviewRequest             100%
+  FarmCart.Api.ServiceRegistration       100%
+  FarmCart.Api.SlotRequest               100%
+  FarmCart.Api.StatusChangeDto           100%
+  FarmCart.Api.StockChange               100%
+  FarmCart.Api.UserDto                   100%
+  FarmCart.Api.VerifyRequest             100%
+  Program                               83.3%
+
+FarmCart.Core                           99.2%
+  FarmCart.Core.AdminService             100%
+  FarmCart.Core.AuditEntry               100%
+  FarmCart.Core.AuditLog                 100%
+  FarmCart.Core.AuthService              100%
+  FarmCart.Core.CardDataGuard            100%
+  FarmCart.Core.Cart                     100%
+  FarmCart.Core.CartLineView             100%
+  FarmCart.Core.CartService              100%
+  FarmCart.Core.CartView                 100%
+  FarmCart.Core.CatalogItem              100%
+  FarmCart.Core.CatalogQuery             100%
+  FarmCart.Core.CatalogService           100%
+  FarmCart.Core.CheckoutRequest          100%
+  FarmCart.Core.DeliveryService          100%
+  FarmCart.Core.DeliverySlot             100%
+  FarmCart.Core.DeliveryTask             100%
+  FarmCart.Core.DomainException          100%
+  FarmCart.Core.Fail                     100%
+  FarmCart.Core.Farmer                   100%
+  FarmCart.Core.FarmerService            100%
+  FarmCart.Core.FulfillmentService       100%
+  FarmCart.Core.GeoPoint                 100%
+  FarmCart.Core.InMemoryNotifier         100%
+  FarmCart.Core.InMemorySmsGateway       100%
+  FarmCart.Core.InMemoryStore            100%
+  FarmCart.Core.ManualClock              100%
+  FarmCart.Core.Money                    100%
+  FarmCart.Core.Notification             100%
+  FarmCart.Core.Order                    100%
+  FarmCart.Core.OrderLine                100%
+  FarmCart.Core.OrderService             100%
+  FarmCart.Core.OrderWorkflow            100%
+  FarmCart.Core.OtpState                 100%
+  FarmCart.Core.PaymentResult            100%
+  FarmCart.Core.PhoneNumber              100%
+  FarmCart.Core.Product                  100%
+  FarmCart.Core.ProductChanges           100%
+  FarmCart.Core.ProductDraft             100%
+  FarmCart.Core.PromoCode                100%
+  FarmCart.Core.Review                   100%
+  FarmCart.Core.ReviewService            100%
+  FarmCart.Core.SandboxCharge            100%
+  FarmCart.Core.SandboxPaymentGateway    100%
+  FarmCart.Core.Session                  100%
+  FarmCart.Core.Shortage                 100%
+  FarmCart.Core.SlotView                 100%
+  FarmCart.Core.StatusChange             100%
+  FarmCart.Core.SystemClock                0%
+  FarmCart.Core.Titles                  80.7%
+  FarmCart.Core.User                     100%

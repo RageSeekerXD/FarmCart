@@ -1,0 +1,36 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  FarmCart.Core -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\bin\Release\net10.0\FarmCart.Core.dll
+  FarmCart.Core.Tests -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:10.75]   Discovering: FarmCart.Core.Tests
+[xUnit.net 00:00:10.80]   Discovered:  FarmCart.Core.Tests
+[xUnit.net 00:00:10.82]   Starting:    FarmCart.Core.Tests
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_IntoFullSlot_IsConflict [23 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_PromoBelowMinimumTotal_IsRejected [6 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_UnknownSlot_IsNotFound [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_WithPromo_AppliesDiscountToChargedAmount [4 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_RepeatedWithSameIdempotencyKey_ReturnsSameOrderAndChargesOnce [3 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.MyOrder_OfAnotherBuyer_IsNotFound [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_NotifiesBuyerAndFarmer [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_WithInvalidPromo_IsRejected(code: "NOPE", daysLater: 0, expected: "promo_unknown") [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_WithInvalidPromo_IsRejected(code: "FARM10", daysLater: 31, expected: "promo_expired") [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_WithoutAddress_IsRejected [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_ProductSoldOutMeanwhile_IsConflictNamingTheProduct [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_WithCash_DoesNotChargeAnything [1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_ByCardWithoutToken_IsRejected [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_DeclinedCard_CreatesNothingAndKeepsCartAndStock [2 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_IntoPastSlot_IsRejected [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_WithEmptyCart_IsRejected [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_DeclinedPayment_DoesNotTakeOrderNumber [< 1 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.RejectedOrder_FreesItsSlot [4 ms]
+[xUnit.net 00:00:10.91]   Finished:    FarmCart.Core.Tests
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.PlaceOrder_ByCard_ChargesTotalReservesStockAndClearsCart [5 ms]
+  Passed FarmCart.Core.Tests.Ordering.OrderServiceTests.AvailableSlots_ShowRemainingCapacityAndHidePastSlots [2 ms]
+
+Test Run Successful.
+Total tests: 20
+     Passed: 20
+ Total time: 11,2427 Seconds

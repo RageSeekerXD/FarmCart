@@ -1,0 +1,34 @@
+﻿==> 1/5 Відновлення залежностей
+==> 2/5 Стандарт кодування (dotnet format --verify-no-changes)
+==> 3/5 Збірка Release (попередження = помилки)
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.27
+==> 4/5 Модульні й приймальні тести з покриттям
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.AcceptanceTests\bin\Release\net10.0\FarmCart.AcceptanceTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+Results File: C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\Rageseeker_RAGESEEKER_2026-10-16_19_51_47_net10.0.trx
+
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 2 s - FarmCart.AcceptanceTests.dll (net10.0)
+Results File: C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\Rageseeker_RAGESEEKER_2026-10-16_19_51_50_net10.0.trx
+
+Passed!  - Failed:     0, Passed:    61, Skipped:     0, Total:    61, Duration: 353 ms - FarmCart.Core.Tests.dll (net10.0)
+
+Attachments:
+  C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\3bc98ed0-9390-4ec9-b069-6f385b69a5bd\coverage.cobertura.xml
+  C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\1549f826-8622-407a-b42d-cda3f1037c71\coverage.cobertura.xml
+==> 5/5 Звіт про покриття
+2026-10-16T19:52:14: File 'C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\obj\Release\net10.0\System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs' does not exist (any more).
+2026-10-16T19:52:14: File 'C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\obj\Release\net10.0\System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs' does not exist (any more).
+2026-10-16T19:52:14: File 'C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\obj\Release\net10.0\System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs' does not exist (any more).
+2026-10-16T19:52:14: File 'C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\obj\Release\net10.0\System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs' does not exist (any more).
+2026-10-16T19:52:14: File 'C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\obj\Release\net10.0\System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs' does not exist (any more).
+2026-10-16T19:52:14: File 'C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\obj\Release\net10.0\System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs' does not exist (any more).
+
+Тести: 75 з 75 пройдено; покриття рядків: 92.3 %, гілок: 81.3 %
+ІНТЕГРАЦІЯ УСПІШНА за 40 с

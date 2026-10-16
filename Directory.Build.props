@@ -1,0 +1,13 @@
+<Project>
+  <!-- Спільні налаштування всіх проєктів FarmCart. Стандарт кодування XP: попередження = помилки. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Version>1.0.0</Version>
+    <Product>FarmCart</Product>
+    <Authors>Франчук О. Р., Волченко Д. О. (ПЗІП-11)</Authors>
+  </PropertyGroup>
+</Project>

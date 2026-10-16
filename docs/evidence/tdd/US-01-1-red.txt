@@ -1,0 +1,375 @@
+  Determining projects to restore...
+  Restored C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\FarmCart.Core.csproj (in 73 ms).
+  Restored C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\FarmCart.Core.Tests.csproj (in 174 ms).
+C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(17,47): warning CS9113: Parameter 'store' is unread. [C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\FarmCart.Core.csproj]
+C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(17,66): warning CS9113: Parameter 'sms' is unread. [C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\FarmCart.Core.csproj]
+C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(17,78): warning CS9113: Parameter 'clock' is unread. [C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\FarmCart.Core.csproj]
+  FarmCart.Core -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\bin\Debug\net10.0\FarmCart.Core.dll
+  FarmCart.Core.Tests -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.59]   Discovering: FarmCart.Core.Tests
+[xUnit.net 00:00:00.66]   Discovered:  FarmCart.Core.Tests
+[xUnit.net 00:00:00.68]   Starting:    FarmCart.Core.Tests
+[xUnit.net 00:00:01.22]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.22]       Stack Trace:
+[xUnit.net 00:00:01.22]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.22]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(79,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WrongCode_ReportsRemainingAttempts()
+[xUnit.net 00:00:01.22]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.22]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.22]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.22]       Stack Trace:
+[xUnit.net 00:00:01.22]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.22]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(11,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(String input)
+[xUnit.net 00:00:01.22]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.22]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.23]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.23]       Stack Trace:
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(11,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(String input)
+[xUnit.net 00:00:01.23]            at InvokeStub_PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(Object, Span`1)
+[xUnit.net 00:00:01.23]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.23]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.23]       Stack Trace:
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(11,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(String input)
+[xUnit.net 00:00:01.23]            at InvokeStub_PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(Object, Span`1)
+[xUnit.net 00:00:01.23]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.23]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.23]       Stack Trace:
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(11,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(String input)
+[xUnit.net 00:00:01.23]            at InvokeStub_PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(Object, Span`1)
+[xUnit.net 00:00:01.23]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.23]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.23]       Stack Trace:
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(143,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Login()
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(37,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_ForKnownPhone_ReturnsSameAccount()
+[xUnit.net 00:00:01.23]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.23]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.23]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.23]       Stack Trace:
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(129,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.FailedAttempts_AreNotResetByRequestingNewCode()
+[xUnit.net 00:00:01.23]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.23]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.23]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.23]       Stack Trace:
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.23]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(49,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_ExactlyFiveMinutesAfterRequest_CodeIsStillValid()
+[xUnit.net 00:00:01.23]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.23]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(input: "0671234567") [514 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 11
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WrongCode_ReportsRemainingAttempts [515 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WrongCode_ReportsRemainingAttempts() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 79
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(input: "+38 (067) 123-45-67") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 11
+   at InvokeStub_PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(input: "380671234567") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 11
+   at InvokeStub_PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(input: "+380671234567") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 11
+   at InvokeStub_PhoneNumberTests.Normalize_AcceptsCommonUkrainianFormats(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_ForKnownPhone_ReturnsSameAccount [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Login() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 143
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_ForKnownPhone_ReturnsSameAccount() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 37
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.FailedAttempts_AreNotResetByRequestingNewCode [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.FailedAttempts_AreNotResetByRequestingNewCode() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 129
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_ExactlyFiveMinutesAfterRequest_CodeIsStillValid [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_ExactlyFiveMinutesAfterRequest_CodeIsStillValid() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 49
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(60,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_CodeOlderThanFiveMinutes_IsExpired()
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(104,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Lockout_OneSecondBeforeFifteenMinutes_IsStillActive()
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(16,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.RequestCode_SendsSixDigitCodeBySms()
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(117,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Login_AfterLockoutExpires_IsAllowedAgain()
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(23,0): at FarmCart.Core.AuthService.FindByToken(String token)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(139,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.FindByToken_UnknownToken_ReturnsNull()
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]       Assert.Throws() Failure: Exception type was not an exact match
+[xUnit.net 00:00:01.25]       Expected: typeof(FarmCart.Core.DomainException)
+[xUnit.net 00:00:01.25]       Actual:   typeof(System.NotImplementedException)
+[xUnit.net 00:00:01.25]       ---- System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(71,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WithoutRequestedCode_IsRejected()
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(21,0): at FarmCart.Core.AuthService.Verify(String phone, String code)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(71,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.<Verify_WithoutRequestedCode_IsRejected>b__10_0()
+[xUnit.net 00:00:01.25]       Assert.Throws() Failure: Exception type was not an exact match
+[xUnit.net 00:00:01.25]       Expected: typeof(FarmCart.Core.DomainException)
+[xUnit.net 00:00:01.25]       Actual:   typeof(System.NotImplementedException)
+[xUnit.net 00:00:01.25]       ---- System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input)
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.25]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0()
+[xUnit.net 00:00:01.25]       Assert.Throws() Failure: Exception type was not an exact match
+[xUnit.net 00:00:01.25]       Expected: typeof(FarmCart.Core.DomainException)
+[xUnit.net 00:00:01.25]       Actual:   typeof(System.NotImplementedException)
+[xUnit.net 00:00:01.25]       ---- System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input)
+[xUnit.net 00:00:01.25]            at InvokeStub_PhoneNumberTests.Normalize_RejectsInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0()
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_CodeOlderThanFiveMinutes_IsExpired [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_CodeOlderThanFiveMinutes_IsExpired() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 60
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Lockout_OneSecondBeforeFifteenMinutes_IsStillActive [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Lockout_OneSecondBeforeFifteenMinutes_IsStillActive() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 104
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.RequestCode_SendsSixDigitCodeBySms [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.RequestCode_SendsSixDigitCodeBySms() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 16
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Login_AfterLockoutExpires_IsAllowedAgain [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Login_AfterLockoutExpires_IsAllowedAgain() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 117
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.FindByToken_UnknownToken_ReturnsNull [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.FindByToken(String token) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 23
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.FindByToken_UnknownToken_ReturnsNull() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 139
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WithoutRequestedCode_IsRejected [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(FarmCart.Core.DomainException)
+Actual:   typeof(System.NotImplementedException)
+---- System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WithoutRequestedCode_IsRejected() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 71
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+----- Inner Stack Trace -----
+   at FarmCart.Core.AuthService.Verify(String phone, String code) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 21
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.<Verify_WithoutRequestedCode_IsRejected>b__10_0() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 71
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "+14155552671") [2 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(FarmCart.Core.DomainException)
+Actual:   typeof(System.NotImplementedException)
+---- System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+----- Inner Stack Trace -----
+   at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(FarmCart.Core.DomainException)
+Actual:   typeof(System.NotImplementedException)
+---- System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+   at InvokeStub_PhoneNumberTests.Normalize_RejectsInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+----- Inner Stack Trace -----
+   at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+[xUnit.net 00:00:01.25]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(90,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_FifthWrongCode_LocksLoginForFifteenMinutes()
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.25]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]       Assert.Throws() Failure: Exception type was not an exact match
+[xUnit.net 00:00:01.25]       Expected: typeof(FarmCart.Core.DomainException)
+[xUnit.net 00:00:01.25]       Actual:   typeof(System.NotImplementedException)
+[xUnit.net 00:00:01.25]       ---- System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input)
+[xUnit.net 00:00:01.25]            at InvokeStub_PhoneNumberTests.Normalize_RejectsInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0()
+[xUnit.net 00:00:01.25]       Assert.Throws() Failure: Exception type was not an exact match
+[xUnit.net 00:00:01.25]       Expected: typeof(FarmCart.Core.DomainException)
+[xUnit.net 00:00:01.25]       Actual:   typeof(System.NotImplementedException)
+[xUnit.net 00:00:01.25]       ---- System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input)
+[xUnit.net 00:00:01.25]            at InvokeStub_PhoneNumberTests.Normalize_RejectsInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0()
+[xUnit.net 00:00:01.25]       Assert.Throws() Failure: Exception type was not an exact match
+[xUnit.net 00:00:01.25]       Expected: typeof(FarmCart.Core.DomainException)
+[xUnit.net 00:00:01.25]       Actual:   typeof(System.NotImplementedException)
+[xUnit.net 00:00:01.25]       ---- System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input)
+[xUnit.net 00:00:01.25]            at InvokeStub_PhoneNumberTests.Normalize_RejectsInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.25]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.25]         ----- Inner Stack Trace -----
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs(5,0): at FarmCart.Core.PhoneNumber.Normalize(String input)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs(21,0): at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0()
+[xUnit.net 00:00:01.25]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.25]       Stack Trace:
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs(19,0): at FarmCart.Core.AuthService.RequestCode(String phone)
+[xUnit.net 00:00:01.25]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs(25,0): at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WithCorrectCode_RegistersNewBuyer()
+[xUnit.net 00:00:01.26]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.26]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.26]   Finished:    FarmCart.Core.Tests
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_FifthWrongCode_LocksLoginForFifteenMinutes [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_FifthWrongCode_LocksLoginForFifteenMinutes() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 90
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "12345") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(FarmCart.Core.DomainException)
+Actual:   typeof(System.NotImplementedException)
+---- System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+   at InvokeStub_PhoneNumberTests.Normalize_RejectsInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+----- Inner Stack Trace -----
+   at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "+3806712345678") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(FarmCart.Core.DomainException)
+Actual:   typeof(System.NotImplementedException)
+---- System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+   at InvokeStub_PhoneNumberTests.Normalize_RejectsInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+----- Inner Stack Trace -----
+   at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+  Failed FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(input: "+38067123456a") [< 1 ms]
+  Error Message:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(FarmCart.Core.DomainException)
+Actual:   typeof(System.NotImplementedException)
+---- System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.Tests.Auth.PhoneNumberTests.Normalize_RejectsInvalidNumbers(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+   at InvokeStub_PhoneNumberTests.Normalize_RejectsInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+----- Inner Stack Trace -----
+   at FarmCart.Core.PhoneNumber.Normalize(String input) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\PhoneNumber.cs:line 5
+   at FarmCart.Core.Tests.Auth.PhoneNumberTests.<>c__DisplayClass1_0.<Normalize_RejectsInvalidNumbers>b__0() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\PhoneNumberTests.cs:line 21
+  Failed FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WithCorrectCode_RegistersNewBuyer [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.AuthService.RequestCode(String phone) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Auth\AuthService.cs:line 19
+   at FarmCart.Core.Tests.Auth.AuthServiceTests.Verify_WithCorrectCode_RegistersNewBuyer() in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Auth\AuthServiceTests.cs:line 25
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Total tests: 21
+     Failed: 21
+ Total time: 2,1257 Seconds

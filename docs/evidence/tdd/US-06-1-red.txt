@@ -1,0 +1,267 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+  FarmCart.Core -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\bin\Debug\net10.0\FarmCart.Core.dll
+  FarmCart.Core.Tests -> C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Debug\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.96]   Discovering: FarmCart.Core.Tests
+[xUnit.net 00:00:01.01]   Discovered:  FarmCart.Core.Tests
+[xUnit.net 00:00:01.03]   Starting:    FarmCart.Core.Tests
+[xUnit.net 00:00:01.06]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.06]       Stack Trace:
+[xUnit.net 00:00:01.06]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.06]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(34,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text)
+[xUnit.net 00:00:01.06]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.06]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.07]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.07]       Stack Trace:
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(34,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text)
+[xUnit.net 00:00:01.07]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.07]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.07]       Stack Trace:
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(34,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text)
+[xUnit.net 00:00:01.07]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.07]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.07]       Stack Trace:
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(34,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text)
+[xUnit.net 00:00:01.07]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.07]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.07]       Stack Trace:
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(34,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text)
+[xUnit.net 00:00:01.07]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.07]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.07]       Stack Trace:
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(34,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text)
+[xUnit.net 00:00:01.07]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.07]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.07]       Stack Trace:
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(34,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text)
+[xUnit.net 00:00:01.07]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.07]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.07]       Stack Trace:
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(23,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.07]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.07]       Stack Trace:
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.07]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(23,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text)
+[xUnit.net 00:00:01.07]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(Object, Span`1)
+[xUnit.net 00:00:01.07]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: null) [1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 34
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "4111 1111 1111 1112") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 34
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "Замовлення №1001, код вручення 4821") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 34
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "tok_visa") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 34
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "41111111111111111111111") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 34
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "+380 67 123 45 67") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 34
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(text: "") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 34
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_IgnoresPhonesCodesAndInvalidNumbers(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "{\"comment\":\"5555-5555-5555-4444\"}") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 23
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "amex 3782 822463 10005") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 23
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(23,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text)
+[xUnit.net 00:00:01.09]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(Object, Span`1)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(23,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text)
+[xUnit.net 00:00:01.09]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(Object, Span`1)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(5,0): at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(23,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text)
+[xUnit.net 00:00:01.09]            at InvokeStub_CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(Object, Span`1)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(7,0): at FarmCart.Core.CardDataGuard.PassesLuhn(String digits)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(14,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(7,0): at FarmCart.Core.CardDataGuard.PassesLuhn(String digits)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(14,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected)
+[xUnit.net 00:00:01.09]            at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(7,0): at FarmCart.Core.CardDataGuard.PassesLuhn(String digits)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(14,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected)
+[xUnit.net 00:00:01.09]            at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(7,0): at FarmCart.Core.CardDataGuard.PassesLuhn(String digits)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(14,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected)
+[xUnit.net 00:00:01.09]            at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(7,0): at FarmCart.Core.CardDataGuard.PassesLuhn(String digits)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(14,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected)
+[xUnit.net 00:00:01.09]            at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.09]       System.NotImplementedException : The method or operation is not implemented.
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs(7,0): at FarmCart.Core.CardDataGuard.PassesLuhn(String digits)
+[xUnit.net 00:00:01.09]         C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs(14,0): at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected)
+[xUnit.net 00:00:01.09]            at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:01.10]   Finished:    FarmCart.Core.Tests
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "Оплачу карткою 4111 1111 1111 1111, передзвоніть") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 23
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "4111111111111111") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 23
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(text: "{\"token\":4111111111111111}") [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.ContainsCardNumber(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 5
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(String text) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 23
+   at InvokeStub_CardDataGuardTests.ContainsCardNumber_DetectsCardInAnyText(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "5555555555554443", expected: False) [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.PassesLuhn(String digits) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 7
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 14
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "4111111111111111", expected: True) [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.PassesLuhn(String digits) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 7
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 14
+   at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "79927398713", expected: True) [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.PassesLuhn(String digits) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 7
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 14
+   at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "378282246310005", expected: True) [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.PassesLuhn(String digits) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 7
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 14
+   at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "5555555555554444", expected: True) [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.PassesLuhn(String digits) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 7
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 14
+   at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(digits: "4111111111111112", expected: False) [< 1 ms]
+  Error Message:
+   System.NotImplementedException : The method or operation is not implemented.
+  Stack Trace:
+     at FarmCart.Core.CardDataGuard.PassesLuhn(String digits) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Core\Payments\CardDataGuard.cs:line 7
+   at FarmCart.Core.Tests.Payments.CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(String digits, Boolean expected) in C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\Payments\CardDataGuardTests.cs:line 14
+   at InvokeStub_CardDataGuardTests.PassesLuhn_ValidatesCheckDigit(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Total tests: 18
+     Failed: 18
+ Total time: 1,4437 Seconds
