@@ -21,6 +21,7 @@ public sealed record Session(string Token, User User, bool IsNewUser);
 public sealed class AuthService(InMemoryStore store, ISmsGateway sms, IClock clock)
 {
     public const int MaxFailedAttempts = 5;
+    public const int CodeDigits = 6;
     public static readonly TimeSpan CodeLifetime = TimeSpan.FromMinutes(5);
     public static readonly TimeSpan LockoutPeriod = TimeSpan.FromMinutes(15);
 
@@ -31,10 +32,10 @@ public sealed class AuthService(InMemoryStore store, ISmsGateway sms, IClock clo
         {
             var otp = store.Otps.GetValueOrDefault(number) ?? new OtpState();
             EnsureNotLocked(otp);
-            otp.Code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+            otp.Code = SecretCode.Digits(CodeDigits);
             otp.ExpiresAt = clock.Now + CodeLifetime;
             store.Otps[number] = otp;
-            sms.Send(number, $"FarmCart: код входу {otp.Code}. Дійсний 5 хв.");
+            sms.Send(number, $"FarmCart: код входу {otp.Code}. Дійсний {CodeLifetime.TotalMinutes:0} хв.");
             return otp.ExpiresAt;
         }
     }

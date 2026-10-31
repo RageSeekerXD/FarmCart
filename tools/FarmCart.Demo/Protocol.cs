@@ -2,8 +2,8 @@ using System.Text;
 
 namespace FarmCart.Demo;
 
-/// <summary>Протокол роботи програми: друкує кроки сценарію в консоль і накопичує їх для файлу.</summary>
-internal sealed class Protocol
+/// <summary>Протокол роботи програми: друкує кроки сценарію (у консоль або інший вивід) і накопичує їх для файлу.</summary>
+internal sealed class Protocol(TextWriter output)
 {
     private readonly StringBuilder _text = new();
     private int _steps;
@@ -41,6 +41,14 @@ internal sealed class Protocol
         }
     }
 
+    /// <summary>Непередбачена відповідь сервера перериває сценарій, але протокол зберігається й показує причину.</summary>
+    public void Abort(Exception error)
+    {
+        _checks++;
+        Failures++;
+        Line($"     !!! Сценарій перервано: {error.GetType().Name}: {error.Message}");
+    }
+
     public void Summary()
     {
         Line("");
@@ -65,7 +73,7 @@ internal sealed class Protocol
 
     private void Line(string text)
     {
-        Console.WriteLine(text);
+        output.WriteLine(text);
         _text.AppendLine(text);
     }
 }

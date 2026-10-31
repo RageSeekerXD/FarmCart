@@ -1,0 +1,41 @@
+﻿==> DEF04-1-red (2026-10-31 19:54:13)
+==> dotnet format --verify-no-changes
+format exit: 0
+==> dotnet build -c Release
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.42
+build exit: 0
+==> dotnet test -c Release --no-build
+Test run for Q:\work\tests\FarmCart.AcceptanceTests\bin\Release\net10.0\FarmCart.AcceptanceTests.dll (.NETCoreApp,Version=v10.0)
+Test run for Q:\work\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:04.17]     FarmCart.Core.Tests.Ordering.FulfillmentServiceTests.Reject_WhenRefundFails_ChangesNothingAndRetryRestoresStockOnce [FAIL]
+[xUnit.net 00:00:04.18]     FarmCart.Core.Tests.Ordering.FulfillmentServiceTests.Accept_WithShortage_WhenRefundFails_ChangesNothing [FAIL]
+  Failed FarmCart.Core.Tests.Ordering.FulfillmentServiceTests.Reject_WhenRefundFails_ChangesNothingAndRetryRestoresStockOnce [4 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Tuple (Placed, 0, 7, 15)
+Actual:   Tuple (Placed, 0, 10, 20)
+  Stack Trace:
+     at FarmCart.Core.Tests.Ordering.FulfillmentServiceTests.Reject_WhenRefundFails_ChangesNothingAndRetryRestoresStockOnce() in Q:\work\tests\FarmCart.Core.Tests\Ordering\FulfillmentServiceTests.cs:line 177
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed FarmCart.Core.Tests.Ordering.FulfillmentServiceTests.Accept_WithShortage_WhenRefundFails_ChangesNothing [3 ms]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: Tuple (Placed, 0, 186)
+Actual:   Tuple (Placed, 0, 168)
+  Stack Trace:
+     at FarmCart.Core.Tests.Ordering.FulfillmentServiceTests.Accept_WithShortage_WhenRefundFails_ChangesNothing() in Q:\work\tests\FarmCart.Core.Tests\Ordering\FulfillmentServiceTests.cs:line 189
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     2, Passed:   179, Skipped:     0, Total:   181, Duration: 249 ms - FarmCart.Core.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:    38, Skipped:     0, Total:    38, Duration: 1 s - FarmCart.AcceptanceTests.dll (net10.0)
+test exit: 1

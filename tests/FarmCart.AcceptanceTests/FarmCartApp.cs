@@ -13,13 +13,15 @@ namespace FarmCart.AcceptanceTests;
 /// FarmCart у пам'яті тестового процесу з керованим годинником. Кожен приймальний тест
 /// створює власний екземпляр, тому тести не залежать один від одного.
 /// </summary>
-public sealed class FarmCartApp(bool seedDemoData = false) : WebApplicationFactory<Program>
+/// <param name="seedDemoData">Демонстраційний режим, як у Development: демонстраційні дані й код із SMS у відповіді API.</param>
+/// <param name="start">Початковий момент годинника; тести сезонності й демонстраційного сценарію задають власну дату.</param>
+public sealed class FarmCartApp(bool seedDemoData = false, DateTimeOffset? start = null) : WebApplicationFactory<Program>
 {
     public const string AdminPhone = "+380500000001";
     private HttpClient? _admin;
 
-    /// <summary>1 жовтня 2026 р., 09:00 за Києвом.</summary>
-    public ManualClock Clock { get; } = new(new DateTimeOffset(2026, 10, 1, 9, 0, 0, TimeSpan.FromHours(3)));
+    /// <summary>За замовчуванням 1 жовтня 2026 р., 09:00 за Києвом.</summary>
+    public ManualClock Clock { get; } = new(start ?? new DateTimeOffset(2026, 10, 1, 9, 0, 0, TimeSpan.FromHours(3)));
 
     public InMemoryStore Store => Services.GetRequiredService<InMemoryStore>();
 
@@ -75,6 +77,7 @@ public sealed class FarmCartApp(bool seedDemoData = false) : WebApplicationFacto
     {
         builder.UseEnvironment("Testing");
         builder.UseSetting("FarmCart:SeedDemoData", seedDemoData ? "true" : "false");
+        builder.UseSetting("FarmCart:ExposeSmsCodes", seedDemoData ? "true" : "false");
         builder.ConfigureLogging(logging => logging.ClearProviders());
         builder.ConfigureServices(services => services.AddSingleton<IClock>(Clock));
     }

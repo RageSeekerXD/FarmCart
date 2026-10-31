@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-
 namespace FarmCart.Core;
 
 public sealed record CheckoutRequest(
@@ -18,6 +16,9 @@ public sealed record SlotView(int Id, DateTimeOffset Start, DateTimeOffset End, 
 /// </summary>
 public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, INotifier notifier, IClock clock)
 {
+    /// <summary>Довжина коду вручення, який покупець називає кур'єру (US-09).</summary>
+    public const int DeliveryCodeDigits = 4;
+
     public IReadOnlyList<SlotView> AvailableSlots()
     {
         lock (store.Sync)
@@ -33,62 +34,37 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
     {
         lock (store.Sync)
         {
-            if (idempotencyKey is not null && store.OrderKeys.TryGetValue((buyer.Id, idempotencyKey), out var existingId))
+            if (FindPlaced(buyer, idempotencyKey) is { } placed)
             {
-                return store.Orders[existingId];
+                return placed;
             }
 
             var cart = store.CartOf(buyer.Id);
             var lines = SnapshotLines(cart);
-            if (string.IsNullOrWhiteSpace(request.Address))
-            {
-                throw Fail.Validation("address_required", "Вкажіть адресу доставки");
-            }
-
+            var address = RequireAddress(request.Address);
             var slot = FreeSlot(request.SlotId);
-            var subtotal = lines.Sum(line => line.Total);
-            var promo = ResolvePromo(request.PromoCode, subtotal);
+            var promo = ResolvePromo(request.PromoCode, lines.Sum(line => line.Total));
             var discountPercent = promo?.Percent ?? 0;
-            var total = subtotal - Order.DiscountFor(subtotal, discountPercent);
+            var total = Order.TotalFor(lines, discountPercent);
 
             // Кошти списуються до створення замовлення: відхилена оплата нічого не змінює й не займає номер (DEF-02).
-            var chargeId = request.PaymentMethod == PaymentMethod.Cash
-                ? null
-                : Charge(request.PaymentToken, total, idempotencyKey is null ? $"checkout-{Guid.NewGuid():N}" : $"buyer-{buyer.Id}-{idempotencyKey}");
-            var order = new Order
+            var chargeId = ChargeUnlessCash(request, total, ChargeReference(buyer, idempotencyKey));
+            var order = new Order(chargeId, total)
             {
                 Id = store.NextId<Order>(),
                 BuyerId = buyer.Id,
                 FarmerId = cart.FarmerId!.Value,
                 Lines = lines,
-                Address = request.Address.Trim(),
+                Address = address,
                 Slot = slot,
                 Comment = request.Comment,
                 PromoCode = promo?.Code,
                 DiscountPercent = discountPercent,
                 PaymentMethod = request.PaymentMethod,
-                PaymentStatus = chargeId is null ? PaymentStatus.PayOnDelivery : PaymentStatus.Paid,
-                ChargeId = chargeId,
-                PaidAmount = chargeId is null ? 0m : total,
-                DeliveryCode = RandomNumberGenerator.GetInt32(0, 10_000).ToString("D4"),
-                Status = OrderStatus.Placed,
+                DeliveryCode = SecretCode.Digits(DeliveryCodeDigits),
             };
-
-            foreach (var line in lines)
-            {
-                store.Products[line.ProductId].Stock -= line.Quantity;
-            }
-
-            order.History.Add(new StatusChange(OrderStatus.Placed, clock.Now));
-            store.Orders.Add(order.Id, order);
-            if (idempotencyKey is not null)
-            {
-                store.OrderKeys[(buyer.Id, idempotencyKey)] = order.Id;
-            }
-
-            store.Carts.Remove(buyer.Id);
-            notifier.Push(buyer.Id, $"Замовлення №{order.Id} оформлено на {Money.Format(order.Total)}");
-            notifier.Push(store.Farmers[order.FarmerId].UserId, $"Нове замовлення №{order.Id} на {Money.Format(order.Total)}");
+            Register(order, idempotencyKey);
+            NotifyPlaced(order);
             return order;
         }
     }
@@ -105,11 +81,47 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
     {
         lock (store.Sync)
         {
-            var order = store.Orders.GetValueOrDefault(orderId);
-            return order is not null && order.BuyerId == buyer.Id
-                ? order
-                : throw Fail.NotFound("order_not_found", $"Замовлення №{orderId} не знайдено");
+            return store.BuyerOrder(buyer, orderId);
         }
+    }
+
+    /// <summary>B-NFR-02: повторний запит із тим самим Idempotency-Key повертає вже оформлене замовлення.</summary>
+    private Order? FindPlaced(User buyer, string? idempotencyKey) =>
+        idempotencyKey is not null && store.OrderKeys.TryGetValue((buyer.Id, idempotencyKey), out var orderId)
+            ? store.Orders[orderId]
+            : null;
+
+    /// <summary>Ідентифікатор платежу для провайдера: повтор із тим самим ключем не спише кошти вдруге.</summary>
+    private static string ChargeReference(User buyer, string? idempotencyKey) =>
+        idempotencyKey is null ? $"checkout-{Guid.NewGuid():N}" : $"buyer-{buyer.Id}-{idempotencyKey}";
+
+    private static string RequireAddress(string? address) =>
+        string.IsNullOrWhiteSpace(address)
+            ? throw Fail.Validation("address_required", "Вкажіть адресу доставки")
+            : address.Trim();
+
+    /// <summary>Резервує залишки, фіксує статус «оформлено», зберігає замовлення з ключем ідемпотентності й очищає кошик.</summary>
+    private void Register(Order order, string? idempotencyKey)
+    {
+        foreach (var line in order.Lines)
+        {
+            store.Products[line.ProductId].Stock -= line.Quantity;
+        }
+
+        order.RecordStatus(OrderStatus.Placed, clock.Now);
+        store.Orders.Add(order.Id, order);
+        if (idempotencyKey is not null)
+        {
+            store.OrderKeys[(order.BuyerId, idempotencyKey)] = order.Id;
+        }
+
+        store.Carts.Remove(order.BuyerId);
+    }
+
+    private void NotifyPlaced(Order order)
+    {
+        notifier.Push(order.BuyerId, $"Замовлення №{order.Id} оформлено на {Money.Format(order.Total)}");
+        notifier.Push(store.Farmers[order.FarmerId].UserId, $"Нове замовлення №{order.Id} на {Money.Format(order.Total)}");
     }
 
     private List<OrderLine> SnapshotLines(Cart cart)
@@ -167,6 +179,10 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
             ? promo
             : throw Fail.Validation("promo_min_total", $"Промокод {promo.Code} діє для замовлень від {Money.Format(promo.MinTotal)}");
     }
+
+    /// <summary>Оплата карткою, Apple Pay чи Google Pay списується за токеном; готівку отримують під час вручення.</summary>
+    private string? ChargeUnlessCash(CheckoutRequest request, decimal total, string reference) =>
+        request.PaymentMethod == PaymentMethod.Cash ? null : Charge(request.PaymentToken, total, reference);
 
     private string Charge(string? token, decimal amount, string reference)
     {

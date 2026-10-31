@@ -9,7 +9,7 @@ public static partial class PhoneNumber
     {
         var compact = Separators().Replace(input ?? "", "");
         var normalized = compact.Length == 10 && compact.StartsWith('0') ? "+38" + compact
-            : compact.StartsWith("380") ? "+" + compact
+            : compact.StartsWith("380", StringComparison.Ordinal) ? "+" + compact
             : compact;
         return UkrainianMobile().IsMatch(normalized)
             ? normalized

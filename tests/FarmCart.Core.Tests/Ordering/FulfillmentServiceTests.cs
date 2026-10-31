@@ -161,4 +161,40 @@ public sealed class FulfillmentServiceTests
         Assert.Empty(_world.Fulfillment.Incoming(stranger));
         Assert.Equal([order.Id], _world.Fulfillment.Incoming(_farm).Select(o => o.Id));
     }
+
+    // DEF-04: аналіз коду в ЛР3 показав, що залишки й позиції змінювалися до виклику провайдера.
+    // Збій повернення коштів мав залишати замовлення напівзміненим, а повтор - повертати товар на склад удруге.
+    [Fact]
+    public void Reject_WhenRefundFails_ChangesNothingAndRetryRestoresStockOnce()
+    {
+        var order = _world.BuyMany(_buyer, [(_apples, 3), (_potatoes, 5)]);
+        var unavailable = new FulfillmentService(_world.Store, new UnavailableRefunds(_world.Payments), _world.Workflow);
+
+        Assert.Throws<InvalidOperationException>(() => unavailable.Reject(_farm, order.Id, "Град пошкодив урожай"));
+        var afterFailure = (order.Status, order.RefundedAmount, _apples.Stock, _potatoes.Stock);
+        _world.Fulfillment.Reject(_farm, order.Id, "Град пошкодив урожай");
+
+        Assert.Equal((OrderStatus.Placed, 0m, 7, 15), afterFailure);
+        Assert.Equal((10, 20, 186m), (_apples.Stock, _potatoes.Stock, order.RefundedAmount));
+    }
+
+    [Fact]
+    public void Accept_WithShortage_WhenRefundFails_ChangesNothing()
+    {
+        var order = _world.BuyMany(_buyer, [(_apples, 3), (_potatoes, 5)]);
+        var unavailable = new FulfillmentService(_world.Store, new UnavailableRefunds(_world.Payments), _world.Workflow);
+
+        Assert.Throws<InvalidOperationException>(() => unavailable.Accept(_farm, order.Id, [new Shortage(_potatoes.Id, 1)]));
+
+        Assert.Equal((OrderStatus.Placed, 0m, 186m), (order.Status, order.RefundedAmount, order.Total));
+        Assert.Equal(5, order.Lines.Single(l => l.ProductId == _potatoes.Id).Quantity);
+    }
+
+    /// <summary>Провайдер списує кошти, але не відповідає на запит повернення (таймаут).</summary>
+    private sealed class UnavailableRefunds(IPaymentGateway inner) : IPaymentGateway
+    {
+        public PaymentResult Charge(string token, decimal amount, string reference) => inner.Charge(token, amount, reference);
+
+        public void Refund(string chargeId, decimal amount) => throw new InvalidOperationException("Платіжний провайдер не відповідає");
+    }
 }

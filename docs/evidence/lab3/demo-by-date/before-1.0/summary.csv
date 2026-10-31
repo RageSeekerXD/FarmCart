@@ -1,0 +1,15 @@
+date;month;exit;failed checks;first problem
+2026-10-31;10;0;0;-
+2026-11-01;11;-532462766;1;!!! Очікування не виконано: знайдено моркву й картоплю «Зеленого Гаю» | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2026-11-15;11;-532462766;1;!!! Очікування не виконано: знайдено моркву й картоплю «Зеленого Гаю» | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2026-12-15;12;-532462766;1;!!! Очікування не виконано: знайдено моркву й картоплю «Зеленого Гаю» | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2027-01-15;1;-532462766;1;!!! Очікування не виконано: знайдено моркву й картоплю «Зеленого Гаю» | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2027-02-15;2;-532462766;1;!!! Очікування не виконано: знайдено моркву й картоплю «Зеленого Гаю» | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2027-03-15;3;-532462766;1;!!! Очікування не виконано: знайдено моркву й картоплю «Зеленого Гаю» | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2027-04-15;4;-532462766;1;!!! Очікування не виконано: знайдено моркву й картоплю «Зеленого Гаю» | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2027-05-15;5;-532462766;2;!!! Очікування не виконано: знайдено моркву й картоплю «Зеленого Гаю» | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2027-06-15;6;-532462766;1;!!! Очікування не виконано: полуниці немає в жовтневому каталозі | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2027-07-15;7;-532462766;1;!!! Очікування не виконано: полуниці немає в жовтневому каталозі | Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+2027-08-15;8;0;0;-
+2027-09-15;9;0;0;-
+2027-10-15;10;0;0;-

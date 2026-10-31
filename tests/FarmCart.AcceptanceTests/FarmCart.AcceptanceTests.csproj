@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\FarmCart.Api\FarmCart.Api.csproj" />
     <ProjectReference Include="..\..\src\FarmCart.Core\FarmCart.Core.csproj" />
+    <ProjectReference Include="..\..\tools\FarmCart.Demo\FarmCart.Demo.csproj" />
   </ItemGroup>
 
 </Project>

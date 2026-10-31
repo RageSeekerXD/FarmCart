@@ -89,6 +89,30 @@ public sealed record FarmerDto(int Id, string Name, double Lat, double Lon, bool
         farmer.ReviewCount);
 }
 
+/// <summary>Товар у каталозі фермера: знімок доменної сутності, щоб зміни в класі Product не змінювали HTTP-контракт непомітно.</summary>
+public sealed record ProductDto(
+    int Id,
+    int FarmerId,
+    string Name,
+    string Category,
+    string Unit,
+    decimal Price,
+    int Stock,
+    string? PhotoUrl,
+    IReadOnlyList<int> SeasonMonths)
+{
+    public static ProductDto From(Product product) => new(
+        product.Id,
+        product.FarmerId,
+        product.Name,
+        product.Category,
+        product.Unit,
+        product.Price,
+        product.Stock,
+        product.PhotoUrl,
+        [.. product.SeasonMonths]);
+}
+
 public sealed record CourierDto(int Id, string Name);
 
 public sealed record ReviewDto(int Id, int OrderId, int Rating, string? Comment, DateTimeOffset At)

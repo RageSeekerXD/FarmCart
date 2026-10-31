@@ -1,8 +1,5 @@
 namespace FarmCart.Core;
 
-/// <summary>Нестача товару, яку фермер виявив під час прийняття замовлення.</summary>
-public sealed record Shortage(int ProductId, int Quantity);
-
 /// <summary>US-07 (B-FR-09): фермер приймає, частково виконує або відхиляє замовлення; кошти повертаються автоматично.</summary>
 public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway payments, OrderWorkflow workflow)
 {
@@ -21,7 +18,7 @@ public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway paym
         {
             var order = FarmerOrder(farmerUser, orderId);
             OrderWorkflow.EnsureCanMove(order, OrderStatus.Accepted);
-            var note = shortages is { Count: > 0 } ? ShortageNote(order, RemoveShortages(order, shortages)) : "";
+            var note = shortages is { Count: > 0 } ? ShortageNote(order, RefundShortages(order, shortages)) : "";
             workflow.Move(order, OrderStatus.Accepted, note);
             return order;
         }
@@ -38,12 +35,14 @@ public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway paym
         {
             var order = FarmerOrder(farmerUser, orderId);
             OrderWorkflow.EnsureCanMove(order, OrderStatus.Rejected);
+
+            // Спершу зовнішній виклик провайдера: якщо повернення не вдалося, залишки й замовлення не змінюються (DEF-04).
+            var refund = Refund(order, order.Unrefunded);
             foreach (var line in order.Lines)
             {
                 store.Products[line.ProductId].Stock += line.Quantity;
             }
 
-            var refund = Refund(order, order.PaidAmount - order.RefundedAmount);
             order.RejectionReason = reason.Trim();
             var note = refund > 0 ? $" Кошти {Money.Format(refund)} повернено на картку." : "";
             workflow.Move(order, OrderStatus.Rejected, $" ({order.RejectionReason}).{note}");
@@ -94,32 +93,12 @@ public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway paym
         ? $". Частини товарів немає, повернено {Money.Format(refund)}"
         : $". Частини товарів немає, до сплати {Money.Format(order.Total)}";
 
-    /// <summary>Зменшує позиції на нестачу й повертає різницю між сплаченим і новою сумою.</summary>
-    private decimal RemoveShortages(Order order, IReadOnlyCollection<Shortage> shortages)
+    /// <summary>Повертає покупцю переплату за нестачу й лише потім зменшує позиції (DEF-04: збій провайдера нічого не змінює).</summary>
+    private decimal RefundShortages(Order order, IReadOnlyCollection<Shortage> shortages)
     {
-        var remaining = order.Lines.ToDictionary(line => line.ProductId, line => line.Quantity);
-        foreach (var shortage in shortages)
-        {
-            if (!remaining.TryGetValue(shortage.ProductId, out var ordered) || shortage.Quantity <= 0 || shortage.Quantity > ordered)
-            {
-                throw Fail.Validation("shortage_invalid", "Нестача має стосуватися позиції замовлення й не перевищувати замовлену кількість");
-            }
-
-            remaining[shortage.ProductId] = ordered - shortage.Quantity;
-        }
-
-        if (remaining.Values.All(quantity => quantity == 0))
-        {
-            throw Fail.Validation("nothing_to_deliver", "Жодного товару немає - відхиліть замовлення");
-        }
-
-        var reduced = order.Lines
-            .Select(line => line with { Quantity = remaining[line.ProductId] })
-            .Where(line => line.Quantity > 0)
-            .ToList();
-        order.Lines.Clear();
-        order.Lines.AddRange(reduced);
-        return Refund(order, order.PaidAmount - order.RefundedAmount - order.Total);
+        var refund = Refund(order, order.OverpaidAfter(shortages));
+        order.ApplyShortages(shortages);
+        return refund;
     }
 
     private decimal Refund(Order order, decimal amount)
@@ -130,12 +109,7 @@ public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway paym
         }
 
         payments.Refund(order.ChargeId, amount);
-        order.RefundedAmount += amount;
-        if (order.RefundedAmount == order.PaidAmount)
-        {
-            order.PaymentStatus = PaymentStatus.Refunded;
-        }
-
+        order.RegisterRefund(amount);
         return amount;
     }
 

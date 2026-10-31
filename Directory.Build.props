@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Product>FarmCart</Product>
     <Authors>Франчук О. Р., Волченко Д. О. (ПЗІП-11)</Authors>
   </PropertyGroup>

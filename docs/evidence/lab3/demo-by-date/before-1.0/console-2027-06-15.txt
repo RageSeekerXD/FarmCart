@@ -1,0 +1,52 @@
+FarmCart - протокол роботи програми: сценарій релізу 1 (31.10.2026 15:02:23, сервер http://localhost:5000/)
+====================================================================================================
+
+[01] Перевірка доступності сервера
+     Клієнт: GET /api/health -> 200 OK
+       • Версія сервера: 1.0.0
+
+[02] US-01. Адміністратор входить за одноразовим кодом із SMS
+     Адміністратор: POST /api/auth/code -> 202 Accepted
+       • SMS на +380500000001: «FarmCart: код входу 580321» (режим розробки: код повертає API)
+     Адміністратор: POST /api/auth/verify -> 200 OK
+       • Сесію відкрито: користувач #1 (Адміністратор FarmCart), ролі: Buyer, Admin
+
+[03] US-02. Продавець без верифікації намагається опублікувати товар
+     Фермер Тарас: POST /api/auth/code -> 202 Accepted
+       • SMS на +380671110004: «FarmCart: код входу 865122» (режим розробки: код повертає API)
+     Фермер Тарас: POST /api/auth/verify -> 200 OK
+       • Сесію відкрито: користувач #6 (Тарас Мельник), ролі: Buyer, Farmer
+     Фермер Тарас: POST /api/farmer/products -> 403 Forbidden [farmer_not_verified] Продавець без верифікації не може публікувати товари
+
+[04] US-02. Адміністратор верифікує продавця, після чого той публікує товар
+     Адміністратор: GET /api/admin/farmers/pending -> 200 OK
+       • Очікує верифікації: продавець #4 Еко-ферма «Сокільники»
+     Адміністратор: POST /api/admin/farmers/4/verify -> 200 OK
+     Фермер Тарас: POST /api/farmer/products -> 201 Created
+       • Опубліковано товар #10 «Сир кисломолочний», 85,00 грн за 0,5 кг
+
+[05] US-01. Новий покупець реєструється за номером телефону (спершу вводить хибний код)
+     Покупець Оксана: POST /api/auth/code -> 202 Accepted
+       • SMS на +380971234567: «FarmCart: код входу 936070» (режим розробки: код повертає API)
+     Покупець Оксана: POST /api/auth/verify -> 400 BadRequest [code_invalid] Невірний код. Залишилось спроб: 4
+     Покупець Оксана: POST /api/auth/verify -> 200 OK
+       • Сесію відкрито: користувач #7, ролі: Buyer; створено новий обліковий запис
+
+[06] US-04. Пошук: сертифіковані овочі до 15 км від центру Львова, спершу дешевші
+     Покупець Оксана: GET /api/catalog?category=Овочі&certified=true&lat=49.8419&lon=24.0315&maxKm=15&sort=PriceAsc -> 200 OK
+       • Морква - 16,00 грн/кг, Ферма «Зелений Гай», 7,6 км
+       • Картопля молода - 18,00 грн/кг, Ферма «Зелений Гай», 7,6 км
+
+[07] US-04. Увесь каталог жовтня: позасезонна полуниця прихована
+     Покупець Оксана: GET /api/catalog -> 200 OK
+       • Товарів у каталозі: 9; категорії: Молочні продукти, Овочі, Мед, Ягоди
+     !!! Очікування не виконано: полуниці немає в жовтневому каталозі
+
+[08] US-05. Кошик: товари одного фермера («покупки з одного прилавка»)
+Unhandled exception. System.InvalidOperationException: Sequence contains no matching element
+   at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.<RunAsync>g__ProductId|8_3(String name, <>c__DisplayClass8_0&) in C:\Users\rages\AppData\Local\Temp\claude\c--Users-rages-OneDrive-------------------------------------------------------------------------------Lab-2-FarmCart\51acc352-a112-4a61-80d6-b2ceee71b4ec\scratchpad\metrics-before\tools\FarmCart.Demo\DemoScenario.cs:line 60
+   at FarmCart.Demo.DemoScenario.RunAsync() in C:\Users\rages\AppData\Local\Temp\claude\c--Users-rages-OneDrive-------------------------------------------------------------------------------Lab-2-FarmCart\51acc352-a112-4a61-80d6-b2ceee71b4ec\scratchpad\metrics-before\tools\FarmCart.Demo\DemoScenario.cs:line 63
+   at Program.<Main>$(String[] args) in C:\Users\rages\AppData\Local\Temp\claude\c--Users-rages-OneDrive-------------------------------------------------------------------------------Lab-2-FarmCart\51acc352-a112-4a61-80d6-b2ceee71b4ec\scratchpad\metrics-before\tools\FarmCart.Demo\Program.cs:line 10
+   at Program.<Main>(String[] args)

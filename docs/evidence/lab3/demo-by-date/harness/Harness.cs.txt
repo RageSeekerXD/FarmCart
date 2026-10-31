@@ -1,0 +1,87 @@
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using FarmCart.Core;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+namespace TimeTravel;
+
+internal static class Harness
+{
+public static async Task Main(string[] args)
+{
+// Usage: TimeTravel <FarmCart.Demo.dll> <output dir> [date ...]
+// For every date: start FarmCart.Api (Development settings, demo data) on Kestrel with ManualClock = date,
+// run the demo client as a separate process, record exit code and the first failed expectation / crash line.
+Console.OutputEncoding = Encoding.UTF8;
+var demoDll = args[0];
+var apiRoot = Environment.GetEnvironmentVariable("FARMCART_API_ROOT") ?? throw new InvalidOperationException("Set FARMCART_API_ROOT");
+Environment.SetEnvironmentVariable("ASPNETCORE_TEST_CONTENTROOT_FARMCART_API", apiRoot);
+var outDir = args[1];
+Directory.CreateDirectory(outDir);
+var dates = args.Length > 2
+    ? args[2..].Select(a => DateTimeOffset.Parse(a, CultureInfo.InvariantCulture)).ToList()
+    : [.. Enumerable.Range(0, 12).Select(i => new DateTimeOffset(2026, 11, 15, 10, 0, 0, TimeSpan.FromHours(2)).AddMonths(i))];
+var summary = new StringBuilder("date;month;exit;failed checks;first problem\n");
+var port = 5300;
+foreach (var date in dates)
+{
+    port++;
+    var clock = new ManualClock(date);
+    using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+    {
+        builder.UseEnvironment("Development");
+        builder.UseSetting("FarmCart:SeedDemoData", "true");
+        builder.ConfigureLogging(logging => logging.ClearProviders());
+        builder.ConfigureServices(services => services.AddSingleton<IClock>(clock));
+    });
+    factory.UseKestrel(port);
+    factory.StartServer();
+    var baseAddress = factory.ClientOptions.BaseAddress;
+    using (var probe = new HttpClient())
+    {
+        try { Console.WriteLine($"probe {baseAddress}: {(int)(await probe.GetAsync(new Uri(baseAddress, "/api/health"))).StatusCode}"); }
+        catch (Exception e) { Console.WriteLine($"probe {baseAddress} failed: {e.Message}"); }
+    }
+
+    var protocolFile = Path.Combine(outDir, $"demo-{date:yyyy-MM-dd}.txt");
+    var psi = new ProcessStartInfo("dotnet")
+    {
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        StandardOutputEncoding = Encoding.UTF8,
+        StandardErrorEncoding = Encoding.UTF8,
+    };
+    psi.ArgumentList.Add(demoDll);
+    psi.ArgumentList.Add(baseAddress.ToString().TrimEnd('/'));
+    psi.ArgumentList.Add(protocolFile);
+    using var process = Process.Start(psi)!;
+    var stdout = process.StandardOutput.ReadToEndAsync();
+    var stderr = process.StandardError.ReadToEndAsync();
+    if (!process.WaitForExit(TimeSpan.FromSeconds(60)))
+    {
+        process.Kill(entireProcessTree: true);
+    }
+
+    var output = await stdout + await stderr;
+    await File.WriteAllTextAsync(Path.Combine(outDir, $"console-{date:yyyy-MM-dd}.txt"), output, new UTF8Encoding(false));
+    var lines = output.Split('\n').Select(l => l.TrimEnd('\r')).ToList();
+    var failed = lines.Count(l => l.Contains("!!! Очікування не виконано", StringComparison.Ordinal));
+    var problem = lines.FirstOrDefault(l => l.Contains("!!!", StringComparison.Ordinal) || l.StartsWith("Unhandled exception", StringComparison.Ordinal)) ?? "-";
+    var crash = lines.FirstOrDefault(l => l.Contains("Exception:", StringComparison.Ordinal));
+    if (crash is not null && problem == "-")
+    {
+        problem = crash;
+    }
+
+    var row = $"{date:yyyy-MM-dd};{date.Month};{process.ExitCode};{failed};{problem.Trim()}" + (crash is not null && !problem.Contains(crash.Trim(), StringComparison.Ordinal) ? $" | {crash.Trim()}" : "");
+    summary.AppendLine(row);
+    Console.WriteLine(row);
+}
+
+await File.WriteAllTextAsync(Path.Combine(outDir, "summary.csv"), summary.ToString(), new UTF8Encoding(false));
+}
+}

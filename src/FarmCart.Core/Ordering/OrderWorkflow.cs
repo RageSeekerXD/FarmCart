@@ -29,8 +29,7 @@ public sealed class OrderWorkflow(INotifier notifier, IClock clock)
     public void Move(Order order, OrderStatus to, string details = "")
     {
         EnsureCanMove(order, to);
-        order.Status = to;
-        order.History.Add(new StatusChange(to, clock.Now));
+        order.RecordStatus(to, clock.Now);
         notifier.Push(order.BuyerId, $"Замовлення №{order.Id}: {to.Title()}{details}");
     }
 }

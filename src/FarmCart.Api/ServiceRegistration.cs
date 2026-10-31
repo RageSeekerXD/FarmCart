@@ -4,9 +4,10 @@ namespace FarmCart.Api;
 
 public static class ServiceRegistration
 {
-    /// <summary>Реєструє доменні сервіси FarmCart; сховище в пам'яті є одним на процес.</summary>
-    public static IServiceCollection AddFarmCart(this IServiceCollection services)
+    /// <summary>Реєструє налаштування й доменні сервіси FarmCart; сховище в пам'яті є одним на процес.</summary>
+    public static IServiceCollection AddFarmCart(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<FarmCartOptions>(configuration.GetSection(FarmCartOptions.Section));
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<InMemoryStore>();
         services.AddSingleton<InMemorySmsGateway>();

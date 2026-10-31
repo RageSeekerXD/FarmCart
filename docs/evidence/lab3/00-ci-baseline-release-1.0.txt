@@ -1,0 +1,27 @@
+﻿==> 1/5 Відновлення залежностей
+==> 2/5 Стандарт кодування (dotnet format --verify-no-changes)
+==> 3/5 Збірка Release (попередження = помилки)
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.11
+==> 4/5 Модульні й приймальні тести з покриттям
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.AcceptanceTests\bin\Release\net10.0\FarmCart.AcceptanceTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.A total of 1 test files matched the specified pattern.
+
+Results File: C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\Rageseeker_RAGESEEKER_2026-10-31_14_43_52_net10.0.trx
+
+Passed!  - Failed:     0, Passed:   179, Skipped:     0, Total:   179, Duration: 251 ms - FarmCart.Core.Tests.dll (net10.0)
+Results File: C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\Rageseeker_RAGESEEKER_2026-10-31_14_43_54_net10.0.trx
+
+Passed!  - Failed:     0, Passed:    38, Skipped:     0, Total:    38, Duration: 3 s - FarmCart.AcceptanceTests.dll (net10.0)
+
+Attachments:
+  C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\9abd3a06-f5c9-4d65-95e9-a9b01ec68d53\Rageseeker_RAGESEEKER_2026-10-31.14_43_55.cobertura.xml
+==> 5/5 Звіт про покриття
+
+Тести: 217 з 217 пройдено; покриття рядків: 99.1 %, гілок: 97.3 %
+ІНТЕГРАЦІЯ УСПІШНА за 33 с

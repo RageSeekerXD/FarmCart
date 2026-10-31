@@ -6,7 +6,7 @@ namespace FarmCart.Api;
 
 public sealed record ApiError(string Error, string Message);
 
-public static class Middleware
+public static partial class Middleware
 {
     /// <summary>Журнал запитів: метод, шлях, статус і час. Тіла й рядки запиту не логуються (персональні та платіжні дані).</summary>
     public static IApplicationBuilder UseRequestLog(this WebApplication app)
@@ -16,12 +16,11 @@ public static class Middleware
         {
             var started = Stopwatch.GetTimestamp();
             await next(context);
-            log.LogInformation(
-                "{Method} {Path} -> {Status} ({Elapsed:0} мс)",
-                context.Request.Method,
-                context.Request.Path,
-                context.Response.StatusCode,
-                Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+            if (log.IsEnabled(LogLevel.Information))
+            {
+                var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                LogRequest(log, context.Request.Method, context.Request.Path, context.Response.StatusCode, elapsed);
+            }
         });
     }
 
@@ -74,6 +73,10 @@ public static class Middleware
         ErrorKind.TooManyAttempts => StatusCodes.Status429TooManyRequests,
         _ => StatusCodes.Status500InternalServerError,
     };
+
+    // Шаблон розбирається під час компіляції: без масиву params і упакування аргументів на кожен запит (CA1848).
+    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "{Method} {Path} -> {Status} ({Elapsed:0} мс)")]
+    private static partial void LogRequest(ILogger logger, string method, PathString path, int status, double elapsed);
 
     private static Task WriteError(HttpContext context, int status, string code, string message)
     {

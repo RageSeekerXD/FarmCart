@@ -31,12 +31,7 @@ public sealed class ReviewService(InMemoryStore store, AuditLog audit, IClock cl
 
         lock (store.Sync)
         {
-            var order = store.Orders.GetValueOrDefault(orderId);
-            if (order is null || order.BuyerId != buyer.Id)
-            {
-                throw Fail.NotFound("order_not_found", $"Замовлення №{orderId} не знайдено");
-            }
-
+            var order = store.BuyerOrder(buyer, orderId);
             if (order.Status != OrderStatus.Delivered)
             {
                 throw Fail.Conflict("not_delivered", "Відгук можна залишити лише після доставки замовлення");

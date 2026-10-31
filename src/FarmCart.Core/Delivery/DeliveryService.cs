@@ -50,12 +50,7 @@ public sealed class DeliveryService(InMemoryStore store, OrderWorkflow workflow)
                 throw Fail.Validation("delivery_code_invalid", "Невірний код вручення. Уточніть код у покупця");
             }
 
-            if (order.PaymentStatus == PaymentStatus.PayOnDelivery)
-            {
-                order.PaymentStatus = PaymentStatus.PaidOnDelivery;
-                order.PaidAmount = order.Total;
-            }
-
+            order.SettleOnDelivery();
             workflow.Move(order, OrderStatus.Delivered, ". Смачного!");
             return order;
         }

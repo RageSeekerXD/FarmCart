@@ -1,0 +1,109 @@
+﻿
+=== a1a5219 R-01: Order encapsulates lines, status history and payment state (Move Method, Encapsulate Collection/Field)
+
+ src/FarmCart.Core/Delivery/DeliveryService.cs    |   7 +-
+ src/FarmCart.Core/Ordering/FulfillmentService.cs |  43 ++--------
+ src/FarmCart.Core/Ordering/Order.cs              | 102 +++++++++++++++++++++--
+ src/FarmCart.Core/Ordering/OrderService.cs       |   8 +-
+ src/FarmCart.Core/Ordering/OrderWorkflow.cs      |   3 +-
+ 5 files changed, 104 insertions(+), 59 deletions(-)
+
+=== 21ade05 R-02: decompose OrderService.PlaceOrder (Compose Method), single total formula Order.TotalFor
+
+ src/FarmCart.Core/Ordering/Order.cs        |  9 +++-
+ src/FarmCart.Core/Ordering/OrderService.cs | 82 +++++++++++++++++++-----------
+ 2 files changed, 60 insertions(+), 31 deletions(-)
+
+=== 0bf04ca R-03: extract InMemoryStore.BuyerOrder (duplicated ownership lookup in OrderService and ReviewService)
+
+ src/FarmCart.Core/Common/InMemoryStore.cs  | 6 ++++++
+ src/FarmCart.Core/Ordering/OrderService.cs | 5 +----
+ src/FarmCart.Core/Reviews/ReviewService.cs | 7 +------
+ 3 files changed, 8 insertions(+), 10 deletions(-)
+
+=== 6811b74 R-04: SecretCode.Digits (duplicated code generation, CA1305), ordinal StartsWith (CA1310), named constants instead of magic numbers
+
+ src/FarmCart.Core/Auth/AuthService.cs      |  5 +++--
+ src/FarmCart.Core/Auth/PhoneNumber.cs      |  2 +-
+ src/FarmCart.Core/Common/SecretCode.cs     | 12 ++++++++++++
+ src/FarmCart.Core/Ordering/OrderService.cs |  7 ++++---
+ 4 files changed, 20 insertions(+), 6 deletions(-)
+
+=== a2da9f6 R-05: typed FarmCartOptions instead of magic configuration key and IsDevelopment() used as a feature flag
+
+ src/FarmCart.Api/Endpoints.cs                 |  7 ++++---
+ src/FarmCart.Api/FarmCartOptions.cs           | 13 +++++++++++++
+ src/FarmCart.Api/Program.cs                   | 11 +++++++++--
+ src/FarmCart.Api/ServiceRegistration.cs       |  5 +++--
+ src/FarmCart.Api/appsettings.Development.json |  3 ++-
+ src/FarmCart.Api/appsettings.json             |  3 ++-
+ 6 files changed, 33 insertions(+), 9 deletions(-)
+
+=== 81fdb23 R-06: DemoScenario - injected HttpClient/TextWriter (CA1001, test seam), one method per step (Compose Method), expectations computed from data instead of magic numbers
+
+ tools/FarmCart.Demo/DemoScenario.cs | 209 +++++++++++++++++++++++++++---------
+ tools/FarmCart.Demo/Program.cs      |   6 +-
+ tools/FarmCart.Demo/Protocol.cs     |   6 +-
+ 3 files changed, 167 insertions(+), 54 deletions(-)
+
+=== 3aec844 R-07: split Endpoints hub class (coupling 78) into per-client endpoint classes (Extract Class)
+
+ src/FarmCart.Api/Endpoints.cs                  | 137 ++-----------------------
+ src/FarmCart.Api/Endpoints/AdminEndpoints.cs   |  22 ++++
+ src/FarmCart.Api/Endpoints/AuthEndpoints.cs    |  26 +++++
+ src/FarmCart.Api/Endpoints/BuyerEndpoints.cs   |  34 ++++++
+ src/FarmCart.Api/Endpoints/CourierEndpoints.cs |  14 +++
+ src/FarmCart.Api/Endpoints/FarmerEndpoints.cs  |  39 +++++++
+ 6 files changed, 144 insertions(+), 128 deletions(-)
+
+=== 97041ec R-08: ProductDto - the farmer catalogue endpoints no longer serialize the mutable domain entity (consistent DTO boundary)
+
+ src/FarmCart.Api/Contracts.cs                 | 24 ++++++++++++++++++++++++
+ src/FarmCart.Api/Endpoints/FarmerEndpoints.cs |  8 ++++----
+ 2 files changed, 28 insertions(+), 4 deletions(-)
+
+=== 4daea57 R-09: request log through compile-time LoggerMessage (CA1848, CA1873)
+
+ src/FarmCart.Api/Middleware.cs | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+=== 040f4e0 DEF-04: refund before changing stock and order lines (Split Phase); regression tests with an unavailable provider
+
+ src/FarmCart.Core/Ordering/FulfillmentService.cs   |  9 ++++--
+ src/FarmCart.Core/Ordering/Order.cs                | 21 ++++++++-----
+ .../Ordering/FulfillmentServiceTests.cs            | 36 ++++++++++++++++++++++
+ 3 files changed, 55 insertions(+), 11 deletions(-)
+
+=== 2ba6829 DEF-03: demo works on any date - year-round products in the purchase flow, month-aware seasonality step against server time (/api/health time), protocol kept on unexpected errors; DemoScenarioTests for all 12 months
+
+ src/FarmCart.Api/DemoData.cs                       |  5 +-
+ src/FarmCart.Api/Endpoints.cs                      |  5 +-
+ .../FarmCart.AcceptanceTests/DemoScenarioTests.cs  | 26 +++++++
+ .../FarmCart.AcceptanceTests.csproj                |  1 +
+ tests/FarmCart.AcceptanceTests/FarmCartApp.cs      |  9 ++-
+ tools/FarmCart.Demo/DemoScenario.cs                | 90 ++++++++++++++++++----
+ tools/FarmCart.Demo/Protocol.cs                    |  7 ++
+ 7 files changed, 121 insertions(+), 22 deletions(-)
+
+=== 1f62606 Release 1.1.0: version, health contract test, README
+
+ Directory.Build.props                              |  2 +-
+ README.md                                          | 16 +++++++++++++---
+ tests/FarmCart.AcceptanceTests/ApiContractTests.cs |  7 ++++---
+ 3 files changed, 18 insertions(+), 7 deletions(-)
+
+=== d890a61 DEF-03: demo protocol stays readable on unexpected server replies (server time fallback, named missing product, abort counted as a check)
+
+ tools/FarmCart.Demo/DemoScenario.cs | 8 +++++---
+ tools/FarmCart.Demo/Protocol.cs     | 1 +
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+=== 1f50ef3 R-05: acceptance test for the Production guard of FarmCart:ExposeSmsCodes
+
+ tests/FarmCart.AcceptanceTests/ApiContractTests.cs | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+=== 79017b3 R-09: elapsed time computed only when the request log is enabled (CA1873)
+
+ src/FarmCart.Api/Middleware.cs | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)

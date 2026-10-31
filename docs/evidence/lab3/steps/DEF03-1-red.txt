@@ -1,0 +1,138 @@
+﻿==> DEF03-1-red (2026-10-31 19:56:14)
+==> dotnet format --verify-no-changes
+format exit: 0
+==> dotnet build -c Release
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.46
+build exit: 0
+==> dotnet test -c Release --no-build
+Test run for Q:\work\tests\FarmCart.AcceptanceTests\bin\Release\net10.0\FarmCart.AcceptanceTests.dll (.NETCoreApp,Version=v10.0)
+Test run for Q:\work\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:02.49]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 7) [FAIL]
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 7) [1 s]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 119
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:02.88]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 1) [FAIL]
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 1) [130 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 120
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:03.01]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 2) [FAIL]
+[xUnit.net 00:00:03.16]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 11) [FAIL]
+[xUnit.net 00:00:03.27]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 12) [FAIL]
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 2) [130 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 120
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 11) [150 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 120
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 12) [110 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 120
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:03.50]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 5) [FAIL]
+[xUnit.net 00:00:03.74]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 4) [FAIL]
+[xUnit.net 00:00:03.84]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 6) [FAIL]
+[xUnit.net 00:00:03.94]     DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 3) [FAIL]
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 5) [102 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 119
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 4) [108 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 119
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 6) [100 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 119
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+  Failed DEMO-2 Сценарій релізу проходить у будь-якому місяці року(month: 3) [99 ms]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.Single[TSource](IEnumerable`1 source, Func`2 predicate)
+   at FarmCart.Demo.DemoScenario.Item(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 313
+   at FarmCart.Demo.DemoScenario.ProductId(JsonArray catalog, String name) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 315
+   at FarmCart.Demo.DemoScenario.FillCartAsync(Actor buyer, JsonArray catalog) in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 120
+   at FarmCart.Demo.DemoScenario.RunAsync() in Q:\work\tools\FarmCart.Demo\DemoScenario.cs:line 34
+   at FarmCart.AcceptanceTests.DemoScenarioTests.ReleaseScenarioPassesInEveryMonth(Int32 month) in Q:\work\tests\FarmCart.AcceptanceTests\DemoScenarioTests.cs:line 22
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:     9, Passed:    41, Skipped:     0, Total:    50, Duration: 2 s - FarmCart.AcceptanceTests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:   181, Skipped:     0, Total:   181, Duration: 293 ms - FarmCart.Core.Tests.dll (net10.0)
+test exit: 1

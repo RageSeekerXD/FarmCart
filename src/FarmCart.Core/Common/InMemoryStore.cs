@@ -50,4 +50,10 @@ public sealed class InMemoryStore
         ?? throw Fail.Forbidden("not_a_farmer", "Спочатку зареєструйтеся як продавець");
 
     public Cart CartOf(int buyerId) => Carts.TryGetValue(buyerId, out var cart) ? cart : Carts[buyerId] = new Cart();
+
+    /// <summary>Замовлення покупця; чуже замовлення для нього «не існує», щоб не розкривати чужі номери.</summary>
+    public Order BuyerOrder(User buyer, int orderId) =>
+        Orders.GetValueOrDefault(orderId) is { } order && order.BuyerId == buyer.Id
+            ? order
+            : throw Fail.NotFound("order_not_found", $"Замовлення №{orderId} не знайдено");
 }
