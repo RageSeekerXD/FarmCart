@@ -23,6 +23,7 @@
 - `GET /api/farmer/profile` - господарство продавця та стан верифікації.
 - `GET /api/orders/{id}/review` - відгук покупця на власне замовлення.
 - `GET /api/admin/promocodes` - список промокодів.
+- `GET /api/demo/accounts` - демонстраційні акаунти для входу одним натисканням (лише в демонстраційному режимі).
 - Хаб SignalR `/hubs/notifications`: подія `notification` користувачу одразу після події замовлення;
   кур'єр отримує сповіщення `delivery.assigned` про нову доставку.
 - OpenAPI `/openapi/v1.json` (лише Development); сервер віддає зібраний веб-клієнт `web/dist` статикою.

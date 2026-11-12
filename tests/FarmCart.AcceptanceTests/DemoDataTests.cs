@@ -94,6 +94,30 @@ public sealed partial class DemoDataTests
         Assert.Equal(5, review.GetProperty("review").GetProperty("rating").GetInt32());
     }
 
+    [Fact(DisplayName = "DEMO-9 Демонстраційні акаунти покривають усі ролі, і кожному є що показати; поза демо-режимом їх немає")]
+    public async Task DemoAccountsCoverEveryRole()
+    {
+        using var app = new FarmCartApp(seedDemoData: true);
+        using var production = new FarmCartApp();
+
+        var accounts = await app.CreateClient().GetJson("/api/demo/accounts");
+        var hidden = await production.CreateClient().GetJson("/api/demo/accounts");
+
+        Assert.Equal(Enum.GetNames<Role>(), accounts.EnumerateArray().Select(a => a.Str("role")));
+        Assert.Equal(0, hidden.GetArrayLength());
+        foreach (var account in accounts.EnumerateArray())
+        {
+            var client = await app.LoginAsync(account.Str("phone"));
+            var roles = (await client.GetJson("/api/me")).GetProperty("roles").EnumerateArray().Select(r => r.GetString());
+            Assert.Contains(account.Str("role"), roles);
+            Assert.False(string.IsNullOrWhiteSpace(account.GetProperty("title").Str("en")));
+        }
+
+        var farmer = await app.LoginAsync(accounts[1].Str("phone"));
+        var incoming = await farmer.GetJson("/api/farmer/orders");
+        Assert.Contains(incoming.EnumerateArray(), o => o.Str("status") == "Placed");
+    }
+
     [Fact(DisplayName = "DEMO-5 Жодне англійське поле демонстраційних даних і довідників не містить кирилиці")]
     public void EnglishFieldsHaveNoCyrillic()
     {

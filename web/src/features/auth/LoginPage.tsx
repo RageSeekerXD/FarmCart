@@ -8,6 +8,7 @@ import type { CodeResponse, SessionResponse } from '../../api/types';
 import { errorMessage } from '../../i18n';
 import { useToast } from '../../shared/Toast';
 import { ROLE_HOME, useAuth } from './AuthContext';
+import { DemoAccountButtons } from './DemoAccounts';
 
 /** UI-01: вхід за номером телефону з одноразовим кодом. У режимі розробки API повертає код (devCode). */
 export function LoginPage() {
@@ -127,6 +128,7 @@ export function LoginPage() {
             </Button>
           </Stack>
         )}
+        <DemoAccountButtons />
       </Paper>
     </Box>
   );

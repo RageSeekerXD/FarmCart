@@ -107,6 +107,8 @@ export const backend = {
     );
   },
   notifications: [] as AppNotification[],
+  /** Демо-акаунти сервера; порожньо - сервер не в демонстраційному режимі. */
+  demoAccounts: [] as { phone: string; role: Role; title: { uk: string; en: string } }[],
   /** Заявки продавців у черзі верифікації. */
   pendingFarmers: [] as FarmerProfile[],
   audit: [] as AuditEntry[],
@@ -146,6 +148,7 @@ export const backend = {
     this.farmProducts = verified ? ownProducts.map((product) => ({ ...product })) : [];
   },
   reset() {
+    this.demoAccounts = [];
     this.pendingFarmers = [];
     this.audit = [];
     this.promoCodes = [{ code: 'FARM10', percent: 10, minTotal: 300, validUntil: '2026-10-31T09:00:00+03:00' }];
@@ -245,6 +248,8 @@ export const handlers = [
     backend.reviews.push(review);
     return HttpResponse.json(review, { status: 201 });
   }),
+
+  http.get('*/api/demo/accounts', () => HttpResponse.json(backend.demoAccounts)),
 
   http.get('*/api/me/notifications', () => HttpResponse.json(backend.notifications)),
 

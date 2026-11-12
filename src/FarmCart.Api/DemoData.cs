@@ -2,6 +2,9 @@ using FarmCart.Core;
 
 namespace FarmCart.Api;
 
+/// <summary>Демонстраційний акаунт: телефон, роль, заради якої його показують, і підпис двома мовами.</summary>
+public sealed record DemoAccount(string Phone, Role Role, LocalizedText Title);
+
 /// <summary>
 /// Демонстраційні дані (режим розробки, BE-8): ферми Львівщини, товари семи категорій обома мовами,
 /// слоти, промокод, кур'єр і адміністратор. Понад 60 % товарів цілорічні, тож каталог не порожній у жодному місяці.
@@ -10,6 +13,18 @@ public static class DemoData
 {
     /// <summary>Покупець з історією: по одному замовленню в кожному статусі.</summary>
     public const string DemoBuyerPhone = "+380931112233";
+    /// <summary>
+    /// Акаунти для показу всіх ролей: веб-клієнт у режимі розробки пропонує вхід одним натисканням.
+    /// У кожного є що показати: історія замовлень, замовлення до прийняття, доставка в дорозі, черга верифікації.
+    /// </summary>
+    public static readonly IReadOnlyList<DemoAccount> Accounts =
+    [
+        new(DemoBuyerPhone, Role.Buyer, new("Покупець з історією замовлень", "Buyer with order history")),
+        new("+380671110009", Role.Farmer, new("Фермер: пекарня «Житній колос»", "Farmer: Zhytnii Kolos Bakery")),
+        new("+380631230001", Role.Courier, new("Кур'єр з доставкою в дорозі", "Courier with a delivery on the way")),
+        new("+380500000001", Role.Admin, new("Адміністратор", "Administrator")),
+    ];
+
     private const string HistoryAddress = "Львів, вул. Личаківська, 24, кв. 5";
 
     public static void Seed(IServiceProvider services)

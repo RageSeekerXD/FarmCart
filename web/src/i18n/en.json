@@ -375,5 +375,10 @@
     "comment": "Comment",
     "submit": "Send review",
     "thanks": "Thank you for your review!"
+  },
+  "demo": {
+    "title": "Demo accounts",
+    "hint": "Development mode: one-click sign-in to show each role.",
+    "switch": "Switch demo account"
   }
 }

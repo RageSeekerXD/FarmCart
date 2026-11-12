@@ -20,6 +20,9 @@ internal static class AuthEndpoints
             var session = auth.Verify(body.Phone, body.Code);
             return new { token = session.Token, isNewUser = session.IsNewUser, user = UserDto.From(session.User) };
         });
+        // Лише в демонстраційному режимі (демо-дані й коди в відповіді API); інакше список порожній і клієнт нічого не показує.
+        api.MapGet("/demo/accounts", (IOptions<FarmCartOptions> options) =>
+            options.Value is { SeedDemoData: true, ExposeSmsCodes: true } ? DemoData.Accounts : []);
         api.MapGet("/me", (Caller caller) => UserDto.From(caller.User));
         api.MapGet("/me/notifications", (Caller caller, InMemoryNotifier notifier) => notifier.For(caller.User.Id));
     }

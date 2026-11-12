@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import type { Lang, Role } from '../api/types';
 import { ROLE_HOME, useAuth } from '../features/auth/AuthContext';
+import { DemoAccountSwitcher } from '../features/auth/DemoAccounts';
 import { cartCount, useCart } from '../features/cart/useCart';
 import { NotificationBell } from '../features/notifications/NotificationBell';
 import { LANGS, useLang } from '../i18n';
@@ -154,6 +155,7 @@ export function Layout() {
           )}
 
           {user && <NotificationBell key={user.id} user={user} />}
+          {user && <DemoAccountSwitcher />}
 
           {user ? (
             <Tooltip title={`${t('header.logout')} (${user.phone})`}>
