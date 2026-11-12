@@ -31,6 +31,27 @@ export function useRemoveFromCart() {
   });
 }
 
+/**
+ * Зміна кількості в кошику. API вміє лише додавати одиниці й прибирати позицію цілком, тож зменшення -
+ * це «прибрати позицію й додати її знову з меншою кількістю»; до 0 - просто прибрати.
+ */
+export function useChangeQuantity() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ productId, from, to }: { productId: number; from: number; to: number }) => {
+      if (to > from) {
+        return api<Cart>('/cart/items', { method: 'POST', body: { productId, quantity: to - from } });
+      }
+
+      const removed = await api<Cart>(`/cart/items/${productId}`, { method: 'DELETE' });
+      return to > 0 ? api<Cart>('/cart/items', { method: 'POST', body: { productId, quantity: to } }) : removed;
+    },
+    onSuccess: (cart) => queryClient.setQueryData(CART_KEY, cart),
+    // Якщо другий крок зменшення не вдався, кошик на сервері вже інший - перечитуємо його.
+    onError: () => void queryClient.invalidateQueries({ queryKey: CART_KEY }),
+  });
+}
+
 export function cartCount(cart: Cart | undefined): number {
   return cart?.lines.reduce((sum, line) => sum + line.quantity, 0) ?? 0;
 }

@@ -107,7 +107,7 @@ export function Layout() {
               slotProps={{ htmlInput: { 'aria-label': t('header.role') } }}
               sx={{
                 minWidth: 130,
-                '& .MuiOutlinedInput-root': { color: 'inherit' },
+                '& .MuiOutlinedInput-root': { color: 'inherit', bgcolor: 'rgba(255,255,255,0.08)' },
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.5)' },
                 '& .MuiSvgIcon-root': { color: 'inherit' },
               }}
@@ -185,7 +185,11 @@ export function Layout() {
           allowScrollButtonsMobile
           textColor="inherit"
           indicatorColor="secondary"
-          sx={{ minHeight: 40, px: { xs: 0, sm: 2 } }}
+          sx={{
+            minHeight: 44,
+            px: { xs: 0, sm: 2 },
+            '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' },
+          }}
         >
           {items.map((item) => (
             <Tab
@@ -194,16 +198,26 @@ export function Layout() {
               label={t(item.label)}
               component={RouterLink}
               to={item.to}
-              sx={{ minHeight: 40, textTransform: 'none', fontSize: '0.95rem' }}
+              sx={{
+                minHeight: 44,
+                textTransform: 'none',
+                fontSize: '0.95rem',
+                opacity: 0.85,
+                borderRadius: '8px 8px 0 0',
+                '&:hover': { opacity: 1, bgcolor: 'rgba(255,255,255,0.08)' },
+                '&.Mui-selected': { opacity: 1 },
+              }}
             />
           ))}
         </Tabs>
       </AppBar>
-      <Container component="main" id="main" maxWidth="lg" sx={{ flex: 1, py: { xs: 2, sm: 3 }, px: { xs: 1.5, sm: 3 } }}>
+      <Container component="main" id="main" maxWidth="lg" sx={{ flex: 1, py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
         <Outlet />
       </Container>
-      <Box component="footer" sx={{ py: 2, textAlign: 'center', color: 'text.secondary' }}>
-        <Typography variant="body2">{t('app.tagline')}</Typography>
+      <Box component="footer" sx={{ py: 3, mt: 2, textAlign: 'center', color: 'text.secondary', borderTop: 1, borderColor: 'divider' }}>
+        <Typography variant="body2">
+          🧺 <strong>{t('app.name')}</strong> · {t('app.tagline')}
+        </Typography>
       </Box>
     </Box>
   );

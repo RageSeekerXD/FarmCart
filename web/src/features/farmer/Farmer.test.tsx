@@ -216,6 +216,25 @@ describe('UI-09 Вхідні замовлення фермера', () => {
     ]);
   });
 
+  it('фільтр за групою: нові окремо від завершених, з лічильниками', async () => {
+    backend.addOrder('Placed');
+    backend.addOrder('Delivered');
+    const { user } = await asFarmer('/farmer/orders');
+    await screen.findByRole('listitem', { name: 'Замовлення №1001' });
+    expect(screen.getByRole('button', { name: 'Усі · 2', pressed: true })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Нові · 1' }));
+    expect(screen.getByRole('listitem', { name: 'Замовлення №1001' })).toBeInTheDocument();
+    expect(screen.queryByRole('listitem', { name: 'Замовлення №1002' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Завершені · 1' }));
+    expect(screen.getByRole('listitem', { name: 'Замовлення №1002' })).toBeInTheDocument();
+    expect(screen.queryByRole('listitem', { name: 'Замовлення №1001' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'У роботі · 0' }));
+    expect(screen.getByText('У цій групі замовлень немає.')).toBeInTheDocument();
+  });
+
   it('нове замовлення з’являється саме, без перезавантаження', async () => {
     await asFarmer('/farmer/orders');
     expect(await screen.findByText(/Замовлень ще немає/)).toBeInTheDocument();

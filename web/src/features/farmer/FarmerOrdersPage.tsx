@@ -1,7 +1,12 @@
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
+import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import {
   Alert,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Dialog,
   DialogActions,
@@ -13,16 +18,48 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Order } from '../../api/types';
+import type { Order, OrderStatus } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatSlot } from '../../shared/dates';
+import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { StatusChip } from '../orders/OrdersPage';
 import { useCouriers, useFarmerOrders, useOrderAction, type OrderAction } from './api';
 
-type DialogState = { kind: 'accept' | 'reject' | 'handover'; order: Order } | null;
+/** Групи замовлень для фільтра: нові чекають рішення фермера, «у роботі» - прийняті й ті, що збираються. */
+const FILTERS = ['all', 'new', 'active', 'done'] as const;
+type Filter = (typeof FILTERS)[number];
+
+function inFilter(status: OrderStatus, filter: Filter): boolean {
+  switch (filter) {
+    case 'new':
+      return status === 'Placed';
+    case 'active':
+      return status === 'Accepted' || status === 'Assembling';
+    case 'done':
+      return status === 'InTransit' || status === 'Delivered' || status === 'Rejected';
+    default:
+      return true;
+  }
+}
+
+/** Статуси, на яких хід за фермером: картка підказує наступний крок. */
+const NEXT_STEP: readonly OrderStatus[] = ['Placed', 'Accepted', 'Assembling'];
+
+function InfoRow({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, color: 'text.secondary', '& > svg': { fontSize: 18, mt: '2px', flexShrink: 0 } }}>
+      {icon}
+      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        {children}
+      </Typography>
+    </Box>
+  );
+}
+
+type DialogState ={ kind: 'accept' | 'reject' | 'handover'; order: Order } | null;
 
 interface ActionDialogProps {
   state: NonNullable<DialogState>;
@@ -140,53 +177,92 @@ export function FarmerOrdersPage() {
   const orders = useFarmerOrders();
   const assemble = useOrderAction();
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [filter, setFilter] = useState<Filter>('all');
 
   const done = (order: Order) => {
     setDialog(null);
     toast.show(`${t('orders.number', { id: order.id })}: ${t(`status.${order.status}`)}`);
   };
 
+  const all = orders.data ?? [];
+  const counts = Object.fromEntries(FILTERS.map((item) => [item, all.filter((order) => inFilter(order.status, item)).length])) as Record<Filter, number>;
+  // Спершу ті, де хід за фермером (нові, потім прийняті й ті, що збираються); усередині групи - порядок сервера.
+  const priority = (status: OrderStatus) => (NEXT_STEP.includes(status) ? NEXT_STEP.indexOf(status) : NEXT_STEP.length);
+  const shown = all.filter((order) => inFilter(order.status, filter)).sort((a, b) => priority(a.status) - priority(b.status));
+
   return (
-    <Box sx={{ maxWidth: 860, mx: 'auto' }}>
+    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
       <Typography component="h1" variant="h4" sx={{ mb: 2, fontSize: { xs: '1.6rem', sm: '2.1rem' } }}>
         {t('farmOrders.title')}
       </Typography>
 
       {orders.isPending && <CircularProgress aria-label={t('common.loading')} />}
       {orders.isError && <Alert severity="error">{errorMessage(orders.error)}</Alert>}
-      {orders.data?.length === 0 && <Typography color="text.secondary">{t('farmOrders.empty')}</Typography>}
+      {orders.data?.length === 0 && <EmptyState icon={<InboxOutlinedIcon />} title={t('farmOrders.empty')} />}
+
+      {all.length > 0 && (
+        <Stack direction="row" spacing={1} useFlexGap role="group" aria-label={t('farmOrders.filterLabel')} sx={{ flexWrap: 'wrap', mb: 2 }}>
+          {FILTERS.map((item) => (
+            <Chip
+              key={item}
+              clickable
+              color={filter === item ? 'primary' : 'default'}
+              variant={filter === item ? 'filled' : 'outlined'}
+              aria-pressed={filter === item}
+              onClick={() => setFilter(item)}
+              label={`${t(`farmOrders.filter.${item}`)} · ${counts[item]}`}
+              sx={{ fontWeight: 600, bgcolor: filter === item ? undefined : 'background.paper' }}
+            />
+          ))}
+        </Stack>
+      )}
+      {all.length > 0 && shown.length === 0 && <Typography color="text.secondary">{t('farmOrders.noneInFilter')}</Typography>}
 
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {orders.data?.map((order) => {
+        {shown.map((order) => {
           const label = t('orders.number', { id: order.id });
+          const isNew = order.status === 'Placed';
+          const next = NEXT_STEP.includes(order.status) ? t(`farmOrders.next.${order.status}`) : null;
           return (
-            <Paper component="li" key={order.id} aria-label={label} sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Paper
+              component="li"
+              key={order.id}
+              aria-label={label}
+              elevation={1}
+              sx={{ p: { xs: 2, sm: 2.5 }, borderLeft: 4, borderColor: isNew ? 'secondary.main' : 'transparent' }}
+            >
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 1.5 }}>
                 <Typography component="h2" variant="h6" sx={{ mr: 'auto' }}>
                   {label}
                 </Typography>
                 <StatusChip status={order.status} />
               </Box>
-              <Stack component="ul" sx={{ listStyle: 'none', p: 0, m: 0, mb: 1 }}>
+              <Stack component="ul" spacing={0.5} sx={{ listStyle: 'none', p: 1.5, m: 0, mb: 1.5, bgcolor: 'background.default', borderRadius: 2 }}>
                 {order.lines.map((line) => (
-                  <Typography component="li" key={line.productId}>
+                  <Typography component="li" key={line.productId} sx={{ fontWeight: 500 }}>
                     {pick(line.name)} — {line.quantity} × {pick(line.unit)}
                   </Typography>
                 ))}
               </Stack>
-              <Typography variant="body2" color="text.secondary">
-                {t('orders.deliveryAt', { slot: formatSlot(order.slotStart, order.slotEnd, lang) })} · {order.address}
-              </Typography>
-              {order.comment && (
-                <Typography variant="body2" color="text.secondary">
-                  {t('checkout.comment')}: {order.comment}
-                </Typography>
-              )}
-              <Typography sx={{ fontWeight: 600, mt: 0.5 }}>
+              <Stack spacing={0.5}>
+                <InfoRow icon={<ScheduleIcon />}>{t('orders.deliveryAt', { slot: formatSlot(order.slotStart, order.slotEnd, lang) })}</InfoRow>
+                <InfoRow icon={<PlaceOutlinedIcon />}>{order.address}</InfoRow>
+                {order.comment && (
+                  <InfoRow icon={<ChatBubbleOutlineIcon />}>
+                    {t('checkout.comment')}: {order.comment}
+                  </InfoRow>
+                )}
+              </Stack>
+              <Typography sx={{ fontWeight: 700, mt: 1.5 }}>
                 {formatMoney(order.total, lang)} · {t(`paymentStatus.${order.paymentStatus}`)}
               </Typography>
+              {next && (
+                <Typography variant="body2" sx={{ mt: 1.5, color: 'primary.dark', fontWeight: 600 }}>
+                  → {next}
+                </Typography>
+              )}
 
-              <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mt: 1.5 }}>
+              <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', mt: 1 }}>
                 {order.status === 'Placed' && (
                   <>
                     <Button variant="contained" onClick={() => setDialog({ kind: 'accept', order })} aria-label={`${t('farmOrders.accept')}: ${label}`}>

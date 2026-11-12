@@ -20,6 +20,33 @@ describe('UI-04 Кошик', () => {
     expect(await screen.findByText('Видалено: Картопля')).toBeInTheDocument();
   });
 
+  it('кнопки «+» і «−» змінюють кількість, порядок позицій не стрибає', async () => {
+    backend.putInCart(1, 10);
+    backend.putInCart(2, 15);
+    const { user } = await renderApp('/cart', { signedIn: true });
+    await screen.findByText('Морква');
+
+    await user.click(screen.getByRole('button', { name: 'Збільшити кількість: Морква' }));
+    await waitFor(() => expect(screen.getByTestId('cart-total')).toHaveTextContent(/446,00\s?₴/));
+    expect(screen.getByRole('group', { name: 'Кількість: 11' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Зменшити кількість: Морква' }));
+    await waitFor(() => expect(screen.getByTestId('cart-total')).toHaveTextContent(/430,00\s?₴/));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Зменшити кількість: Морква' })).toBeEnabled());
+    await user.click(screen.getByRole('button', { name: 'Зменшити кількість: Морква' }));
+    await waitFor(() => expect(screen.getByTestId('cart-total')).toHaveTextContent(/414,00\s?₴/));
+    expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([expect.stringContaining('Морква'), expect.stringContaining('Картопля')]);
+  });
+
+  it('«−» на останній одиниці прибирає позицію', async () => {
+    backend.putInCart(1, 1);
+    const { user } = await renderApp('/cart', { signedIn: true });
+
+    await user.click(await screen.findByRole('button', { name: 'Зменшити кількість: Морква' }));
+
+    expect(await screen.findByText('Кошик порожній')).toBeInTheDocument();
+  });
+
   it('порожній кошик веде до каталогу', async () => {
     const { user } = await renderApp('/cart', { signedIn: true });
 

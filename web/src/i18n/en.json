@@ -81,7 +81,12 @@
     "added": "Added to cart: {{name}}",
     "loginToBuy": "Sign in to add products to your cart",
     "oneFarm": "Products from: {{name}}",
-    "allFarms": "Show products from all farms"
+    "allFarms": "Show products from all farms",
+    "subtitle": "Fresh produce straight from farms around Lviv",
+    "moreFilters": "More filters",
+    "lowStock": "Only {{count}} left",
+    "inCart": "In cart: {{count}}",
+    "emptyHint": "Try a different search or reset the filters."
   },
   "cart": {
     "title": "Cart",
@@ -95,7 +100,12 @@
     "total": "Total",
     "remove": "Remove from cart: {{name}}",
     "removed": "Removed: {{name}}",
-    "checkout": "Checkout"
+    "checkout": "Checkout",
+    "emptyHint": "Add fresh produce from the catalogue and it will show up here.",
+    "continue": "Continue shopping",
+    "increase": "Increase quantity: {{name}}",
+    "decrease": "Decrease quantity: {{name}}",
+    "items": "Items: {{count}}"
   },
   "common": {
     "loading": "Loading…",
@@ -230,7 +240,9 @@
     "subtotal": "Subtotal",
     "discount": "Promo code {{code}} discount",
     "payment": "Payment",
-    "refunded": "Refunded"
+    "refunded": "Refunded",
+    "emptyHint": "After checkout you can follow the delivery of your orders here.",
+    "progress": "Step {{step}} of {{total}}"
   },
   "status": {
     "Placed": "Placed",
@@ -286,7 +298,9 @@
     "allYear": "all year",
     "outOfStock": "Out of stock",
     "noProducts": "No products yet. Add your first one.",
-    "saved": "Saved: {{name}}"
+    "saved": "Saved: {{name}}",
+    "lowStock": "Only {{count}} left",
+    "productsCount": "Products: {{count}}"
   },
   "farmOrders": {
     "title": "Incoming orders",
@@ -303,7 +317,20 @@
     "reason": "Reason for rejection",
     "reasonHint": "The buyer sees this text. The money is refunded automatically.",
     "courier": "Courier",
-    "chooseCourier": "Choose a courier."
+    "chooseCourier": "Choose a courier.",
+    "filterLabel": "Show orders",
+    "filter": {
+      "all": "All",
+      "new": "New",
+      "active": "In progress",
+      "done": "Completed"
+    },
+    "next": {
+      "Placed": "Accept or reject the order",
+      "Accepted": "Start packing when you are ready",
+      "Assembling": "Hand the packed order over to a courier"
+    },
+    "noneInFilter": "No orders in this group."
   },
   "courier": {
     "delivery": "Delivery No. {{id}}",
@@ -317,7 +344,9 @@
     "codeHint": "Four digits the buyer tells you.",
     "confirm": "Delivered",
     "delivered": "Order No. {{id}} delivered",
-    "empty": "No active deliveries."
+    "empty": "No active deliveries.",
+    "count": "Active deliveries: {{count}}",
+    "emptyHint": "New deliveries appear here automatically once a farmer hands an order over."
   },
   "notify": {
     "title": "Notifications",
@@ -365,7 +394,8 @@
       "slot.create": "Delivery slot created",
       "promo.create": "Promo code created",
       "review.hide": "Review hidden"
-    }
+    },
+    "openMap": "Show on map: {{name}}"
   },
   "review": {
     "title": "Rate the farmer",

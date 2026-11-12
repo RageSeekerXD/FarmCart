@@ -1,9 +1,43 @@
-import { Box, Button, CircularProgress, Paper, Typography } from '@mui/material';
+import { alpha, Box, Button, CircularProgress, Paper, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, Navigate, useLocation } from 'react-router-dom';
 import type { Role } from '../api/types';
 import { useAuth } from '../features/auth/AuthContext';
+
+/** Порожній стан: велика піктограма, пояснення й наступна дія замість голого рядка тексту. */
+export function EmptyState({ icon, title, hint, action }: { icon: ReactNode; title: string; hint?: string; action?: ReactNode }) {
+  return (
+    <Paper sx={{ p: { xs: 3, sm: 5 }, textAlign: 'center' }}>
+      <Box
+        aria-hidden
+        sx={{
+          width: 72,
+          height: 72,
+          mx: 'auto',
+          mb: 2,
+          borderRadius: '50%',
+          display: 'grid',
+          placeItems: 'center',
+          color: 'primary.main',
+          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.08),
+          '& svg': { fontSize: 36 },
+        }}
+      >
+        {icon}
+      </Box>
+      <Typography component="p" variant="h6" sx={{ mb: hint ? 0.5 : 2 }}>
+        {title}
+      </Typography>
+      {hint && (
+        <Typography color="text.secondary" sx={{ mb: 2.5, maxWidth: 420, mx: 'auto' }}>
+          {hint}
+        </Typography>
+      )}
+      {action}
+    </Paper>
+  );
+}
 
 function Message({ title, children }: { title: string; children?: ReactNode }) {
   return (

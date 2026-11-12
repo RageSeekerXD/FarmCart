@@ -1,14 +1,26 @@
-import { Alert, Box, Button, Chip, CircularProgress, Paper, Stack, Typography } from '@mui/material';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import { Alert, Box, Button, Chip, CircularProgress, LinearProgress, Paper, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import type { OrderStatus } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatSlot } from '../../shared/dates';
-import { useOrders } from './orders';
+import { EmptyState } from '../../shared/pages';
+import { ORDER_PATH, useOrders } from './orders';
 
 const STATUS_COLOR: Record<OrderStatus, 'default' | 'info' | 'warning' | 'success' | 'error'> = {
   Placed: 'info',
   Accepted: 'info',
+  Assembling: 'warning',
+  InTransit: 'warning',
+  Delivered: 'success',
+  Rejected: 'error',
+};
+
+const PROGRESS_COLOR: Record<OrderStatus, 'primary' | 'warning' | 'success' | 'error'> = {
+  Placed: 'primary',
+  Accepted: 'primary',
   Assembling: 'warning',
   InTransit: 'warning',
   Delivered: 'success',
@@ -47,37 +59,65 @@ export function OrdersPage() {
       )}
 
       {orders.data?.length === 0 && (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography sx={{ mb: 2 }}>{t('orders.empty')}</Typography>
-          <Button component={RouterLink} to="/" variant="contained">
-            {t('cart.goToCatalog')}
-          </Button>
-        </Paper>
+        <EmptyState
+          icon={<ReceiptLongOutlinedIcon />}
+          title={t('orders.empty')}
+          hint={t('orders.emptyHint')}
+          action={
+            <Button component={RouterLink} to="/" variant="contained">
+              {t('cart.goToCatalog')}
+            </Button>
+          }
+        />
       )}
 
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {orders.data?.map((order) => (
-          <Paper component="li" key={order.id} sx={{ p: 2 }} aria-label={t('orders.number', { id: order.id })}>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 0.5 }}>
-              <Typography component="h2" variant="h6" sx={{ mr: 'auto' }}>
-                {t('orders.number', { id: order.id })}
+        {orders.data?.map((order) => {
+          // Відхилене замовлення далі не йде: смуга повна й червона, щоб не виглядала «застряглою».
+          const step = order.status === 'Rejected' ? ORDER_PATH.length : ORDER_PATH.indexOf(order.status) + 1;
+          return (
+            <Paper
+              component="li"
+              key={order.id}
+              elevation={1}
+              sx={{ p: { xs: 2, sm: 2.5 }, transition: 'box-shadow 160ms ease', '&:hover': { boxShadow: 4 } }}
+              aria-label={t('orders.number', { id: order.id })}
+            >
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                <Typography component="h2" variant="h6" sx={{ mr: 'auto' }}>
+                  {t('orders.number', { id: order.id })}
+                </Typography>
+                <StatusChip status={order.status} />
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {order.lines.map((line) => `${pick(line.name)} × ${line.quantity}`).join(', ')}
               </Typography>
-              <StatusChip status={order.status} />
-            </Box>
-            <Typography variant="body2" color="text.secondary">
-              {order.lines.map((line) => `${pick(line.name)} × ${line.quantity}`).join(', ')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('orders.deliveryAt', { slot: formatSlot(order.slotStart, order.slotEnd, lang) })}
-            </Typography>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-              <Typography sx={{ fontWeight: 600 }}>{formatMoney(order.total, lang)}</Typography>
-              <Button component={RouterLink} to={`/orders/${order.id}`} size="small" aria-label={t('orders.trackNamed', { id: order.id })}>
-                {t('orders.track')}
-              </Button>
-            </Box>
-          </Paper>
-        ))}
+              <Typography variant="body2" color="text.secondary">
+                {t('orders.deliveryAt', { slot: formatSlot(order.slotStart, order.slotEnd, lang) })}
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={(step / ORDER_PATH.length) * 100}
+                color={PROGRESS_COLOR[order.status]}
+                aria-label={t('orders.progress', { step, total: ORDER_PATH.length })}
+                sx={{ my: 1.5, height: 6 }}
+              />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '1.05rem' }}>{formatMoney(order.total, lang)}</Typography>
+                <Button
+                  component={RouterLink}
+                  to={`/orders/${order.id}`}
+                  variant="outlined"
+                  size="small"
+                  endIcon={<ChevronRightIcon />}
+                  aria-label={t('orders.trackNamed', { id: order.id })}
+                >
+                  {t('orders.track')}
+                </Button>
+              </Box>
+            </Paper>
+          );
+        })}
       </Stack>
     </Box>
   );

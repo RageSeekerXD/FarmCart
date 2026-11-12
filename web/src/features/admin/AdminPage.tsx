@@ -1,15 +1,27 @@
-import { Alert, Box, Button, Chip, CircularProgress, Paper, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
+import HistoryIcon from '@mui/icons-material/History';
+import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
+import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
+import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
+import { Alert, Box, Button, Chip, CircularProgress, Link, Paper, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import type { AuditEntry, FarmerProfile, PromoCode, Slot } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatDateTime, formatSlot, localIso } from '../../shared/dates';
+import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 
 const SECTIONS = ['verification', 'slots', 'promo', 'audit'] as const;
 type Section = (typeof SECTIONS)[number];
+const SECTION_ICON: Record<Section, ReactElement> = {
+  verification: <VerifiedUserOutlinedIcon fontSize="small" />,
+  slots: <EventAvailableOutlinedIcon fontSize="small" />,
+  promo: <LocalOfferOutlinedIcon fontSize="small" />,
+  audit: <HistoryIcon fontSize="small" />,
+};
 
 function Loading({ pending, error, children }: { pending: boolean; error: unknown; children: ReactNode }) {
   const { t } = useTranslation();
@@ -40,10 +52,13 @@ function Verification() {
 
   return (
     <Loading pending={pending.isPending} error={pending.error}>
-      {pending.data?.length === 0 && <Typography color="text.secondary">{t('admin.noPending')}</Typography>}
+      {pending.data?.length === 0 && <EmptyState icon={<VerifiedUserOutlinedIcon />} title={t('admin.noPending')} />}
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
         {pending.data?.map((farmer) => (
-          <Paper component="li" key={farmer.id} aria-label={pick(farmer.name)} sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+          <Paper component="li" key={farmer.id} aria-label={pick(farmer.name)} elevation={1} sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+            <Box aria-hidden sx={{ width: 48, height: 48, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 26, bgcolor: 'background.default' }}>
+              🌾
+            </Box>
             <Box sx={{ flex: '1 1 240px' }}>
               <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600 }}>
                 {pick(farmer.name)}
@@ -51,10 +66,22 @@ function Verification() {
               <Typography variant="body2" color="text.secondary" lang={lang === 'uk' ? 'en' : 'uk'}>
                 {lang === 'uk' ? farmer.name.en : farmer.name.uk}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Link
+                href={`https://www.openstreetmap.org/?mlat=${farmer.lat}&mlon=${farmer.lon}#map=13/${farmer.lat}/${farmer.lon}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="body2"
+                aria-label={t('admin.openMap', { name: pick(farmer.name) })}
+                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+              >
+                <MapOutlinedIcon sx={{ fontSize: 16 }} />
                 {farmer.lat.toFixed(4)}, {farmer.lon.toFixed(4)}
-              </Typography>
-              {farmer.certified && <Chip size="small" color="success" variant="outlined" label={t('catalog.organic')} sx={{ mt: 0.5 }} />}
+              </Link>
+              {farmer.certified && (
+                <Box sx={{ mt: 0.5 }}>
+                  <Chip size="small" color="success" variant="outlined" label={t('catalog.organic')} />
+                </Box>
+              )}
             </Box>
             <Button
               variant="contained"
@@ -108,7 +135,7 @@ function Slots() {
 
   return (
     <Stack spacing={2}>
-      <Paper component="form" onSubmit={submit} noValidate aria-label={t('admin.newSlot')} sx={{ p: 2 }}>
+      <Paper component="form" onSubmit={submit} noValidate aria-label={t('admin.newSlot')} elevation={1} sx={{ p: { xs: 2, sm: 2.5 } }}>
         <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
           {t('admin.newSlot')}
         </Typography>
@@ -136,14 +163,23 @@ function Slots() {
       </Paper>
       <Loading pending={slots.isPending} error={slots.error}>
         {slots.data?.length === 0 && <Typography color="text.secondary">{t('checkout.noSlots')}</Typography>}
-        <Stack component="ul" spacing={1} aria-label={t('admin.upcomingSlots')} sx={{ listStyle: 'none', p: 0, m: 0 }}>
+        <Typography component="h3" variant="subtitle1" sx={{ mb: 1 }}>
+          {t('admin.upcomingSlots')}
+        </Typography>
+        <Box
+          component="ul"
+          aria-label={t('admin.upcomingSlots')}
+          sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid', gap: 1, gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))' }}
+        >
           {slots.data?.map((slot) => (
-            <Paper component="li" key={slot.id} variant="outlined" sx={{ px: 2, py: 1, display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-              <Typography>{formatSlot(slot.start, slot.end, lang)}</Typography>
-              <Typography color="text.secondary">{t('checkout.slotLeft', { count: slot.remaining })}</Typography>
+            <Paper component="li" key={slot.id} variant="outlined" sx={{ px: 2, py: 1.5 }}>
+              <Typography sx={{ fontWeight: 600 }}>{formatSlot(slot.start, slot.end, lang)}</Typography>
+              <Typography variant="body2" sx={{ color: slot.remaining === 0 ? 'error.main' : slot.remaining === 1 ? 'warning.dark' : 'text.secondary' }}>
+                {slot.remaining > 0 ? t('checkout.slotLeft', { count: slot.remaining }) : t('checkout.slotFull')}
+              </Typography>
             </Paper>
           ))}
-        </Stack>
+        </Box>
       </Loading>
     </Stack>
   );
@@ -185,7 +221,7 @@ function Promo() {
 
   return (
     <Stack spacing={2}>
-      <Paper component="form" onSubmit={submit} noValidate aria-label={t('admin.newPromo')} sx={{ p: 2 }}>
+      <Paper component="form" onSubmit={submit} noValidate aria-label={t('admin.newPromo')} elevation={1} sx={{ p: { xs: 2, sm: 2.5 } }}>
         <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
           {t('admin.newPromo')}
         </Typography>
@@ -214,9 +250,25 @@ function Promo() {
       <Loading pending={codes.isPending} error={codes.error}>
         <Stack component="ul" spacing={1} aria-label={t('admin.createdPromo')} sx={{ listStyle: 'none', p: 0, m: 0 }}>
           {codes.data?.map((promo) => (
-            <Paper component="li" key={promo.code} variant="outlined" sx={{ px: 2, py: 1 }}>
-              <Typography>
-                <strong>{promo.code}</strong> · {t('admin.promoSummary', { percent: promo.percent, min: formatMoney(promo.minTotal, lang), until: formatDateTime(promo.validUntil, lang) })}
+            <Paper component="li" key={promo.code} variant="outlined" sx={{ px: 2, py: 1.25, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}>
+              <Box
+                component="strong"
+                sx={{
+                  fontFamily: 'ui-monospace, "Cascadia Mono", Consolas, monospace',
+                  letterSpacing: '0.05em',
+                  px: 1,
+                  py: 0.25,
+                  borderRadius: 1,
+                  border: 1,
+                  borderStyle: 'dashed',
+                  borderColor: 'primary.main',
+                  color: 'primary.dark',
+                }}
+              >
+                {promo.code}
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                {t('admin.promoSummary', { percent: promo.percent, min: formatMoney(promo.minTotal, lang), until: formatDateTime(promo.validUntil, lang) })}
               </Typography>
             </Paper>
           ))}
@@ -236,10 +288,10 @@ function Audit() {
 
   return (
     <Loading pending={audit.isPending} error={audit.error}>
-      {entries.length === 0 && <Typography color="text.secondary">{t('admin.noAudit')}</Typography>}
+      {entries.length === 0 && <EmptyState icon={<HistoryIcon />} title={t('admin.noAudit')} />}
       <Stack component="ol" spacing={1} sx={{ listStyle: 'none', p: 0, m: 0 }}>
         {entries.map((entry) => (
-          <Paper component="li" key={entry.id} variant="outlined" sx={{ px: 2, py: 1 }}>
+          <Paper component="li" key={entry.id} variant="outlined" sx={{ px: 2, py: 1.25, borderLeft: 3, borderLeftColor: 'primary.main' }}>
             <Typography sx={{ fontWeight: 600 }}>
               {actionTitle(entry.action)} <Typography component="span" color="text.secondary">· {entry.target}</Typography>
             </Typography>
@@ -264,9 +316,18 @@ export function AdminPage() {
       <Typography component="h1" variant="h4" sx={{ mb: 1, fontSize: { xs: '1.6rem', sm: '2.1rem' } }}>
         {t('nav.admin')}
       </Typography>
-      <Tabs value={section} onChange={(_, next: Section) => setSection(next)} variant="scrollable" allowScrollButtonsMobile aria-label={t('nav.admin')} sx={{ mb: 2 }}>
+      <Tabs value={section} onChange={(_, next: Section) => setSection(next)} variant="scrollable" allowScrollButtonsMobile aria-label={t('nav.admin')} sx={{ mb: 2.5, borderBottom: 1, borderColor: 'divider' }}>
         {SECTIONS.map((item) => (
-          <Tab key={item} value={item} label={t(`admin.section.${item}`)} id={`admin-tab-${item}`} aria-controls={`admin-panel-${item}`} sx={{ textTransform: 'none' }} />
+          <Tab
+            key={item}
+            value={item}
+            icon={SECTION_ICON[item]}
+            iconPosition="start"
+            label={t(`admin.section.${item}`)}
+            id={`admin-tab-${item}`}
+            aria-controls={`admin-panel-${item}`}
+            sx={{ textTransform: 'none', minHeight: 48 }}
+          />
         ))}
       </Tabs>
       <Box role="tabpanel" id={`admin-panel-${section}`} aria-labelledby={`admin-tab-${section}`}>
