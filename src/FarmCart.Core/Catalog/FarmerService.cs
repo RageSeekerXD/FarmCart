@@ -1,7 +1,7 @@
 namespace FarmCart.Core;
 
 public sealed record ProductDraft(
-    string Name,
+    LocalizedText Name,
     string Category,
     string Unit,
     decimal Price,
@@ -9,16 +9,16 @@ public sealed record ProductDraft(
     IReadOnlyCollection<int>? SeasonMonths = null,
     string? PhotoUrl = null);
 
-public sealed record ProductChanges(string? Name = null, decimal? Price = null, int? Stock = null, IReadOnlyCollection<int>? SeasonMonths = null);
+public sealed record ProductChanges(LocalizedText? Name = null, decimal? Price = null, int? Stock = null, IReadOnlyCollection<int>? SeasonMonths = null);
 
 /// <summary>US-02, US-03 (B-FR-07, B-FR-08): реєстрація продавця та керування власним каталогом.</summary>
 public sealed class FarmerService(InMemoryStore store)
 {
-    public Farmer Register(User user, string farmName, GeoPoint location, bool certified, string? documents)
+    public Farmer Register(User user, LocalizedText farmName, GeoPoint location, bool certified, string? documents)
     {
-        if (string.IsNullOrWhiteSpace(farmName))
+        if (farmName is not { IsComplete: true })
         {
-            throw Fail.Validation("farm_name_required", "Вкажіть назву господарства");
+            throw Fail.Validation("farm_name_required", "Вкажіть назву господарства українською й англійською");
         }
 
         if (!location.IsValid)
@@ -37,7 +37,7 @@ public sealed class FarmerService(InMemoryStore store)
             {
                 Id = store.NextId<Farmer>(),
                 UserId = user.Id,
-                Name = farmName.Trim(),
+                Name = farmName.Trimmed(),
                 Location = location,
                 Certified = certified,
                 Documents = documents,
@@ -48,11 +48,20 @@ public sealed class FarmerService(InMemoryStore store)
         }
     }
 
+    /// <summary>Господарство продавця: за ним веб-кабінет показує, чи пройдено верифікацію.</summary>
+    public Farmer Profile(User user)
+    {
+        lock (store.Sync)
+        {
+            return store.FarmerOf(user);
+        }
+    }
+
     public Product AddProduct(User user, ProductDraft draft)
     {
-        RequireText(draft.Name, "Назва товару");
-        RequireText(draft.Category, "Категорія");
-        RequireText(draft.Unit, "Одиниця продажу");
+        RequireName(draft.Name);
+        var category = Reference.Category(draft.Category) ?? throw Fail.Validation("category_unknown", "Оберіть категорію з довідника");
+        var unit = Reference.Unit(draft.Unit) ?? throw Fail.Validation("unit_unknown", "Оберіть одиницю продажу з довідника");
         RequirePositive(draft.Price);
         RequireNonNegative(draft.Stock);
         var season = ToSeason(draft.SeasonMonths);
@@ -68,9 +77,10 @@ public sealed class FarmerService(InMemoryStore store)
             {
                 Id = store.NextId<Product>(),
                 FarmerId = farmer.Id,
-                Name = draft.Name.Trim(),
-                Category = draft.Category.Trim(),
-                Unit = draft.Unit.Trim(),
+                Name = draft.Name.Trimmed(),
+                Category = category.Code,
+                UnitCode = unit.Code,
+                Unit = unit.Title,
                 Price = draft.Price,
                 Stock = draft.Stock,
                 PhotoUrl = draft.PhotoUrl,
@@ -88,8 +98,8 @@ public sealed class FarmerService(InMemoryStore store)
             var product = OwnProduct(user, productId);
             if (changes.Name is { } name)
             {
-                RequireText(name, "Назва товару");
-                product.Name = name.Trim();
+                RequireName(name);
+                product.Name = name.Trimmed();
             }
 
             if (changes.Price is { } price)
@@ -147,11 +157,11 @@ public sealed class FarmerService(InMemoryStore store)
             : throw Fail.Forbidden("not_your_product", "Змінювати можна лише власні товари");
     }
 
-    private static void RequireText(string? value, string field)
+    private static void RequireName(LocalizedText? name)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (name is not { Uk: not null, En: not null, IsComplete: true })
         {
-            throw Fail.Validation("field_required", $"Поле «{field}» обов'язкове");
+            throw Fail.Validation("name_required", "Вкажіть назву товару українською й англійською");
         }
     }
 

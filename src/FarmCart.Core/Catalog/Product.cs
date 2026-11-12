@@ -6,12 +6,17 @@ public sealed class Product
 
     public required int FarmerId { get; init; }
 
-    public required string Name { get; set; }
+    /// <summary>Назва двома мовами (BE-9).</summary>
+    public required LocalizedText Name { get; set; }
 
+    /// <summary>Код категорії з довідника <see cref="Reference.Categories"/>: «vegetables», «dairy».</summary>
     public required string Category { get; init; }
 
-    /// <summary>Одиниця продажу: «кг», «л», «банка 0,5 л».</summary>
-    public required string Unit { get; init; }
+    /// <summary>Код одиниці продажу з довідника <see cref="Reference.Units"/>: «kg», «jar-0.5l».</summary>
+    public required string UnitCode { get; init; }
+
+    /// <summary>Одиниця продажу словами: «кг» / «kg», «банка 0,5 л» / «0.5 l jar».</summary>
+    public required LocalizedText Unit { get; init; }
 
     public decimal Price { get; set; }
 

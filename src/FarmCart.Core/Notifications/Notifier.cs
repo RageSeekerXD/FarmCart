@@ -1,26 +1,55 @@
 namespace FarmCart.Core;
 
-public sealed record Notification(int UserId, string Text, DateTimeOffset At);
-
-public interface INotifier
+/// <summary>Види сповіщень (BE-2): за видом клієнт обирає текст мовою інтерфейсу й екран, який слід оновити.</summary>
+public static class NotificationKind
 {
-    void Push(int userId, string text);
+    /// <summary>Покупцю: замовлення оформлено. Параметр: total.</summary>
+    public const string OrderPlaced = "order.placed";
+
+    /// <summary>Фермеру: надійшло нове замовлення. Параметр: total.</summary>
+    public const string OrderNew = "order.new";
+
+    /// <summary>Покупцю: статус замовлення змінився. Параметр: status.</summary>
+    public const string OrderStatus = "order.status";
+
+    /// <summary>Кур'єру: йому передано доставку.</summary>
+    public const string DeliveryAssigned = "delivery.assigned";
 }
 
 /// <summary>
-/// Push-сповіщення в пам'яті: мобільний клієнт забирає їх через API (B-FR-05).
-/// Інтеграцію з FCM/APNs відкладено до релізу 2 - вона не змінює доменної логіки.
+/// Сповіщення користувачу. <see cref="Kind"/>, <see cref="OrderId"/> і <see cref="Params"/> - структура для клієнта,
+/// який показує текст мовою інтерфейсу; <see cref="Text"/> лишається українським для сумісності з клієнтами релізу 1.
+/// </summary>
+public sealed record Notification(
+    int Id,
+    int UserId,
+    string Kind,
+    int? OrderId,
+    IReadOnlyDictionary<string, string> Params,
+    string Text,
+    DateTimeOffset At);
+
+public interface INotifier
+{
+    Notification Push(int userId, string kind, string text, int? orderId = null, IReadOnlyDictionary<string, string>? parameters = null);
+}
+
+/// <summary>
+/// Сповіщення в пам'яті: клієнт забирає їх через API (B-FR-05), а веб-клієнт ще й отримує одразу через хаб (BE-3).
 /// </summary>
 public sealed class InMemoryNotifier(IClock clock) : INotifier
 {
+    private static readonly IReadOnlyDictionary<string, string> NoParams = new Dictionary<string, string>();
     private readonly List<Notification> _sent = [];
     private readonly Lock _sync = new();
 
-    public void Push(int userId, string text)
+    public Notification Push(int userId, string kind, string text, int? orderId = null, IReadOnlyDictionary<string, string>? parameters = null)
     {
         lock (_sync)
         {
-            _sent.Add(new Notification(userId, text, clock.Now));
+            var notification = new Notification(_sent.Count + 1, userId, kind, orderId, parameters ?? NoParams, text, clock.Now);
+            _sent.Add(notification);
+            return notification;
         }
     }
 

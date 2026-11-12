@@ -6,7 +6,7 @@ public sealed record DeliveryTask(
     int OrderId,
     DateTimeOffset SlotStart,
     DateTimeOffset SlotEnd,
-    string PickupFrom,
+    LocalizedText PickupFrom,
     string Address,
     int Items,
     decimal AmountToCollect,

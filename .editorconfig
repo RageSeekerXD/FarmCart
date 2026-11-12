@@ -45,3 +45,6 @@ dotnet_naming_rule.types_are_pascal.style = pascal
 dotnet_naming_rule.types_are_pascal.severity = warning
 dotnet_naming_symbols.type_symbols.applicable_kinds = class, struct, enum, delegate
 dotnet_naming_style.pascal.capitalization = pascal_case
+
+[web/**.{ts,tsx,js,json,html}]
+indent_size = 2

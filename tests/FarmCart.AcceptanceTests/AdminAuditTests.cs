@@ -5,6 +5,24 @@ namespace FarmCart.AcceptanceTests;
 /// <summary>B-FR-12: «Кожна дія адміністратора потрапляє до журналу аудиту».</summary>
 public sealed class AdminAuditTests
 {
+    [Fact(DisplayName = "UI-11 Адміністратор бачить список промокодів; іншим ролям він недоступний")]
+    public async Task AdminListsPromoCodes()
+    {
+        using var app = new FarmCartApp();
+        var admin = await app.AdminAsync();
+        var buyer = await app.LoginAsync("+380971234567");
+        await admin.PostJson("/api/admin/promocodes", new { code = "osin15", percent = 15, minTotal = 300m, validUntil = app.Clock.Now.AddDays(30) });
+        await admin.PostJson("/api/admin/promocodes", new { code = "ZYMA20", percent = 20, minTotal = 500m, validUntil = app.Clock.Now.AddDays(90) });
+
+        var codes = await admin.GetJson("/api/admin/promocodes");
+        var forbidden = await buyer.GetAsync("/api/admin/promocodes");
+
+        Assert.Equal(["ZYMA20", "OSIN15"], codes.EnumerateArray().Select(c => c.Str("code")));
+        Assert.Equal((15, 300m), (codes[1].GetProperty("percent").GetInt32(), codes[1].Dec("minTotal")));
+        Assert.Equal("role_required", await forbidden.ErrorCode());
+    }
+
+
     [Fact(DisplayName = "B-FR-12 Кожна дія адміністратора потрапляє до журналу аудиту")]
     public async Task EveryAdminActionIsAudited()
     {

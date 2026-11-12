@@ -56,19 +56,22 @@ public sealed class TestWorld
 
     public ReviewService Reviews { get; }
 
+    /// <summary>Двомовний текст для тестів: англійський варіант за замовчуванням виводиться з українського.</summary>
+    public static LocalizedText Text(string uk, string? en = null) => new(uk, en ?? $"{uk} (en)");
+
     public User NewUser(params Role[] roles) =>
         Store.AddUser($"+38067{Store.Users.Count + 1_000_000:D7}", "Тестовий користувач", roles);
 
     public (User User, Farmer Farmer) NewFarmer(string name = "Ферма «Зелений Гай»", GeoPoint? at = null, bool certified = false, bool verified = true)
     {
         var user = NewUser();
-        var farmer = Farmers.Register(user, name, at ?? Vynnyky, certified, documents: null);
+        var farmer = Farmers.Register(user, Text(name), at ?? Vynnyky, certified, documents: null);
         farmer.Verified = verified;
         return (user, farmer);
     }
 
-    public Product NewProduct(User farmerUser, string name = "Яблука", decimal price = 30m, int stock = 10, string category = "Фрукти", params int[] season) =>
-        Farmers.AddProduct(farmerUser, new ProductDraft(name, category, "кг", price, stock, season));
+    public Product NewProduct(User farmerUser, string name = "Яблука", decimal price = 30m, int stock = 10, string category = "fruits", params int[] season) =>
+        Farmers.AddProduct(farmerUser, new ProductDraft(Text(name), category, "kg", price, stock, season));
 
     public DeliverySlot NewSlot(int capacity = 3, int hoursFromNow = 24)
     {

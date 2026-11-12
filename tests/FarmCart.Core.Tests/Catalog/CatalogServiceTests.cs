@@ -32,7 +32,7 @@ public sealed class CatalogServiceTests
     public void Search_ByTextIsCaseInsensitive()
     {
         var (farm, _) = _world.NewFarmer();
-        _world.NewProduct(farm, "Мед липовий", category: "Мед");
+        _world.NewProduct(farm, "Мед липовий", category: "honey");
         _world.NewProduct(farm, "Яблука");
 
         Assert.Equal(["Мед липовий"], Names(new CatalogQuery(Text: "мед")));
@@ -43,12 +43,12 @@ public sealed class CatalogServiceTests
     {
         var (organic, _) = _world.NewFarmer("Органік", certified: true);
         var (regular, _) = _world.NewFarmer("Звичайна", certified: false);
-        _world.NewProduct(organic, "Морква", 16m, category: "Овочі");
-        _world.NewProduct(organic, "Буряк", 60m, category: "Овочі");
-        _world.NewProduct(organic, "Яблука", 30m, category: "Фрукти");
-        _world.NewProduct(regular, "Картопля", 18m, category: "Овочі");
+        _world.NewProduct(organic, "Морква", 16m, category: "vegetables");
+        _world.NewProduct(organic, "Буряк", 60m, category: "vegetables");
+        _world.NewProduct(organic, "Яблука", 30m, category: "fruits");
+        _world.NewProduct(regular, "Картопля", 18m, category: "vegetables");
 
-        var found = Names(new CatalogQuery(Category: "овочі", CertifiedOnly: true, MinPrice: 10m, MaxPrice: 50m));
+        var found = Names(new CatalogQuery(Category: "VEGETABLES", CertifiedOnly: true, MinPrice: 10m, MaxPrice: 50m));
 
         Assert.Equal(["Морква"], found);
     }
@@ -75,7 +75,7 @@ public sealed class CatalogServiceTests
         var found = _world.Catalog.Search(new CatalogQuery(From: TestWorld.LvivCenter, MaxDistanceKm: 15));
 
         var item = Assert.Single(found);
-        Assert.Equal("Яблука", item.Name);
+        Assert.Equal("Яблука", item.Name.Uk);
         Assert.InRange(item.DistanceKm!.Value, 7.0, 8.5);
     }
 
@@ -132,19 +132,19 @@ public sealed class CatalogServiceTests
             var (user, _) = _world.NewFarmer($"Ферма {f}", new GeoPoint(49.5 + (f * 0.01), 24.0));
             for (var p = 0; p < 200; p++)
             {
-                _world.NewProduct(user, $"Товар {f}-{p}", 10m + p, category: p % 2 == 0 ? "Овочі" : "Фрукти");
+                _world.NewProduct(user, $"Товар {f}-{p}", 10m + p, category: p % 2 == 0 ? "vegetables" : "fruits");
             }
         }
 
         var timings = Enumerable.Range(0, 40).Select(_ =>
         {
             var watch = Stopwatch.StartNew();
-            _world.Catalog.Search(new CatalogQuery(Category: "Овочі", From: TestWorld.LvivCenter, MaxDistanceKm: 50, Sort: CatalogSort.Distance));
+            _world.Catalog.Search(new CatalogQuery(Category: "vegetables", From: TestWorld.LvivCenter, MaxDistanceKm: 50, Sort: CatalogSort.Distance));
             return watch.Elapsed;
         }).Order().ToList();
 
         Assert.True(timings[(int)(timings.Count * 0.95) - 1] < TimeSpan.FromSeconds(1));
     }
 
-    private string[] Names(CatalogQuery query) => [.. _world.Catalog.Search(query).Select(i => i.Name)];
+    private string[] Names(CatalogQuery query) => [.. _world.Catalog.Search(query).Select(i => i.Name.Uk)];
 }

@@ -17,7 +17,7 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
     private const string Promo = "FARM10";
     private const int PromoPercent = 10;
     private static readonly CultureInfo Uk = CultureInfo.GetCultureInfo("uk-UA");
-    private static readonly object Curd = new { name = "Сир кисломолочний", category = "Молочні продукти", unit = "0,5 кг", price = 85m, stock = 20 };
+    private static readonly object Curd = new { name = new { uk = "Сир кисломолочний", en = "Cottage cheese" }, category = "dairy", unit = "kg-0.5", price = 85m, stock = 20 };
     private readonly Protocol _protocol = new(output);
 
     public string Protocol => _protocol.Text;
@@ -95,13 +95,13 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
     {
         _protocol.Step("US-02. Адміністратор верифікує продавця, після чого той публікує товар");
         var pending = (await admin.Get("/api/admin/farmers/pending")).Items;
-        var farm = pending.Single(f => f!["name"]!.ToString() == "Еко-ферма «Сокільники»")!;
-        _protocol.Detail($"Очікує верифікації: продавець #{farm["id"]} {farm["name"]}");
+        var farm = pending.Single(f => Text(f!["name"]) == "Еко-ферма «Сокільники»")!;
+        _protocol.Detail($"Очікує верифікації: продавець #{farm["id"]} {Text(farm["name"])}");
         var verified = await admin.Post($"/api/admin/farmers/{farm["id"]}/verify");
         _protocol.Check(verified["verified"] == "true", "продавця верифіковано");
         var published = await newcomer.Post("/api/farmer/products", Curd);
         _protocol.Check(published.Status == 201, "товар опубліковано (201)");
-        _protocol.Detail($"Опубліковано товар #{published["id"]} «{published["name"]}», {Uah(published["price"])} за {published["unit"]}");
+        _protocol.Detail($"Опубліковано товар #{published["id"]} «{Text(published.Body!["name"])}», {Uah(published["price"])} за {Text(published.Body!["unit"])}");
     }
 
     private async Task<Actor> BuyerRegistersAsync()
@@ -113,10 +113,10 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
     private async Task SearchVegetablesAsync(Actor buyer)
     {
         _protocol.Step("US-04. Пошук: сертифіковані овочі до 15 км від центру Львова, спершу дешевші");
-        var vegetables = (await buyer.Get($"/api/catalog?category=Овочі&certified=true&{LvivCenter}&maxKm=15&sort=PriceAsc")).Items;
+        var vegetables = (await buyer.Get($"/api/catalog?category=vegetables&certified=true&{LvivCenter}&maxKm=15&sort=PriceAsc")).Items;
         foreach (var item in vegetables)
         {
-            _protocol.Detail($"{item!["name"]} - {Uah(item["price"])}/{item["unit"]}, {item["farmerName"]}, {Number(item["distanceKm"])} км");
+            _protocol.Detail($"{Text(item!["name"])} - {Uah(item["price"])}/{Text(item["unit"])}, {Text(item["farmerName"])}, {Number(item["distanceKm"])} км");
         }
 
         _protocol.Check(Names(vegetables).SequenceEqual(["Морква", "Картопля"]), "знайдено моркву й картоплю «Зеленого Гаю»");
@@ -135,14 +135,14 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
         var shown = Names(catalog).ToHashSet();
         foreach (var product in own)
         {
-            var name = product!["name"]!.ToString();
+            var name = Text(product!["name"]);
             var months = SeasonMonths(product);
             var inSeason = months.Count == 0 || months.Contains(today.Month);
             _protocol.Detail($"{name}: {SeasonText(months)} - {(shown.Contains(name) ? "у каталозі" : "поза сезоном, приховано")}");
             _protocol.Check(shown.Contains(name) == inSeason, $"«{name}» {(inSeason ? "є" : "немає")} у каталозі");
         }
 
-        _protocol.Check(own.Any(p => !shown.Contains(p!["name"]!.ToString())), "щонайменше один сезонний товар приховано");
+        _protocol.Check(own.Any(p => !shown.Contains(Text(p!["name"]))), "щонайменше один сезонний товар приховано");
         _protocol.Detail($"Товарів у каталозі: {catalog.Count}; категорії: {string.Join(", ", catalog.Select(i => i!["category"]!.ToString()).Distinct())}");
         return (farmer, catalog);
     }
@@ -237,7 +237,7 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
     {
         var courier = await SignInAsync("US-09. Кур'єр бачить свої доставки з маршрутом", "Кур'єр Андрій", "+380631230001");
         var task = (await courier.Get("/api/courier/deliveries")).Items[0]!;
-        _protocol.Detail($"Доставка №{task["orderId"]}: {Period(task["slotStart"], task["slotEnd"])}, забрати: {task["pickupFrom"]}, адреса: {task["address"]}");
+        _protocol.Detail($"Доставка №{task["orderId"]}: {Period(task["slotStart"], task["slotEnd"])}, забрати: {Text(task["pickupFrom"])}, адреса: {task["address"]}");
         _protocol.Detail($"Позицій: {task["items"]}, отримати готівкою: {Uah(task["amountToCollect"])}");
         _protocol.Detail($"Маршрут: {Uri.UnescapeDataString(task["routeUrl"]!.ToString())}");
         return courier;
@@ -269,7 +269,7 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
         var review = await buyer.Post($"/api/orders/{orderId}/review", new { rating = 5, comment = "Морква солодка, картопля як з городу" });
         _protocol.Check(review.Status == 201, "відгук збережено");
         var rated = (await buyer.Get("/api/catalog?q=Морква")).Items[0]!;
-        _protocol.Detail($"Рейтинг продавця {rated["farmerName"]} у каталозі: {Number(rated["farmerRating"])} з 5");
+        _protocol.Detail($"Рейтинг продавця {Text(rated["farmerName"])} у каталозі: {Number(rated["farmerRating"])} з 5");
         _protocol.Check(rated["farmerRating"]?.GetValue<double>() == 5.0, "рейтинг фермера 5");
     }
 
@@ -342,7 +342,10 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
     private static decimal WithPromo(decimal subtotal) =>
         subtotal - Math.Round(subtotal * PromoPercent / 100m, 2, MidpointRounding.AwayFromZero);
 
-    private static IEnumerable<string> Names(JsonArray items) => items.Select(i => i!["name"]!.ToString());
+    private static IEnumerable<string> Names(JsonArray items) => items.Select(i => Text(i!["name"]));
+
+    /// <summary>Протокол друкується українською: з двомовного поля <c>{ uk, en }</c> береться український текст.</summary>
+    private static string Text(JsonNode? localized) => localized?["uk"]?.ToString() ?? "";
 
     private static List<int> SeasonMonths(JsonNode product) => [.. product["seasonMonths"]!.AsArray().Select(m => m!.GetValue<int>())];
 
@@ -368,7 +371,7 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
     }
 
     private static JsonNode Item(JsonArray catalog, string name) =>
-        catalog.SingleOrDefault(i => i!["name"]!.ToString() == name) ?? throw new InvalidOperationException($"Товару «{name}» немає в каталозі");
+        catalog.SingleOrDefault(i => Text(i!["name"]) == name) ?? throw new InvalidOperationException($"Товару «{name}» немає в каталозі");
 
     private static int ProductId(JsonArray catalog, string name) => Item(catalog, name)["productId"]!.GetValue<int>();
 

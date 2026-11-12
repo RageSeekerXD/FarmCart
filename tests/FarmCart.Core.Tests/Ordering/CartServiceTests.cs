@@ -79,7 +79,7 @@ public sealed class CartServiceTests
         var cart = _world.Carts.Add(buyer, _world.NewProduct(second, "Молоко").Id, 1);
 
         Assert.Null(empty.FarmerId);
-        Assert.Equal("Молоко", Assert.Single(cart.Lines).Name);
+        Assert.Equal("Молоко", Assert.Single(cart.Lines).Name.Uk);
     }
 
     [Fact]

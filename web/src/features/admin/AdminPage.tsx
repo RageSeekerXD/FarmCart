@@ -1,0 +1,280 @@
+import { Alert, Box, Button, Chip, CircularProgress, Paper, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, type FormEvent, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { api } from '../../api/client';
+import type { AuditEntry, FarmerProfile, PromoCode, Slot } from '../../api/types';
+import { errorMessage, formatMoney, useLang } from '../../i18n';
+import { formatDateTime, formatSlot, localIso } from '../../shared/dates';
+import { useToast } from '../../shared/Toast';
+
+const SECTIONS = ['verification', 'slots', 'promo', 'audit'] as const;
+type Section = (typeof SECTIONS)[number];
+
+function Loading({ pending, error, children }: { pending: boolean; error: unknown; children: ReactNode }) {
+  const { t } = useTranslation();
+  if (error) {
+    return <Alert severity="error">{errorMessage(error)}</Alert>;
+  }
+
+  return pending ? <CircularProgress aria-label={t('common.loading')} /> : children;
+}
+
+/** Черга заявок продавців: адміністратор перевіряє документи й верифікує господарство. */
+function Verification() {
+  const { t } = useTranslation();
+  const { lang, pick } = useLang();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const pending = useQuery({ queryKey: ['admin', 'pending'], queryFn: () => api<FarmerProfile[]>('/admin/farmers/pending'), refetchInterval: 15_000 });
+  const verify = useMutation({
+    mutationFn: (farmer: FarmerProfile) => api<FarmerProfile>(`/admin/farmers/${farmer.id}/verify`, { method: 'POST', body: {} }),
+    onSuccess: (farmer) => {
+      queryClient.setQueryData<FarmerProfile[]>(['admin', 'pending'], (farmers) => farmers?.filter((item) => item.id !== farmer.id));
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] });
+      void queryClient.invalidateQueries({ queryKey: ['farms'] });
+      toast.show(t('admin.verifiedNamed', { name: pick(farmer.name) }));
+    },
+    onError: (error) => toast.show(errorMessage(error), 'error'),
+  });
+
+  return (
+    <Loading pending={pending.isPending} error={pending.error}>
+      {pending.data?.length === 0 && <Typography color="text.secondary">{t('admin.noPending')}</Typography>}
+      <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
+        {pending.data?.map((farmer) => (
+          <Paper component="li" key={farmer.id} aria-label={pick(farmer.name)} sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center' }}>
+            <Box sx={{ flex: '1 1 240px' }}>
+              <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600 }}>
+                {pick(farmer.name)}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" lang={lang === 'uk' ? 'en' : 'uk'}>
+                {lang === 'uk' ? farmer.name.en : farmer.name.uk}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {farmer.lat.toFixed(4)}, {farmer.lon.toFixed(4)}
+              </Typography>
+              {farmer.certified && <Chip size="small" color="success" variant="outlined" label={t('catalog.organic')} sx={{ mt: 0.5 }} />}
+            </Box>
+            <Button
+              variant="contained"
+              loading={verify.isPending && verify.variables?.id === farmer.id}
+              onClick={() => verify.mutate(farmer)}
+              aria-label={t('admin.verifyNamed', { name: pick(farmer.name) })}
+            >
+              {t('admin.verify')}
+            </Button>
+          </Paper>
+        ))}
+      </Stack>
+    </Loading>
+  );
+}
+
+const tomorrow = () => {
+  const date = new Date(Date.now() + 24 * 3600 * 1000);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+/** Слоти доставки: майбутні слоти й форма нового. Час вводиться місцевий, на сервер іде в ISO 8601. */
+function Slots() {
+  const { t } = useTranslation();
+  const { lang } = useLang();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const slots = useQuery({ queryKey: ['slots'], queryFn: () => api<Slot[]>('/slots'), staleTime: 0 });
+  const [date, setDate] = useState(tomorrow);
+  const [from, setFrom] = useState('10:00');
+  const [to, setTo] = useState('12:00');
+  const [capacity, setCapacity] = useState('3');
+
+  const create = useMutation({
+    mutationFn: () =>
+      api<unknown>('/admin/slots', {
+        method: 'POST',
+        body: { start: localIso(date, from), end: localIso(date, to), capacity: Number(capacity) },
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['slots'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] });
+      toast.show(t('admin.slotAdded'));
+    },
+  });
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    create.mutate();
+  };
+
+  return (
+    <Stack spacing={2}>
+      <Paper component="form" onSubmit={submit} noValidate aria-label={t('admin.newSlot')} sx={{ p: 2 }}>
+        <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
+          {t('admin.newSlot')}
+        </Typography>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'flex-start' } }}>
+          <TextField label={t('admin.date')} type="date" required value={date} onChange={(event) => setDate(event.target.value)} slotProps={{ inputLabel: { shrink: true } }} />
+          <TextField label={t('admin.from')} type="time" required value={from} onChange={(event) => setFrom(event.target.value)} slotProps={{ inputLabel: { shrink: true } }} />
+          <TextField label={t('admin.to')} type="time" required value={to} onChange={(event) => setTo(event.target.value)} slotProps={{ inputLabel: { shrink: true } }} />
+          <TextField
+            label={t('admin.capacity')}
+            required
+            value={capacity}
+            onChange={(event) => setCapacity(event.target.value.replace(/\D/g, ''))}
+            slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+            sx={{ maxWidth: { sm: 140 } }}
+          />
+          <Button type="submit" variant="contained" loading={create.isPending} disabled={!date || !from || !to || capacity === ''} sx={{ minHeight: 56 }}>
+            {t('admin.add')}
+          </Button>
+        </Stack>
+        {create.isError && (
+          <Alert severity="error" sx={{ mt: 1.5 }}>
+            {errorMessage(create.error)}
+          </Alert>
+        )}
+      </Paper>
+      <Loading pending={slots.isPending} error={slots.error}>
+        {slots.data?.length === 0 && <Typography color="text.secondary">{t('checkout.noSlots')}</Typography>}
+        <Stack component="ul" spacing={1} aria-label={t('admin.upcomingSlots')} sx={{ listStyle: 'none', p: 0, m: 0 }}>
+          {slots.data?.map((slot) => (
+            <Paper component="li" key={slot.id} variant="outlined" sx={{ px: 2, py: 1, display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+              <Typography>{formatSlot(slot.start, slot.end, lang)}</Typography>
+              <Typography color="text.secondary">{t('checkout.slotLeft', { count: slot.remaining })}</Typography>
+            </Paper>
+          ))}
+        </Stack>
+      </Loading>
+    </Stack>
+  );
+}
+
+/** Промокоди: список усіх кодів і форма нового. */
+function Promo() {
+  const { t } = useTranslation();
+  const { lang } = useLang();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [code, setCode] = useState('');
+  const [percent, setPercent] = useState('10');
+  const [minTotal, setMinTotal] = useState('300');
+  const [until, setUntil] = useState(() => {
+    const date = new Date(Date.now() + 30 * 24 * 3600 * 1000);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  });
+  const codes = useQuery({ queryKey: ['admin', 'promocodes'], queryFn: () => api<PromoCode[]>('/admin/promocodes') });
+
+  const create = useMutation({
+    mutationFn: () =>
+      api<PromoCode>('/admin/promocodes', {
+        method: 'POST',
+        body: { code: code.trim(), percent: Number(percent), minTotal: Number(minTotal.replace(',', '.')), validUntil: localIso(until, '23:59:59') },
+      }),
+    onSuccess: (promo) => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'promocodes'] });
+      setCode('');
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] });
+      toast.show(t('admin.promoAdded', { code: promo.code }));
+    },
+  });
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    create.mutate();
+  };
+
+  return (
+    <Stack spacing={2}>
+      <Paper component="form" onSubmit={submit} noValidate aria-label={t('admin.newPromo')} sx={{ p: 2 }}>
+        <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600, mb: 1.5 }}>
+          {t('admin.newPromo')}
+        </Typography>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'flex-start' } }}>
+          <TextField
+            label={t('admin.promoCode')}
+            required
+            value={code}
+            onChange={(event) => setCode(event.target.value.toUpperCase())}
+            helperText={t('admin.promoCodeHint')}
+            slotProps={{ htmlInput: { maxLength: 16 } }}
+          />
+          <TextField label={t('admin.percent')} required value={percent} onChange={(event) => setPercent(event.target.value.replace(/\D/g, ''))} slotProps={{ htmlInput: { inputMode: 'numeric' } }} sx={{ maxWidth: { sm: 130 } }} />
+          <TextField label={t('admin.minTotal')} required value={minTotal} onChange={(event) => setMinTotal(event.target.value)} slotProps={{ htmlInput: { inputMode: 'decimal' } }} sx={{ maxWidth: { sm: 170 } }} />
+          <TextField label={t('admin.validUntil')} type="date" required value={until} onChange={(event) => setUntil(event.target.value)} slotProps={{ inputLabel: { shrink: true } }} />
+          <Button type="submit" variant="contained" loading={create.isPending} disabled={code.trim() === '' || percent === '' || minTotal === '' || !until} sx={{ minHeight: 56 }}>
+            {t('admin.add')}
+          </Button>
+        </Stack>
+        {create.isError && (
+          <Alert severity="error" sx={{ mt: 1.5 }}>
+            {errorMessage(create.error)}
+          </Alert>
+        )}
+      </Paper>
+      <Loading pending={codes.isPending} error={codes.error}>
+        <Stack component="ul" spacing={1} aria-label={t('admin.createdPromo')} sx={{ listStyle: 'none', p: 0, m: 0 }}>
+          {codes.data?.map((promo) => (
+            <Paper component="li" key={promo.code} variant="outlined" sx={{ px: 2, py: 1 }}>
+              <Typography>
+                <strong>{promo.code}</strong> · {t('admin.promoSummary', { percent: promo.percent, min: formatMoney(promo.minTotal, lang), until: formatDateTime(promo.validUntil, lang) })}
+              </Typography>
+            </Paper>
+          ))}
+        </Stack>
+      </Loading>
+    </Stack>
+  );
+}
+
+/** Журнал аудиту (B-FR-12). Дія показується мовою інтерфейсу за кодом; подробиці - текст сервера, як записано. */
+function Audit() {
+  const { t, i18n } = useTranslation();
+  const { lang } = useLang();
+  const audit = useQuery({ queryKey: ['admin', 'audit'], queryFn: () => api<AuditEntry[]>('/admin/audit') });
+  const entries = [...(audit.data ?? [])].sort((a, b) => b.id - a.id);
+  const actionTitle = (action: string) => (i18n.exists(`admin.action.${action}`) ? t(`admin.action.${action}`) : action);
+
+  return (
+    <Loading pending={audit.isPending} error={audit.error}>
+      {entries.length === 0 && <Typography color="text.secondary">{t('admin.noAudit')}</Typography>}
+      <Stack component="ol" spacing={1} sx={{ listStyle: 'none', p: 0, m: 0 }}>
+        {entries.map((entry) => (
+          <Paper component="li" key={entry.id} variant="outlined" sx={{ px: 2, py: 1 }}>
+            <Typography sx={{ fontWeight: 600 }}>
+              {actionTitle(entry.action)} <Typography component="span" color="text.secondary">· {entry.target}</Typography>
+            </Typography>
+            <Typography variant="body2">{entry.details}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              {formatDateTime(entry.at, lang)} · {t('admin.byAdmin', { id: entry.adminId })}
+            </Typography>
+          </Paper>
+        ))}
+      </Stack>
+    </Loading>
+  );
+}
+
+/** UI-11: кабінет адміністратора - верифікація продавців, слоти доставки, промокоди, журнал аудиту. */
+export function AdminPage() {
+  const { t } = useTranslation();
+  const [section, setSection] = useState<Section>('verification');
+
+  return (
+    <Box sx={{ maxWidth: 960, mx: 'auto' }}>
+      <Typography component="h1" variant="h4" sx={{ mb: 1, fontSize: { xs: '1.6rem', sm: '2.1rem' } }}>
+        {t('nav.admin')}
+      </Typography>
+      <Tabs value={section} onChange={(_, next: Section) => setSection(next)} variant="scrollable" allowScrollButtonsMobile aria-label={t('nav.admin')} sx={{ mb: 2 }}>
+        {SECTIONS.map((item) => (
+          <Tab key={item} value={item} label={t(`admin.section.${item}`)} id={`admin-tab-${item}`} aria-controls={`admin-panel-${item}`} sx={{ textTransform: 'none' }} />
+        ))}
+      </Tabs>
+      <Box role="tabpanel" id={`admin-panel-${section}`} aria-labelledby={`admin-tab-${section}`}>
+        {section === 'verification' && <Verification />}
+        {section === 'slots' && <Slots />}
+        {section === 'promo' && <Promo />}
+        {section === 'audit' && <Audit />}
+      </Box>
+    </Box>
+  );
+}

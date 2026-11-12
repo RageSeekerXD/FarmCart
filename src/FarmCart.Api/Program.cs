@@ -11,6 +11,7 @@ builder.Logging.AddSimpleConsole(options =>
     options.TimestampFormat = "HH:mm:ss ";
 });
 builder.Services.AddFarmCart(builder.Configuration);
+builder.Services.AddOpenApi();
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.Configure<RouteHandlerOptions>(options => options.ThrowOnBadRequest = true);
 
@@ -19,6 +20,11 @@ var settings = app.Services.GetRequiredService<IOptions<FarmCartOptions>>().Valu
 if (settings.ExposeSmsCodes && app.Environment.IsProduction())
 {
     throw new InvalidOperationException("FarmCart:ExposeSmsCodes заборонено в Production: коди входу потрапили б у відповіді API");
+}
+
+if (settings.FixedTime is not null && app.Environment.IsProduction())
+{
+    throw new InvalidOperationException("FarmCart:FixedTime заборонено в Production: зупинений годинник зламав би строки дії кодів і слоти доставки");
 }
 
 app.UseRequestLog();
@@ -30,4 +36,11 @@ if (settings.SeedDemoData)
 }
 
 app.MapFarmCartApi();
+app.MapHub<NotificationsHub>(NotificationsHub.Path);
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
+app.UseFarmCartWeb(settings.WebRoot);
 app.Run();

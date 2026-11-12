@@ -68,6 +68,16 @@ public sealed partial class AdminService(InMemoryStore store, AuditLog audit, IC
         }
     }
 
+    /// <summary>UI-11: усі промокоди для кабінету адміністратора - спершу ті, що діють довше.</summary>
+    public IReadOnlyList<PromoCode> PromoCodes(User admin)
+    {
+        admin.Require(Role.Admin);
+        lock (store.Sync)
+        {
+            return [.. store.PromoCodes.Values.OrderByDescending(p => p.ValidUntil).ThenBy(p => p.Code, StringComparer.Ordinal)];
+        }
+    }
+
     public PromoCode CreatePromoCode(User admin, string code, int percent, decimal minTotal, DateTimeOffset validUntil)
     {
         admin.Require(Role.Admin);

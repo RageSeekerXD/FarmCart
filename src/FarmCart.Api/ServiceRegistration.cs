@@ -8,14 +8,19 @@ public static class ServiceRegistration
     public static IServiceCollection AddFarmCart(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<FarmCartOptions>(configuration.GetSection(FarmCartOptions.Section));
-        services.AddSingleton<IClock, SystemClock>();
+        services.AddSingleton<IClock>(sp =>
+            sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<FarmCartOptions>>().Value.FixedTime is { } fixedTime
+                ? new ManualClock(fixedTime)
+                : new SystemClock());
+
         services.AddSingleton<InMemoryStore>();
         services.AddSingleton<InMemorySmsGateway>();
         services.AddSingleton<ISmsGateway>(sp => sp.GetRequiredService<InMemorySmsGateway>());
         services.AddSingleton<SandboxPaymentGateway>();
         services.AddSingleton<IPaymentGateway>(sp => sp.GetRequiredService<SandboxPaymentGateway>());
         services.AddSingleton<InMemoryNotifier>();
-        services.AddSingleton<INotifier>(sp => sp.GetRequiredService<InMemoryNotifier>());
+        services.AddSignalR();
+        services.AddSingleton<INotifier, HubNotifier>();
         services.AddSingleton<AuthService>();
         services.AddSingleton<AuditLog>();
         services.AddSingleton<AdminService>();

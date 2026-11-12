@@ -59,8 +59,8 @@ public sealed class OrderFulfillmentTests
     private static async Task<(HttpClient Farmer, HttpClient Buyer, JsonElement Order)> PaidOrderAsync(FarmCartApp app)
     {
         var farmer = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
-        var apples = await farmer.PublishAsync("Яблука", "Фрукти", 32m, stock: 10);
-        var potatoes = await farmer.PublishAsync("Картопля", "Овочі", 18m, stock: 20);
+        var apples = await farmer.PublishAsync("Яблука", "fruits", 32m, stock: 10);
+        var potatoes = await farmer.PublishAsync("Картопля", "vegetables", 18m, stock: 20);
         var slot = await app.SlotAsync();
         var buyer = await app.LoginAsync("+380971111111");
         await buyer.AddToCartAsync(apples, 3);

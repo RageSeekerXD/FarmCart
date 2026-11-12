@@ -30,7 +30,7 @@ public sealed record DeliverySlot(int Id, DateTimeOffset Start, DateTimeOffset E
 
 public sealed record PromoCode(string Code, int Percent, decimal MinTotal, DateTimeOffset ValidUntil);
 
-public sealed record OrderLine(int ProductId, string Name, string Unit, decimal UnitPrice, int Quantity)
+public sealed record OrderLine(int ProductId, LocalizedText Name, LocalizedText Unit, decimal UnitPrice, int Quantity)
 {
     public decimal Total => UnitPrice * Quantity;
 }

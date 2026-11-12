@@ -9,6 +9,9 @@ internal static class BuyerEndpoints
     public static void MapBuyerEndpoints(this RouteGroupBuilder api)
     {
         api.MapGet("/catalog", ([AsParameters] CatalogRequest request, CatalogService catalog) => catalog.Search(request.ToQuery()));
+        api.MapGet("/reference", () => Reference.All);
+        api.MapGet("/farmers", (double? lat, double? lon, CatalogService catalog) =>
+            catalog.Farms(lat is { } latitude && lon is { } longitude ? new GeoPoint(latitude, longitude) : null));
         api.MapGet("/slots", (OrderService orders) => orders.AvailableSlots());
 
         api.MapGet("/cart", (Caller caller, CartService carts) => carts.Get(caller.User));
@@ -29,6 +32,8 @@ internal static class BuyerEndpoints
             var review = reviews.Add(caller.User, id, body.Rating, body.Comment);
             return Results.Created($"/api/farmers/{review.FarmerId}/reviews", ReviewDto.From(review));
         });
+        api.MapGet("/orders/{id:int}/review", (int id, Caller caller, ReviewService reviews) =>
+            new { review = reviews.ForOrder(caller.User, id) is { } review ? ReviewDto.From(review) : null });
         api.MapGet("/farmers/{id:int}/reviews", (int id, ReviewService reviews) => reviews.ForFarmer(id).Select(ReviewDto.From));
     }
 }

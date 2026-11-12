@@ -16,7 +16,7 @@ public sealed class CatalogSearchTests
         using var app = await ThreeFarmsAsync();
         var buyer = await app.LoginAsync("+380971234567");
 
-        var found = await buyer.GetJson($"/api/catalog?category=Овочі&certified=true&{Lviv}&maxKm=20&maxPrice=20");
+        var found = await buyer.GetJson($"/api/catalog?category=vegetables&certified=true&{Lviv}&maxKm=20&maxPrice=20");
 
         Assert.Equal(["Морква"], found.Names());
         Assert.InRange(found[0].GetProperty("distanceKm").GetDouble(), 7, 8.5);
@@ -28,8 +28,8 @@ public sealed class CatalogSearchTests
         using var app = await ThreeFarmsAsync();
         var buyer = await app.LoginAsync("+380971234567");
 
-        var byPrice = await buyer.GetJson("/api/catalog?category=Овочі&sort=PriceDesc");
-        var byDistance = await buyer.GetJson($"/api/catalog?category=Овочі&{Lviv}&sort=Distance");
+        var byPrice = await buyer.GetJson("/api/catalog?category=vegetables&sort=PriceDesc");
+        var byDistance = await buyer.GetJson($"/api/catalog?category=vegetables&{Lviv}&sort=Distance");
 
         Assert.Equal(["Картопля", "Морква", "Буряк"], byPrice.Names());
         Assert.Equal(["Морква", "Картопля", "Буряк"], byDistance.Names());
@@ -58,7 +58,7 @@ public sealed class CatalogSearchTests
         for (var i = 0; i < 40; i++)
         {
             var watch = Stopwatch.StartNew();
-            await buyer.GetJson($"/api/catalog?category=Овочі&{Lviv}&maxKm=50&sort=Distance");
+            await buyer.GetJson($"/api/catalog?category=vegetables&{Lviv}&maxKm=50&sort=Distance");
             timings.Add(watch.Elapsed);
         }
 
@@ -72,10 +72,10 @@ public sealed class CatalogSearchTests
         var green = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»", Places.Vynnyky, certified: true);
         var cheese = await app.VerifiedFarmerAsync("+380671110002", "Сироварня «Карпатська бринза»", Places.Bryukhovychi);
         var distant = await app.VerifiedFarmerAsync("+380671110003", "Хутір під Києвом", Places.Kyiv, certified: true);
-        await green.PublishAsync("Морква", "Овочі", 16m);
-        await green.PublishAsync("Яблука", "Фрукти", 32m);
-        await cheese.PublishAsync("Картопля", "Овочі", 18m);
-        await distant.PublishAsync("Буряк", "Овочі", 15m);
+        await green.PublishAsync("Морква", "vegetables", 16m);
+        await green.PublishAsync("Яблука", "fruits", 32m);
+        await cheese.PublishAsync("Картопля", "vegetables", 18m);
+        await distant.PublishAsync("Буряк", "vegetables", 15m);
         return app;
     }
 
@@ -90,10 +90,10 @@ public sealed class CatalogSearchTests
                 user = app.Store.AddUser($"+38050{f + 1_000_000:D7}");
             }
 
-            farmers.Register(user, $"Ферма {f}", new GeoPoint(49.6 + (f * 0.01), 24.0), certified: f % 2 == 0, documents: null).Verified = true;
+            farmers.Register(user, new LocalizedText($"Ферма {f}", $"Farm {f}"), new GeoPoint(49.6 + (f * 0.01), 24.0), certified: f % 2 == 0, documents: null).Verified = true;
             for (var p = 0; p < productsPerFarm; p++)
             {
-                farmers.AddProduct(user, new ProductDraft($"Товар {f}-{p}", p % 2 == 0 ? "Овочі" : "Фрукти", "кг", 10m + p, 100));
+                farmers.AddProduct(user, new ProductDraft(new LocalizedText($"Товар {f}-{p}", $"Product {f}-{p}"), p % 2 == 0 ? "vegetables" : "fruits", "kg", 10m + p, 100));
             }
         }
     }

@@ -7,7 +7,7 @@ public sealed class Farmer
 
     public required int UserId { get; init; }
 
-    public required string Name { get; init; }
+    public required LocalizedText Name { get; init; }
 
     public required GeoPoint Location { get; init; }
 

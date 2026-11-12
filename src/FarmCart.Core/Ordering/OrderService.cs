@@ -120,8 +120,9 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
 
     private void NotifyPlaced(Order order)
     {
-        notifier.Push(order.BuyerId, $"Замовлення №{order.Id} оформлено на {Money.Format(order.Total)}");
-        notifier.Push(store.Farmers[order.FarmerId].UserId, $"Нове замовлення №{order.Id} на {Money.Format(order.Total)}");
+        var total = new Dictionary<string, string> { ["total"] = order.Total.ToString(System.Globalization.CultureInfo.InvariantCulture) };
+        notifier.Push(order.BuyerId, NotificationKind.OrderPlaced, $"Замовлення №{order.Id} оформлено на {Money.Format(order.Total)}", order.Id, total);
+        notifier.Push(store.Farmers[order.FarmerId].UserId, NotificationKind.OrderNew, $"Нове замовлення №{order.Id} на {Money.Format(order.Total)}", order.Id, total);
     }
 
     private List<OrderLine> SnapshotLines(Cart cart)

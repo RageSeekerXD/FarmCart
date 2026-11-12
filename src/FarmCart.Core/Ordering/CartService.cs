@@ -1,6 +1,6 @@
 namespace FarmCart.Core;
 
-public sealed record CartLineView(int ProductId, string Name, string Unit, decimal Price, int Quantity, decimal Total);
+public sealed record CartLineView(int ProductId, LocalizedText Name, LocalizedText Unit, string? PhotoUrl, decimal Price, int Quantity, decimal Total);
 
 public sealed record CartView(int? FarmerId, IReadOnlyList<CartLineView> Lines, decimal Total);
 
@@ -63,7 +63,7 @@ public sealed class CartService(InMemoryStore store)
     {
         var lines = cart.Quantities
             .Select(item => (Product: store.Products[item.Key], Quantity: item.Value))
-            .Select(x => new CartLineView(x.Product.Id, x.Product.Name, x.Product.Unit, x.Product.Price, x.Quantity, x.Product.Price * x.Quantity))
+            .Select(x => new CartLineView(x.Product.Id, x.Product.Name, x.Product.Unit, x.Product.PhotoUrl, x.Product.Price, x.Quantity, x.Product.Price * x.Quantity))
             .ToList();
         return new CartView(cart.FarmerId, lines, lines.Sum(line => line.Total));
     }

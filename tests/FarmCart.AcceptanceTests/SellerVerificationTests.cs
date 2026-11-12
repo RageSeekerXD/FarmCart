@@ -7,7 +7,25 @@ namespace FarmCart.AcceptanceTests;
 public sealed class SellerVerificationTests
 {
     private const string FarmerPhone = "+380671110001";
-    private static readonly object Apples = new { name = "Яблука «Голден»", category = "Фрукти", unit = "кг", price = 32m, stock = 150 };
+    private static readonly object Apples = new { name = HttpJson.Bilingual("Яблука «Голден»"), category = "fruits", unit = "kg", price = 32m, stock = 150 };
+
+    [Fact(DisplayName = "UI-08 Продавець бачить своє господарство й стан верифікації; покупець кабінету продавця не має")]
+    public async Task SellerSeesOwnProfile()
+    {
+        using var app = new FarmCartApp();
+        var farmer = await app.LoginAsync(FarmerPhone);
+        var buyer = await app.LoginAsync("+380971234567");
+        var farmerId = (await farmer.PostJson("/api/farmers", new { farmName = HttpJson.Bilingual("Ферма «Зелений Гай»"), lat = 49.816, lon = 24.13, certified = true })).Id();
+
+        var pending = await farmer.GetJson("/api/farmer/profile");
+        (await (await app.AdminAsync()).PostAsync($"/api/admin/farmers/{farmerId}/verify", null)).EnsureSuccessStatusCode();
+        var verified = await farmer.GetJson("/api/farmer/profile");
+        var stranger = await buyer.GetAsync("/api/farmer/profile");
+
+        Assert.Equal((farmerId, "Zelenyi Hai Farm", false), (pending.Id(), pending.GetProperty("name").Str("en"), pending.GetProperty("verified").GetBoolean()));
+        Assert.True(verified.GetProperty("verified").GetBoolean());
+        Assert.Equal("not_a_farmer", await stranger.ErrorCode());
+    }
 
     [Fact(DisplayName = "US-02.1 Продавець без верифікації не може публікувати товари")]
     public async Task UnverifiedSellerCannotPublish()
@@ -15,7 +33,7 @@ public sealed class SellerVerificationTests
         using var app = new FarmCartApp();
         var farmer = await app.LoginAsync(FarmerPhone);
 
-        var registered = await farmer.PostAsJsonAsync("/api/farmers", new { farmName = "Ферма «Зелений Гай»", lat = 49.816, lon = 24.13, certified = true });
+        var registered = await farmer.PostAsJsonAsync("/api/farmers", new { farmName = HttpJson.Bilingual("Ферма «Зелений Гай»"), lat = 49.816, lon = 24.13, certified = true });
         var published = await farmer.PostAsJsonAsync("/api/farmer/products", Apples);
 
         Assert.Equal(HttpStatusCode.Created, registered.StatusCode);
@@ -29,7 +47,7 @@ public sealed class SellerVerificationTests
     {
         using var app = new FarmCartApp();
         var farmer = await app.LoginAsync(FarmerPhone);
-        var farmerId = (await farmer.PostJson("/api/farmers", new { farmName = "Ферма «Зелений Гай»", lat = 49.816, lon = 24.13, certified = true })).Id();
+        var farmerId = (await farmer.PostJson("/api/farmers", new { farmName = HttpJson.Bilingual("Ферма «Зелений Гай»"), lat = 49.816, lon = 24.13, certified = true })).Id();
         var admin = await app.AdminAsync();
         var pending = await admin.GetJson("/api/admin/farmers/pending");
 
@@ -50,7 +68,7 @@ public sealed class SellerVerificationTests
     {
         using var app = new FarmCartApp();
         var farmer = await app.LoginAsync(FarmerPhone);
-        var farmerId = (await farmer.PostJson("/api/farmers", new { farmName = "Ферма", lat = 49.816, lon = 24.13, certified = false })).Id();
+        var farmerId = (await farmer.PostJson("/api/farmers", new { farmName = HttpJson.Bilingual("Ферма", "Farm"), lat = 49.816, lon = 24.13, certified = false })).Id();
 
         var selfVerification = await farmer.PostAsync($"/api/admin/farmers/{farmerId}/verify", null);
         var auditRead = await farmer.GetAsync("/api/admin/audit");

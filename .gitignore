@@ -4,3 +4,6 @@ artifacts/
 TestResults/
 .vs/
 *.user
+node_modules/
+web/dist/
+web/coverage/

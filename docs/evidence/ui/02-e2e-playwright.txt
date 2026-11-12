@@ -1,0 +1,21 @@
+﻿
+Running 13 tests using 1 worker
+
+(node:2628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\english.spec.ts:4:1 › англійською на сторінках каталогу, кошика й замовлень немає кирилиці (1.7s)
+  ok  2 [chromium] › tests\e2e\mobile-keyboard.spec.ts:14:3 › ширина 360 px › екрани покупця вміщуються без горизонтального прокручування (4.2s)
+  ok  3 [chromium] › tests\e2e\mobile-keyboard.spec.ts:46:3 › ширина 360 px › екрани фермера, кур’єра й адміністратора вміщуються без горизонтального прокручування (4.5s)
+  ok  4 [chromium] › tests\e2e\mobile-keyboard.spec.ts:84:3 › ширина 360 px › новий покупець: форма реєстрації господарства вміщується (1.5s)
+  ok  5 [chromium] › tests\e2e\mobile-keyboard.spec.ts:93:1 › клавіатурою без миші: вхід, перехід до вмісту, товар у кошик (542ms)
+  ok  6 [chromium] › tests\e2e\mobile-keyboard.spec.ts:122:1 › на 360 px шапка лишається в один рядок (601ms)
+  ok  7 [chromium] › tests\e2e\order-journey.spec.ts:4:1 › покупець купує → фермер приймає й передає кур’єру → кур’єр вручає → покупець бачить статуси без перезавантаження (4.8s)
+  -   8 [chromium] › tests\e2e\screens.spec.ts:28:3 › екрани покупця (uk)
+  -   9 [chromium] › tests\e2e\screens.spec.ts:77:3 › екрани фермера, кур’єра й адміністратора (uk)
+  -  10 [chromium] › tests\e2e\screens.spec.ts:116:3 › телефон 360 px і реєстрація господарства (uk)
+  -  11 [chromium] › tests\e2e\screens.spec.ts:28:3 › екрани покупця (en)
+  -  12 [chromium] › tests\e2e\screens.spec.ts:77:3 › екрани фермера, кур’єра й адміністратора (en)
+  -  13 [chromium] › tests\e2e\screens.spec.ts:116:3 › телефон 360 px і реєстрація господарства (en)
+
+  6 skipped
+  7 passed (21.4s)

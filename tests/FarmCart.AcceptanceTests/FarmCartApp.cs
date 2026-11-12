@@ -66,7 +66,7 @@ public sealed class FarmCartApp(bool seedDemoData = false, DateTimeOffset? start
     {
         var location = at ?? Places.Vynnyky;
         var farmer = await LoginAsync(phone);
-        var registered = await farmer.PostAsJsonAsync("/api/farmers", new { farmName, lat = location.Lat, lon = location.Lon, certified });
+        var registered = await farmer.PostAsJsonAsync("/api/farmers", new { farmName = HttpJson.Bilingual(farmName), lat = location.Lat, lon = location.Lon, certified });
         var farmerId = (await registered.Json()).GetProperty("id").GetInt32();
         var admin = await AdminAsync();
         (await admin.PostAsync($"/api/admin/farmers/{farmerId}/verify", null)).EnsureSuccessStatusCode();
@@ -93,6 +93,19 @@ public static class Places
 
 public static class HttpJson
 {
+    private static readonly Dictionary<string, string> English = new()
+    {
+        ["Яблука"] = "Apples",
+        ["Яблука «Голден»"] = "Golden Delicious apples",
+        ["Морква"] = "Carrots",
+        ["Картопля"] = "Potatoes",
+        ["Буряк"] = "Beetroot",
+        ["Бринза"] = "Bryndza cheese",
+        ["Полуниця"] = "Strawberries",
+        ["Ферма «Зелений Гай»"] = "Zelenyi Hai Farm",
+        ["Сироварня «Карпатська бринза»"] = "Karpatska Bryndza Creamery",
+    };
+
     public static async Task<JsonElement> Json(this HttpResponseMessage response) =>
         await response.Content.ReadFromJsonAsync<JsonElement>();
 
@@ -116,11 +129,18 @@ public static class HttpJson
     public static int Id(this JsonElement element) => element.GetProperty("id").GetInt32();
 
     public static string[] Names(this JsonElement items) =>
-        [.. items.EnumerateArray().Select(i => i.GetProperty("name").GetString()!)];
+        [.. items.EnumerateArray().Select(i => i.GetProperty("name").GetProperty("uk").GetString()!)];
+
+    /// <summary>Назви мовою інтерфейсу покупця: «uk» або «en».</summary>
+    public static string[] Names(this JsonElement items, string lang) =>
+        [.. items.EnumerateArray().Select(i => i.GetProperty("name").GetProperty(lang).GetString()!)];
+
+    /// <summary>Двомовний текст так, як його надсилає клієнт: <c>{ uk, en }</c>. Англійський варіант - зі словника тестів.</summary>
+    public static object Bilingual(string uk, string? en = null) => new { uk, en = en ?? English.GetValueOrDefault(uk, $"Item {uk.Length}") };
 
     /// <summary>Публікує товар від імені фермера й повертає його ідентифікатор.</summary>
     public static async Task<int> PublishAsync(this HttpClient farmer, string name, string category, decimal price, int stock = 50, int[]? seasonMonths = null) =>
-        (await farmer.PostJson("/api/farmer/products", new { name, category, unit = "кг", price, stock, seasonMonths })).Id();
+        (await farmer.PostJson("/api/farmer/products", new { name = Bilingual(name), category, unit = "kg", price, stock, seasonMonths })).Id();
 
     public static Task<HttpResponseMessage> AddToCartAsync(this HttpClient buyer, int productId, int quantity) =>
         buyer.PostAsJsonAsync("/api/cart/items", new { productId, quantity });

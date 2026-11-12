@@ -30,6 +30,13 @@ public sealed class OrderWorkflow(INotifier notifier, IClock clock)
     {
         EnsureCanMove(order, to);
         order.RecordStatus(to, clock.Now);
-        notifier.Push(order.BuyerId, $"Замовлення №{order.Id}: {to.Title()}{details}");
+        var status = new Dictionary<string, string> { ["status"] = to.ToString() };
+        notifier.Push(order.BuyerId, NotificationKind.OrderStatus, $"Замовлення №{order.Id}: {to.Title()}{details}", order.Id, status);
+
+        // BE-4: кур'єр дізнається про нову доставку, щойно фермер передав йому замовлення.
+        if (to == OrderStatus.InTransit && order.CourierId is { } courierId)
+        {
+            notifier.Push(courierId, NotificationKind.DeliveryAssigned, $"Нова доставка №{order.Id}: {order.Address}", order.Id);
+        }
     }
 }

@@ -11,7 +11,7 @@ public sealed class CheckoutTests
     {
         using var app = new FarmCartApp();
         var farmer = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
-        var apples = await farmer.PublishAsync("Яблука", "Фрукти", 32m, stock: 3);
+        var apples = await farmer.PublishAsync("Яблука", "fruits", 32m, stock: 3);
         var slot = await app.SlotAsync();
         var anna = await app.LoginAsync("+380971111111");
         var petro = await app.LoginAsync("+380972222222");
@@ -32,7 +32,7 @@ public sealed class CheckoutTests
     {
         using var app = new FarmCartApp();
         var farmer = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
-        var apples = await farmer.PublishAsync("Яблука", "Фрукти", 32m);
+        var apples = await farmer.PublishAsync("Яблука", "fruits", 32m);
         var slot = await app.SlotAsync(capacity: 1);
         var anna = await app.LoginAsync("+380971111111");
         var petro = await app.LoginAsync("+380972222222");
@@ -52,7 +52,7 @@ public sealed class CheckoutTests
     {
         using var app = new FarmCartApp();
         var farmer = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
-        var apples = await farmer.PublishAsync("Яблука", "Фрукти", 32m);
+        var apples = await farmer.PublishAsync("Яблука", "fruits", 32m);
         var slot = await app.SlotAsync();
         var admin = await app.AdminAsync();
         await admin.PostJson("/api/admin/promocodes", new { code = "OSIN15", percent = 15, minTotal = 300m, validUntil = app.Clock.Now.AddDays(30) });
@@ -74,7 +74,7 @@ public sealed class CheckoutTests
     {
         using var app = new FarmCartApp();
         var farmer = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
-        var apples = await farmer.PublishAsync("Яблука", "Фрукти", 32m, stock: 10);
+        var apples = await farmer.PublishAsync("Яблука", "fruits", 32m, stock: 10);
         var slot = await app.SlotAsync();
         var buyer = await app.LoginAsync("+380971111111");
         await buyer.AddToCartAsync(apples, 2);
@@ -94,8 +94,8 @@ public sealed class CheckoutTests
         using var app = new FarmCartApp();
         var green = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
         var cheese = await app.VerifiedFarmerAsync("+380671110002", "Сироварня «Карпатська бринза»");
-        var apples = await green.PublishAsync("Яблука", "Фрукти", 32m);
-        var brynza = await cheese.PublishAsync("Бринза", "Молочні продукти", 165m);
+        var apples = await green.PublishAsync("Яблука", "fruits", 32m);
+        var brynza = await cheese.PublishAsync("Бринза", "dairy", 165m);
         var buyer = await app.LoginAsync("+380971111111");
         await buyer.AddToCartAsync(apples, 2);
 
@@ -112,8 +112,8 @@ public sealed class CheckoutTests
         using var app = new FarmCartApp();
         var green = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
         var cheese = await app.VerifiedFarmerAsync("+380671110002", "Сироварня «Карпатська бринза»");
-        var apples = await green.PublishAsync("Яблука", "Фрукти", 32m);
-        var brynza = await cheese.PublishAsync("Бринза", "Молочні продукти", 165m);
+        var apples = await green.PublishAsync("Яблука", "fruits", 32m);
+        var brynza = await cheese.PublishAsync("Бринза", "dairy", 165m);
         var buyer = await app.LoginAsync("+380971111111");
         await buyer.AddToCartAsync(apples, 1);
 

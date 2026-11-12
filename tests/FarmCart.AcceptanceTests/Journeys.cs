@@ -10,7 +10,7 @@ public static class Journeys
     public static async Task<(HttpClient Farmer, int Apples, int Slot)> FarmWithApplesAsync(FarmCartApp app, string phone = "+380671110001")
     {
         var farmer = await app.VerifiedFarmerAsync(phone, "Ферма «Зелений Гай»");
-        var apples = await farmer.PublishAsync("Яблука", "Фрукти", 32m, stock: 50);
+        var apples = await farmer.PublishAsync("Яблука", "fruits", 32m, stock: 50);
         return (farmer, apples, await app.SlotAsync());
     }
 

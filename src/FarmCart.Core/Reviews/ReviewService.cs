@@ -58,6 +58,16 @@ public sealed class ReviewService(InMemoryStore store, AuditLog audit, IClock cl
         }
     }
 
+    /// <summary>Відгук покупця на власне замовлення або null: за ним клієнт вирішує, чи показувати форму відгуку.</summary>
+    public Review? ForOrder(User buyer, int orderId)
+    {
+        lock (store.Sync)
+        {
+            var order = store.BuyerOrder(buyer, orderId);
+            return store.Reviews.Values.FirstOrDefault(r => r.OrderId == order.Id);
+        }
+    }
+
     public IReadOnlyList<Review> ForFarmer(int farmerId)
     {
         lock (store.Sync)

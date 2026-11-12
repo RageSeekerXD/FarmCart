@@ -64,7 +64,7 @@ public sealed class PaymentTests
     private static async Task<(HttpClient Buyer, int Slot)> BuyerWithCartAsync(FarmCartApp app)
     {
         var farmer = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
-        var apples = await farmer.PublishAsync("Яблука", "Фрукти", 32m);
+        var apples = await farmer.PublishAsync("Яблука", "fruits", 32m);
         var slot = await app.SlotAsync();
         var buyer = await app.LoginAsync("+380971111111");
         await buyer.AddToCartAsync(apples, 3);

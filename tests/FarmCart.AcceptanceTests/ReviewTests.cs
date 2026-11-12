@@ -6,6 +6,29 @@ namespace FarmCart.AcceptanceTests;
 /// <summary>US-10 (B-FR-06): «Як покупець, я хочу оцінити фермера після доставки, щоб інші обирали перевірених».</summary>
 public sealed class ReviewTests
 {
+    [Fact(DisplayName = "UI-07 Покупець бачить, чи вже залишив відгук на замовлення")]
+    public async Task BuyerSeesOwnReviewOfOrder()
+    {
+        using var app = new FarmCartApp();
+        var (farmer, apples, slot) = await Journeys.FarmWithApplesAsync(app);
+        var buyer = await app.LoginAsync("+380971234567");
+        var stranger = await app.LoginAsync("+380979999999");
+        var (courier, courierId) = await Journeys.CourierAsync(app);
+        var orderId = await Journeys.OrderAsync(buyer, apples, 1, slot);
+        await Journeys.SendAsync(farmer, orderId, courierId);
+        await Journeys.DeliverAsync(buyer, courier, orderId);
+
+        var before = await buyer.GetJson($"/api/orders/{orderId}/review");
+        (await buyer.PostAsJsonAsync($"/api/orders/{orderId}/review", new { rating = 4, comment = "Смачні яблука" })).EnsureSuccessStatusCode();
+        var after = await buyer.GetJson($"/api/orders/{orderId}/review");
+        var foreign = await stranger.GetAsync($"/api/orders/{orderId}/review");
+
+        Assert.Equal(System.Text.Json.JsonValueKind.Null, before.GetProperty("review").ValueKind);
+        Assert.Equal((4, "Смачні яблука"), (after.GetProperty("review").GetProperty("rating").GetInt32(), after.GetProperty("review").Str("comment")));
+        Assert.Equal("order_not_found", await foreign.ErrorCode());
+    }
+
+
     [Fact(DisplayName = "US-10.1 Відгук можливий лише для доставленого замовлення; рейтинг фермера в каталозі оновлюється одразу")]
     public async Task ReviewOnlyAfterDeliveryAndRatingUpdatesImmediately()
     {

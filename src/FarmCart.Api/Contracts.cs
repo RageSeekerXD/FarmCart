@@ -25,7 +25,7 @@ public sealed record PhoneRequest(string Phone);
 
 public sealed record VerifyRequest(string Phone, string Code);
 
-public sealed record FarmerRegistration(string FarmName, double Lat, double Lon, bool Certified, string? Documents);
+public sealed record FarmerRegistration(LocalizedText FarmName, double Lat, double Lon, bool Certified, string? Documents);
 
 public sealed record StockChange(int Delta);
 
@@ -57,7 +57,8 @@ public sealed record CatalogRequest(
     bool? Certified,
     decimal? MinPrice,
     decimal? MaxPrice,
-    CatalogSort? Sort)
+    CatalogSort? Sort,
+    string? Lang)
 {
     public CatalogQuery ToQuery() => new(
         Q,
@@ -68,7 +69,8 @@ public sealed record CatalogRequest(
         Certified ?? false,
         MinPrice,
         MaxPrice,
-        Sort ?? CatalogSort.Name);
+        Sort ?? CatalogSort.Name,
+        Lang ?? LocalizedText.Ukrainian);
 }
 
 public sealed record UserDto(int Id, string Phone, string Name, IEnumerable<Role> Roles)
@@ -76,7 +78,7 @@ public sealed record UserDto(int Id, string Phone, string Name, IEnumerable<Role
     public static UserDto From(User user) => new(user.Id, user.Phone, user.Name, user.Roles.Order());
 }
 
-public sealed record FarmerDto(int Id, string Name, double Lat, double Lon, bool Certified, bool Verified, double? Rating, int ReviewCount)
+public sealed record FarmerDto(int Id, LocalizedText Name, double Lat, double Lon, bool Certified, bool Verified, double? Rating, int ReviewCount)
 {
     public static FarmerDto From(Farmer farmer) => new(
         farmer.Id,
@@ -93,9 +95,10 @@ public sealed record FarmerDto(int Id, string Name, double Lat, double Lon, bool
 public sealed record ProductDto(
     int Id,
     int FarmerId,
-    string Name,
+    LocalizedText Name,
     string Category,
-    string Unit,
+    string UnitCode,
+    LocalizedText Unit,
     decimal Price,
     int Stock,
     string? PhotoUrl,
@@ -106,6 +109,7 @@ public sealed record ProductDto(
         product.FarmerId,
         product.Name,
         product.Category,
+        product.UnitCode,
         product.Unit,
         product.Price,
         product.Stock,
@@ -120,7 +124,7 @@ public sealed record ReviewDto(int Id, int OrderId, int Rating, string? Comment,
     public static ReviewDto From(Review review) => new(review.Id, review.OrderId, review.Rating, review.Comment, review.At);
 }
 
-public sealed record OrderLineDto(int ProductId, string Name, string Unit, decimal UnitPrice, int Quantity, decimal Total);
+public sealed record OrderLineDto(int ProductId, LocalizedText Name, LocalizedText Unit, decimal UnitPrice, int Quantity, decimal Total);
 
 public sealed record StatusChangeDto(OrderStatus Status, string Title, DateTimeOffset At);
 

@@ -12,6 +12,7 @@ internal static class FarmerEndpoints
             var farmer = farmers.Register(caller.User, body.FarmName, new GeoPoint(body.Lat, body.Lon), body.Certified, body.Documents);
             return Results.Created($"/api/farmers/{farmer.Id}", FarmerDto.From(farmer));
         });
+        api.MapGet("/farmer/profile", (Caller caller, FarmerService farmers) => FarmerDto.From(farmers.Profile(caller.User)));
         api.MapGet("/farmer/products", (Caller caller, FarmerService farmers) => farmers.MyProducts(caller.User).Select(ProductDto.From));
         api.MapPost("/farmer/products", (Caller caller, ProductDraft body, FarmerService farmers) =>
         {

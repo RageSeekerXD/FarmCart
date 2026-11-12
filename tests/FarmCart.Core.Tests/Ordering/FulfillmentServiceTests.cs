@@ -13,7 +13,7 @@ public sealed class FulfillmentServiceTests
     {
         (_farm, _) = _world.NewFarmer();
         _apples = _world.NewProduct(_farm, "Яблука", 32m, stock: 10);
-        _potatoes = _world.NewProduct(_farm, "Картопля", 18m, stock: 20, category: "Овочі");
+        _potatoes = _world.NewProduct(_farm, "Картопля", 18m, stock: 20, category: "vegetables");
         _buyer = _world.NewUser();
     }
 

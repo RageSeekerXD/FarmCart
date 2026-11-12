@@ -1,0 +1,94 @@
+﻿==> 1/11 Відновлення залежностей
+==> 2/11 Стандарт кодування (dotnet format --verify-no-changes)
+==> 3/11 Збірка Release (попередження = помилки)
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.86
+==> 4/11 Модульні й приймальні тести з покриттям
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.Core.Tests\bin\Release\net10.0\FarmCart.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\tests\FarmCart.AcceptanceTests\bin\Release\net10.0\FarmCart.AcceptanceTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+Results File: C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\Rageseeker_RAGESEEKER_2026-11-12_20_07_10_net10.0.trx
+
+Passed!  - Failed:     0, Passed:   205, Skipped:     0, Total:   205, Duration: 302 ms - FarmCart.Core.Tests.dll (net10.0)
+Results File: C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\Rageseeker_RAGESEEKER_2026-11-12_20_07_10_net10.0[1].trx
+
+Passed!  - Failed:     0, Passed:    92, Skipped:     0, Total:    92, Duration: 3 s - FarmCart.AcceptanceTests.dll (net10.0)
+
+Attachments:
+  C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\artifacts\tests\0375cba7-50a5-4081-aef1-992832d9c447\Rageseeker_RAGESEEKER_2026-11-12.20_07_10.cobertura.xml
+==> 5/11 Звіт про покриття
+2026-11-12T20:07:14: File 'C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Api\obj\Release\net10.0\Microsoft.AspNetCore.OpenApi.SourceGenerators\Microsoft.AspNetCore.OpenApi.SourceGenerators.XmlCommentGenerator\OpenApiXmlCommentSupport.generated.cs' does not exist (any more).
+2026-11-12T20:07:14: File 'C:\Users\rages\OneDrive\Документи\Навчання магістратура\Методології розробки програмного забезпечення\Lab_2_FarmCart\src\FarmCart.Api\obj\Release\net10.0\Microsoft.AspNetCore.OpenApi.SourceGenerators\Microsoft.AspNetCore.OpenApi.SourceGenerators.XmlCommentGenerator\OpenApiXmlCommentSupport.generated.cs' does not exist (any more).
+==> 6/11 Веб-клієнт: залежності (npm ci)
+
+added 390 packages in 1m
+==> 7/11 Веб-клієнт: стандарт кодування (eslint)
+==> 8/11 Веб-клієнт: типи (tsc --noEmit)
+==> 9/11 Веб-клієнт: компонентні тести з покриттям (vitest)
+
+ RUN  v5.1.0 C:/Users/rages/OneDrive/Документи/Навчання магістратура/Методології розробки програмного забезпечення/Lab_2_FarmCart/web
+      Coverage enabled with v8
+
+
+ Test Files  14 passed (14)
+      Tests  123 passed (123)
+   Start at  20:08:48
+   Duration  27.14s (tests 62%, import 18%, environment 11%, setup 5%, transform 3%)
+
+ % Coverage report from v8
+
+=============================== Coverage summary ===============================
+Statements   : 97.22% ( 875/900 )
+Branches     : 90.64% ( 678/748 )
+Functions    : 95.7% ( 334/349 )
+Lines        : 97.23% ( 809/832 )
+================================================================================
+==> 10/11 Веб-клієнт: збірка (vite build)
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 1099 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           0.54 kB │ gzip:   0.37 kB
+dist/assets/TileLayer-vh-t_kPv.css       15.09 kB │ gzip:   6.36 kB
+dist/assets/LocationPicker-CNDdQ9VP.js    0.83 kB │ gzip:   0.53 kB
+dist/assets/FarmMapView-BhTkfkdi.js       2.74 kB │ gzip:   1.31 kB
+dist/assets/TileLayer-B3xab_0l.js       152.68 kB │ gzip:  44.76 kB
+dist/assets/index-BbEoslqF.js           878.11 kB │ gzip: 264.89 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 282ms
+==> 11/11 Веб-клієнт: наскрізні тести (Playwright)
+
+Running 13 tests using 1 worker
+
+(node:17888) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [chromium] › tests\e2e\english.spec.ts:4:1 › англійською на сторінках каталогу, кошика й замовлень немає кирилиці (1.7s)
+  ok  2 [chromium] › tests\e2e\mobile-keyboard.spec.ts:14:3 › ширина 360 px › екрани покупця вміщуються без горизонтального прокручування (4.2s)
+  ok  3 [chromium] › tests\e2e\mobile-keyboard.spec.ts:46:3 › ширина 360 px › екрани фермера, кур’єра й адміністратора вміщуються без горизонтального прокручування (4.6s)
+  ok  4 [chromium] › tests\e2e\mobile-keyboard.spec.ts:84:3 › ширина 360 px › новий покупець: форма реєстрації господарства вміщується (1.5s)
+  ok  5 [chromium] › tests\e2e\mobile-keyboard.spec.ts:93:1 › клавіатурою без миші: вхід, перехід до вмісту, товар у кошик (528ms)
+  ok  6 [chromium] › tests\e2e\mobile-keyboard.spec.ts:122:1 › на 360 px шапка лишається в один рядок (602ms)
+  ok  7 [chromium] › tests\e2e\order-journey.spec.ts:4:1 › покупець купує → фермер приймає й передає кур’єру → кур’єр вручає → покупець бачить статуси без перезавантаження (5.0s)
+  -   8 [chromium] › tests\e2e\screens.spec.ts:28:3 › екрани покупця (uk)
+  -   9 [chromium] › tests\e2e\screens.spec.ts:77:3 › екрани фермера, кур’єра й адміністратора (uk)
+  -  10 [chromium] › tests\e2e\screens.spec.ts:116:3 › телефон 360 px і реєстрація господарства (uk)
+  -  11 [chromium] › tests\e2e\screens.spec.ts:28:3 › екрани покупця (en)
+  -  12 [chromium] › tests\e2e\screens.spec.ts:77:3 › екрани фермера, кур’єра й адміністратора (en)
+  -  13 [chromium] › tests\e2e\screens.spec.ts:116:3 › телефон 360 px і реєстрація господарства (en)
+
+  6 skipped
+  7 passed (21.6s)
+
+Тести: 297 з 297 пройдено; покриття рядків: 86 %, гілок: 72.9 %
+ІНТЕГРАЦІЯ УСПІШНА за 163 с

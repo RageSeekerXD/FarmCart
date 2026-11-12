@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "farmcart",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "src/FarmCart.Api", "--configuration", "Release", "--no-build", "--launch-profile", "http"],
+      "port": 5080
+    }
+  ]
+}

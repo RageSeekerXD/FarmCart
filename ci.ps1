@@ -30,26 +30,51 @@ function Invoke-Step([string]$Title, [scriptblock]$Command) {
 
 if (Test-Path $artifacts) { Remove-Item $artifacts -Recurse -Force }
 
-Invoke-Step '1/5 Відновлення залежностей' {
+Invoke-Step '1/11 Відновлення залежностей' {
     dotnet restore --verbosity quiet
     if ($LASTEXITCODE -eq 0) { dotnet tool restore | Out-Null }
 }
-Invoke-Step '2/5 Стандарт кодування (dotnet format --verify-no-changes)' {
+Invoke-Step '2/11 Стандарт кодування (dotnet format --verify-no-changes)' {
     dotnet format --verify-no-changes --no-restore
 }
-Invoke-Step '3/5 Збірка Release (попередження = помилки)' {
+Invoke-Step '3/11 Збірка Release (попередження = помилки)' {
     dotnet build --configuration Release --no-restore --verbosity quiet
 }
 # Покриття - Microsoft Code Coverage з динамічною інструментацією (coverage.runsettings): збірки на диску
 # не переписуються, тому Windows Smart App Control не блокує їх під час тестів.
-Invoke-Step '4/5 Модульні й приймальні тести з покриттям' {
+Invoke-Step '4/11 Модульні й приймальні тести з покриттям' {
     dotnet test --configuration Release --no-build --verbosity quiet --results-directory "$artifacts/tests" `
         --logger trx --logger "console;verbosity=minimal" --settings coverage.runsettings --collect "Code Coverage;Format=cobertura"
 }
-Invoke-Step '5/5 Звіт про покриття' {
+Invoke-Step '5/11 Звіт про покриття' {
     dotnet reportgenerator "-reports:$artifacts/tests/**/*.cobertura.xml" "-targetdir:$artifacts/coverage" `
         "-reporttypes:TextSummary;Html;Cobertura" "-assemblyfilters:+FarmCart.Core;+FarmCart.Api" "-filefilters:-*.g.cs" "-verbosity:Warning"
 }
+
+# Веб-клієнт (реліз 2.0, тека web/): ті самі правила - стандарт кодування, типи без помилок,
+# 100 % компонентних тестів і покриття рядків не нижче 70 % (поріг задано у web/vite.config.ts).
+Push-Location (Join-Path $PSScriptRoot 'web')
+Invoke-Step '6/11 Веб-клієнт: залежності (npm ci)' {
+    npm ci --no-audit --no-fund --loglevel=error
+}
+Invoke-Step '7/11 Веб-клієнт: стандарт кодування (eslint)' {
+    npm run lint --silent
+}
+Invoke-Step '8/11 Веб-клієнт: типи (tsc --noEmit)' {
+    npm run typecheck --silent
+}
+Invoke-Step '9/11 Веб-клієнт: компонентні тести з покриттям (vitest)' {
+    npm run coverage --silent
+}
+Invoke-Step '10/11 Веб-клієнт: збірка (vite build)' {
+    npm run build --silent
+}
+# Наскрізні тести: Playwright запускає зібраний на кроці 3 FarmCart.Api (порт 5081, демонстраційні дані,
+# зафіксований час) зі зібраним на кроці 10 клієнтом. Браузер ставиться один раз: npx playwright install chromium.
+Invoke-Step '11/11 Веб-клієнт: наскрізні тести (Playwright)' {
+    npm run e2e --silent
+}
+Pop-Location
 
 # Підсумок для трекера: кількість тестів і покриття. -LiteralPath: імена файлів TRX можуть містити «[1]».
 $counters = Get-ChildItem "$artifacts/tests" -Filter *.trx -Recurse |
