@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Product } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
+import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { categoryLook, LOW_STOCK } from '../catalog/categoryLook';
@@ -99,7 +100,7 @@ export function FarmerProductsPage() {
       {products.data?.length === 0 && profile.data?.verified && <EmptyState icon={<Inventory2OutlinedIcon />} title={t('farm.noProducts')} />}
 
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {products.data?.map((product) => {
+        {products.data?.map((product, index) => {
           const look = categoryLook(product.category);
           return (
             <Paper
@@ -107,7 +108,17 @@ export function FarmerProductsPage() {
               key={product.id}
               aria-label={pick(product.name)}
               elevation={1}
-              sx={{ p: 1.5, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', opacity: product.stock === 0 ? 0.8 : 1 }}
+              sx={{
+                p: 1.5,
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 2,
+                alignItems: 'center',
+                opacity: product.stock === 0 ? 0.8 : 1,
+                transition: 'box-shadow 200ms ease',
+                '&:hover': { boxShadow: 4 },
+                ...enter(index),
+              }}
             >
               <Box aria-hidden sx={{ width: 64, height: 64, flexShrink: 0, borderRadius: 2, display: 'grid', placeItems: 'center', fontSize: 32, background: look.tint }}>
                 {look.icon}

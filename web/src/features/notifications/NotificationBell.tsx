@@ -1,4 +1,5 @@
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Badge, Box, IconButton, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AppNotification, User } from '../../api/types';
 import { useLang } from '../../i18n';
 import { formatDateTime } from '../../shared/dates';
+import { bump, EASE_SPRING, ring } from '../../shared/motion';
 import { useToast } from '../../shared/Toast';
 import { useAuth } from '../auth/AuthContext';
 import { notificationTarget, notificationText, useNotifications } from './notifications';
@@ -19,7 +21,34 @@ export function NotificationBell({ user }: { user: User }) {
   const navigate = useNavigate();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 
-  const announce = useCallback((notification: AppNotification) => toast.show(notificationText(notification, t, lang), 'info'), [toast, t, lang]);
+  const go = useCallback(
+    (notification: AppNotification) => {
+      const target = notificationTarget(notification);
+      if (roles.includes(target.role)) {
+        setRole(target.role);
+        void navigate(target.to);
+      }
+    },
+    [roles, setRole, navigate],
+  );
+
+  // Нова подія спливає тостом із заголовком і кнопкою «Відкрити» - до замовлення чи доставки, яких вона стосується.
+  // «Замовлення оформлено» - наслідок дії самого покупця: її вже підтвердив тост оформлення, другий був би повтором.
+  // Сповіщення все одно лягає в стрічку й лічильник дзвіночка.
+  const announce = useCallback(
+    (notification: AppNotification) => {
+      if (notification.kind === 'order.placed') {
+        return;
+      }
+
+      toast.show(notificationText(notification, t, lang), 'info', {
+        title: t('notify.newTitle'),
+        icon: <NotificationsActiveIcon />,
+        action: { label: t('notify.open'), onClick: () => go(notification) },
+      });
+    },
+    [toast, t, lang, go],
+  );
   const { items, unread, seenId, live, markAllRead } = useNotifications(user, announce);
 
   const close = () => {
@@ -28,12 +57,8 @@ export function NotificationBell({ user }: { user: User }) {
   };
 
   const open = (notification: AppNotification) => {
-    const target = notificationTarget(notification);
     close();
-    if (roles.includes(target.role)) {
-      setRole(target.role);
-      void navigate(target.to);
-    }
+    go(notification);
   };
 
   return (
@@ -47,7 +72,16 @@ export function NotificationBell({ user }: { user: User }) {
           data-live={live}
           onClick={(event) => setAnchor(event.currentTarget)}
         >
-          <Badge badgeContent={unread} color="secondary">
+          {/* key={unread}: лічильник змінився - бейдж «підстрибує», а дзвіночок дзеленчить, якщо є непрочитані. */}
+          <Badge
+            key={unread}
+            badgeContent={unread}
+            color="secondary"
+            sx={{
+              '& .MuiBadge-badge:not(.MuiBadge-invisible)': { animation: `${bump} 480ms ${EASE_SPRING}` },
+              '& > svg': unread > 0 ? { transformOrigin: '50% 4px', animation: `${ring} 900ms ease-in-out` } : {},
+            }}
+          >
             <NotificationsIcon />
           </Badge>
         </IconButton>

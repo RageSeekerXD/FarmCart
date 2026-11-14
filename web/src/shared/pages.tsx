@@ -4,14 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, Navigate, useLocation } from 'react-router-dom';
 import type { Role } from '../api/types';
 import { useAuth } from '../features/auth/AuthContext';
+import { EASE_SPRING, float, popIn } from './motion';
 
 /** Порожній стан: велика піктограма, пояснення й наступна дія замість голого рядка тексту. */
 export function EmptyState({ icon, title, hint, action }: { icon: ReactNode; title: string; hint?: string; action?: ReactNode }) {
   return (
-    <Paper sx={{ p: { xs: 3, sm: 5 }, textAlign: 'center' }}>
+    <Paper sx={{ p: { xs: 3, sm: 5 }, textAlign: 'center', animation: `${popIn} 420ms ${EASE_SPRING} backwards` }}>
       <Box
         aria-hidden
         sx={{
+          animation: `${float} 4s ease-in-out infinite`,
           width: 72,
           height: 72,
           mx: 'auto',
@@ -42,7 +44,7 @@ export function EmptyState({ icon, title, hint, action }: { icon: ReactNode; tit
 function Message({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <Paper sx={{ p: 4, textAlign: 'center', maxWidth: 560, mx: 'auto', mt: 4 }}>
-      <Typography component="h1" variant="h5" gutterBottom>
+      <Typography component="h1" variant="h5" gutterBottom sx={{ '&::after': { mx: 'auto' } }}>
         {title}
       </Typography>
       {children}

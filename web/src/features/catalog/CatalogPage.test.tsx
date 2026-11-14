@@ -124,6 +124,20 @@ describe('UI-02 Каталог з фільтрами', () => {
     expect(await screen.findByRole('link', { name: 'Товарів у кошику: 1' })).toBeInTheDocument();
   });
 
+  it('після додавання кнопка коротко показує «Додано», а тост веде до кошика', async () => {
+    const { user } = await renderApp('/', { signedIn: true });
+
+    await user.click(await screen.findByRole('button', { name: 'Додати в кошик: Морква' }));
+
+    const carrots = screen.getByRole('article', { name: 'Морква' });
+    expect(await within(carrots).findByRole('button', { name: 'Додати в кошик: Морква' })).toHaveTextContent('Додано');
+    expect(within(carrots).getByText('У кошику: 1')).toBeInTheDocument();
+    await waitFor(() => expect(within(carrots).getByRole('button', { name: 'Додати в кошик: Морква' })).toHaveTextContent('У кошик'), { timeout: 3000 });
+
+    await user.click(screen.getByRole('button', { name: 'До кошика' }));
+    expect(await screen.findByRole('heading', { name: 'Кошик' })).toBeInTheDocument();
+  });
+
   it('товар іншого фермера не додається, причина - мовою інтерфейсу', async () => {
     backend.putInCart(1, 1);
     const { user } = await renderApp('/', { signedIn: true, lang: 'en' });

@@ -24,12 +24,13 @@ import {
   useTheme,
 } from '@mui/material';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { CatalogItem, CatalogSort, ReferenceData } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
+import { enter } from '../../shared/motion';
 import { useToast } from '../../shared/Toast';
 import { useAuth } from '../auth/AuthContext';
 import { EmptyState } from '../../shared/pages';
@@ -90,6 +91,16 @@ export function CatalogPage() {
   const filters = parseFilters(params);
   const location = useBuyerLocation();
   const [addingId, setAddingId] = useState<number | null>(null);
+  // Щойно доданий товар: кнопка на мить стає зеленою «Додано ✓», потім повертається.
+  const [addedId, setAddedId] = useState<number | null>(null);
+  useEffect(() => {
+    if (addedId === null) {
+      return;
+    }
+
+    const timer = setTimeout(() => setAddedId(null), 1600);
+    return () => clearTimeout(timer);
+  }, [addedId]);
 
   const reference = useQuery({
     queryKey: ['reference'],
@@ -131,7 +142,12 @@ export function CatalogPage() {
     addToCart.mutate(
       { productId: item.productId, quantity: 1 },
       {
-        onSuccess: () => toast.show(t('catalog.added', { name: pick(item.name) })),
+        onSuccess: () => {
+          setAddedId(item.productId);
+          toast.show(t('catalog.added', { name: pick(item.name) }), 'success', {
+            action: { label: t('catalog.goToCart'), onClick: () => void navigate('/cart') },
+          });
+        },
         onError: (error) => toast.show(errorMessage(error), 'error'),
         onSettled: () => setAddingId(null),
       },
@@ -328,16 +344,22 @@ export function CatalogPage() {
           {catalog.isPending && (
             <Box component="ul" sx={GRID}>
               {Array.from({ length: 8 }, (_, index) => (
-                <Box component="li" key={index}>
+                <Box component="li" key={index} sx={enter(index)}>
                   <ProductSkeleton />
                 </Box>
               ))}
             </Box>
           )}
           <Box component="ul" sx={GRID}>
-            {items.map((item) => (
-              <Box component="li" key={item.productId}>
-                <ProductCard item={item} adding={addingId === item.productId} inCart={inCart.get(item.productId) ?? 0} onAdd={add} />
+            {items.map((item, index) => (
+              <Box component="li" key={item.productId} sx={enter(index)}>
+                <ProductCard
+                  item={item}
+                  adding={addingId === item.productId}
+                  justAdded={addedId === item.productId}
+                  inCart={inCart.get(item.productId) ?? 0}
+                  onAdd={add}
+                />
               </Box>
             ))}
           </Box>

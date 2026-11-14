@@ -1,10 +1,10 @@
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import { CssBaseline, ThemeProvider, type Theme } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ApiError } from './api/client';
 import { AdminPage } from './features/admin/AdminPage';
-import { AuthProvider } from './features/auth/AuthContext';
+import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { LoginPage } from './features/auth/LoginPage';
 import { CartPage } from './features/cart/CartPage';
 import { CatalogPage } from './features/catalog/CatalogPage';
@@ -19,7 +19,7 @@ import { OrdersPage } from './features/orders/OrdersPage';
 import { Layout } from './shared/Layout';
 import { NotFoundPage, RequireRole } from './shared/pages';
 import { ToastProvider } from './shared/Toast';
-import { theme } from './theme';
+import { BRANDS, createAppTheme, type BrandKey } from './theme';
 
 export function createQueryClient(): QueryClient {
   return new QueryClient({
@@ -34,17 +34,30 @@ export function createQueryClient(): QueryClient {
   });
 }
 
+/** Теми ролей створюються один раз: перемикання ролі лише вибирає готову. */
+const THEMES = Object.fromEntries((Object.keys(BRANDS) as BrandKey[]).map((key) => [key, createAppTheme(key)])) as Record<BrandKey, Theme>;
+
+/** Візуальний стиль за роллю, у якій користувач працює зараз; гість бачить стиль покупця. */
+function RoleTheme({ children }: { children: ReactNode }) {
+  const { user, role } = useAuth();
+  return (
+    <ThemeProvider theme={THEMES[user ? role : 'Guest']}>
+      <CssBaseline />
+      {children}
+    </ThemeProvider>
+  );
+}
+
 /** Провайдери застосунку без маршрутизатора: його дає main.tsx (BrowserRouter) або тест (MemoryRouter). */
 export function Providers({ children, client }: { children: ReactNode; client?: QueryClient }) {
   const [queryClient] = useState(() => client ?? createQueryClient());
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ToastProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <RoleTheme>
+          <ToastProvider>{children}</ToastProvider>
+        </RoleTheme>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

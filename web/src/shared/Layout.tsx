@@ -1,6 +1,7 @@
 import LogoutIcon from '@mui/icons-material/Logout';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import {
+  alpha,
   AppBar,
   Badge,
   Box,
@@ -17,6 +18,7 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  useTheme,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -26,6 +28,7 @@ import { DemoAccountSwitcher } from '../features/auth/DemoAccounts';
 import { cartCount, useCart } from '../features/cart/useCart';
 import { NotificationBell } from '../features/notifications/NotificationBell';
 import { LANGS, useLang } from '../i18n';
+import { bump, EASE_OUT, EASE_SPRING, fadeUp, popIn } from './motion';
 
 interface NavItem {
   to: string;
@@ -66,9 +69,20 @@ export function Layout() {
   const items = !user ? GUEST_NAV : role === 'Buyer' && !roles.includes('Farmer') ? [...NAV.Buyer, BECOME_SELLER] : NAV[role];
   const current = items.find((item) => item.to === location.pathname)?.to ?? false;
   const inCart = cartCount(cart.data);
+  const theme = useTheme();
+  const brand = theme.brand;
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        // Тло з м'якими плямами кольору ролі вгорі сторінки.
+        background: `radial-gradient(1100px 380px at 0% 0%, ${alpha(brand.main, 0.08)}, transparent 70%), radial-gradient(800px 320px at 100% 0%, ${alpha(theme.palette.secondary.main, 0.08)}, transparent 70%), ${theme.palette.background.default}`,
+        transition: 'background-color 400ms ease',
+      }}
+    >
       <Link
         href="#main"
         sx={{
@@ -82,15 +96,34 @@ export function Layout() {
       >
         {t('header.skipToContent')}
       </Link>
-      <AppBar position="sticky" color="primary" elevation={1}>
+      <AppBar
+        position="sticky"
+        color="primary"
+        elevation={0}
+        sx={{
+          // Градієнт ролі з ледь помітною «крапковою» фактурою.
+          background: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.10) 1px, transparent 0) 0 0 / 18px 18px, ${brand.gradient}`,
+          boxShadow: `0 6px 20px ${alpha(brand.dark, 0.25)}`,
+        }}
+      >
         <Toolbar sx={{ gap: { xs: 0.25, sm: 1 }, flexWrap: 'wrap', py: 0.5, px: { xs: 1, sm: 3 } }}>
           <Typography
             component={RouterLink}
             to="/"
             variant="h6"
-            sx={{ color: 'inherit', textDecoration: 'none', fontWeight: 700, mr: 'auto', fontSize: { xs: '1.05rem', sm: '1.25rem' }, whiteSpace: 'nowrap' }}
+            sx={{
+              color: 'inherit',
+              textDecoration: 'none',
+              fontWeight: 800,
+              letterSpacing: '-0.01em',
+              mr: 'auto',
+              fontSize: { xs: '1.05rem', sm: '1.3rem' },
+              whiteSpace: 'nowrap',
+              '& .logo-mark': { display: 'inline-block', transition: `transform 400ms ${EASE_SPRING}` },
+              '&:hover .logo-mark': { transform: 'rotate(-12deg) scale(1.2)' },
+            }}
           >
-            🧺 {t('app.name')}
+            <span className="logo-mark">{brand.emoji}</span> {t('app.name')}
           </Typography>
 
           {user && roles.length > 1 && (
@@ -147,7 +180,13 @@ export function Layout() {
           {user && role === 'Buyer' && (
             <Tooltip title={t('nav.cart')}>
               <IconButton component={RouterLink} to="/cart" color="inherit" aria-label={t('header.cartItems', { count: inCart })}>
-                <Badge badgeContent={inCart} color="secondary">
+                {/* key={inCart}: товар додано чи прибрано - бейдж кошика «підстрибує». */}
+                <Badge
+                  key={inCart}
+                  badgeContent={inCart}
+                  color="secondary"
+                  sx={{ '& .MuiBadge-badge:not(.MuiBadge-invisible)': { animation: `${bump} 480ms ${EASE_SPRING}`, fontWeight: 700 } }}
+                >
                   <ShoppingBasketIcon />
                 </Badge>
               </IconButton>
@@ -176,47 +215,75 @@ export function Layout() {
             </Button>
           )}
         </Toolbar>
-        <Tabs
-          component="nav"
-          aria-label={t('nav.main')}
-          value={current}
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          textColor="inherit"
-          indicatorColor="secondary"
-          sx={{
-            minHeight: 44,
-            px: { xs: 0, sm: 2 },
-            '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' },
-          }}
-        >
-          {items.map((item) => (
-            <Tab
-              key={item.to}
-              value={item.to}
-              label={t(item.label)}
-              component={RouterLink}
-              to={item.to}
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Tabs
+            component="nav"
+            aria-label={t('nav.main')}
+            value={current}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            textColor="inherit"
+            indicatorColor="secondary"
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              minHeight: 44,
+              px: { xs: 0, sm: 2 },
+              '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0', transition: `all 360ms ${EASE_OUT}` },
+            }}
+          >
+            {items.map((item) => (
+              <Tab
+                key={item.to}
+                value={item.to}
+                label={t(item.label)}
+                component={RouterLink}
+                to={item.to}
+                sx={{
+                  minHeight: 44,
+                  textTransform: 'none',
+                  fontSize: '0.95rem',
+                  opacity: 0.85,
+                  borderRadius: '8px 8px 0 0',
+                  '&:hover': { opacity: 1, bgcolor: 'rgba(255,255,255,0.08)' },
+                  '&.Mui-selected': { opacity: 1 },
+                }}
+              />
+            ))}
+          </Tabs>
+          {/* Знак ролі, у якій користувач працює: колір шапки й емодзі змінюються разом із роллю. */}
+          {user && (
+            <Typography
+              key={role}
+              variant="body2"
               sx={{
-                minHeight: 44,
-                textTransform: 'none',
-                fontSize: '0.95rem',
-                opacity: 0.85,
-                borderRadius: '8px 8px 0 0',
-                '&:hover': { opacity: 1, bgcolor: 'rgba(255,255,255,0.08)' },
-                '&.Mui-selected': { opacity: 1 },
+                display: { xs: 'none', sm: 'block' },
+                mr: 3,
+                px: 1.5,
+                py: 0.25,
+                borderRadius: 5,
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                bgcolor: 'rgba(255,255,255,0.16)',
+                border: '1px solid rgba(255,255,255,0.28)',
+                animation: `${popIn} 360ms ${EASE_SPRING} backwards`,
               }}
-            />
-          ))}
-        </Tabs>
+            >
+              {brand.emoji} {t(`roles.${role}`)}
+            </Typography>
+          )}
+        </Box>
       </AppBar>
       <Container component="main" id="main" maxWidth="lg" sx={{ flex: 1, py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
-        <Outlet />
+        {/* Перехід між сторінками: нова сторінка плавно з'являється знизу. */}
+        <Box key={location.pathname} sx={{ animation: `${fadeUp} 420ms ${EASE_OUT} backwards` }}>
+          <Outlet />
+        </Box>
       </Container>
       <Box component="footer" sx={{ py: 3, mt: 2, textAlign: 'center', color: 'text.secondary', borderTop: 1, borderColor: 'divider' }}>
         <Typography variant="body2">
-          🧺 <strong>{t('app.name')}</strong> · {t('app.tagline')}
+          {brand.emoji} <strong>{t('app.name')}</strong> · {t('app.tagline')}
         </Typography>
       </Box>
     </Box>

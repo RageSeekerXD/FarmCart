@@ -2,11 +2,13 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Alert, Box, Button, CircularProgress, Divider, Paper, Stack, Step, StepLabel, Stepper, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link as RouterLink, useParams } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useParams } from 'react-router-dom';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatDateTime, formatSlot } from '../../shared/dates';
+import { EASE_SPRING, enter, glow, popIn, shine } from '../../shared/motion';
 import { useFarms } from '../map/MapPage';
 import { StatusChip } from './OrdersPage';
+import { PlacedBanner } from './PlacedBanner';
 import { ReviewSection } from './ReviewSection';
 import { isFinal, timeline, useOrder } from './orders';
 
@@ -26,6 +28,8 @@ export function OrderPage() {
   const id = Number(useParams().id);
   const order = useOrder(id);
   const farms = useFarms(null);
+  // Сюди щойно перейшли з оформлення: показуємо святкове підтвердження.
+  const justPlaced = (useLocation().state as { placed?: boolean } | null)?.placed === true;
 
   const back = (
     <Button component={RouterLink} to="/orders" startIcon={<ArrowBackIcon />} sx={{ mb: 1 }}>
@@ -57,12 +61,15 @@ export function OrderPage() {
         <Typography component="h1" variant="h4" sx={{ fontSize: { xs: '1.6rem', sm: '2.1rem' } }}>
           {t('orders.number', { id: data.id })}
         </Typography>
-        <Box role="status" aria-label={t('orders.status')}>
+        {/* key={data.status}: статус змінився (подія чи опитування) - позначка м'яко «вистрибує» заново. */}
+        <Box key={data.status} role="status" aria-label={t('orders.status')} sx={{ animation: `${popIn} 420ms ${EASE_SPRING} backwards` }}>
           <StatusChip status={data.status} />
         </Box>
       </Box>
 
       <Stack spacing={2}>
+        {justPlaced && !isFinal(data.status) && <PlacedBanner />}
+
         {data.status === 'Rejected' && (
           <Alert severity="error">
             {t('orders.rejected')}
@@ -73,9 +80,36 @@ export function OrderPage() {
         )}
 
         {data.deliveryCode && !isFinal(data.status) && (
-          <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'secondary.light' }}>
-            <Typography>{t('orders.codeTitle')}</Typography>
-            <Typography component="p" variant="h3" data-testid="delivery-code" sx={{ letterSpacing: 8, fontWeight: 700 }}>
+          <Paper
+            elevation={1}
+            sx={{
+              p: { xs: 2, sm: 2.5 },
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden',
+              background: 'linear-gradient(135deg, #ffe082 0%, #ffca28 55%, #ffb300 100%)',
+              ...enter(0),
+              // Відблиск, що час від часу пробігає карткою коду: код помітний, але не кричить.
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                width: '30%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)',
+                animation: `${shine} 4.5s ease-in-out 600ms infinite`,
+                pointerEvents: 'none',
+              },
+            }}
+          >
+            <Typography sx={{ fontWeight: 600 }}>{t('orders.codeTitle')}</Typography>
+            <Typography
+              component="p"
+              variant="h3"
+              data-testid="delivery-code"
+              sx={{ letterSpacing: 10, fontWeight: 800, animation: `${popIn} 520ms ${EASE_SPRING} 150ms backwards` }}
+            >
               {data.deliveryCode}
             </Typography>
             <Typography variant="body2">{t('orders.codeHint')}</Typography>
@@ -84,13 +118,30 @@ export function OrderPage() {
 
         {data.status === 'Delivered' && <ReviewSection orderId={data.id} />}
 
-        <Paper component="section" aria-labelledby="order-timeline" sx={{ p: { xs: 1.5, sm: 2.5 } }}>
+        <Paper component="section" elevation={1} aria-labelledby="order-timeline" sx={{ p: { xs: 1.5, sm: 2.5 }, ...enter(1) }}>
           <Typography id="order-timeline" component="h2" variant="h6" sx={{ mb: 1 }}>
             {t('orders.timeline')}
           </Typography>
-          <Stepper orientation="vertical" activeStep={steps.findIndex((step) => step.state === 'current')}>
-            {steps.map((step) => (
-              <Step key={step.status} completed={step.state === 'done' || (step.state === 'current' && data.status === 'Delivered')}>
+          <Stepper
+            orientation="vertical"
+            activeStep={steps.findIndex((step) => step.state === 'current')}
+            sx={(theme) => ({
+              // Пройдена частина шляху - лінією кольору ролі; поточний крок м'яко світиться, поки замовлення в роботі.
+              '& .MuiStepConnector-line': { borderLeftWidth: 2, transition: 'border-color 400ms ease' },
+              '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line, & .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
+                borderColor: theme.palette.primary.main,
+              },
+              '& .MuiStepIcon-root.Mui-active': isFinal(data.status) ? {} : { animation: `${glow} 2.2s ease-in-out infinite` },
+              '& .MuiStepIcon-root.Mui-completed': { color: theme.palette.primary.main },
+              '& .MuiStepLabel-label.Mui-active': { fontWeight: 700 },
+            })}
+          >
+            {steps.map((step, index) => (
+              <Step
+                key={step.status}
+                completed={step.state === 'done' || (step.state === 'current' && data.status === 'Delivered')}
+                sx={enter(index + 2, 70)}
+              >
                 <StepLabel
                   error={step.status === 'Rejected'}
                   optional={step.at ? <Typography variant="caption">{formatDateTime(step.at, lang)}</Typography> : undefined}
@@ -103,7 +154,7 @@ export function OrderPage() {
           </Stepper>
         </Paper>
 
-        <Paper component="section" aria-labelledby="order-lines" sx={{ p: { xs: 1.5, sm: 2.5 } }}>
+        <Paper component="section" elevation={1} aria-labelledby="order-lines" sx={{ p: { xs: 1.5, sm: 2.5 }, ...enter(2) }}>
           <Typography id="order-lines" component="h2" variant="h6" sx={{ mb: 1 }}>
             {t('orders.contents')}
           </Typography>
@@ -146,7 +197,7 @@ export function OrderPage() {
           </Stack>
         </Paper>
 
-        <Paper component="section" aria-labelledby="order-delivery" sx={{ p: { xs: 1.5, sm: 2.5 } }}>
+        <Paper component="section" elevation={1} aria-labelledby="order-delivery" sx={{ p: { xs: 1.5, sm: 2.5 }, ...enter(3) }}>
           <Typography id="order-delivery" component="h2" variant="h6" sx={{ mb: 1 }}>
             {t('checkout.delivery')}
           </Typography>

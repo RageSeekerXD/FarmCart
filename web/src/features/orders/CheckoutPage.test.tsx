@@ -24,6 +24,7 @@ describe('UI-05 Оформлення замовлення', () => {
 
     expect(await screen.findByRole('heading', { name: 'Замовлення №1001' })).toBeInTheDocument();
     expect(await screen.findByText('Замовлення №1001 оформлено')).toBeInTheDocument();
+    expect(screen.getByText('Дякуємо за замовлення!')).toBeInTheDocument();
     expect(screen.getByTestId('order-total')).toHaveTextContent(/387,00/);
     expect(screen.getByText(/Знижка за промокодом FARM10/)).toBeInTheDocument();
     expect(backend.checkouts).toHaveLength(1);

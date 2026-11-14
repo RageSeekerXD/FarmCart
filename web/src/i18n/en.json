@@ -43,7 +43,10 @@
     "verify": "Sign in",
     "changePhone": "Change number",
     "welcomeNew": "Account created. Welcome to FarmCart!",
-    "welcomeBack": "You are signed in"
+    "welcomeBack": "You are signed in",
+    "feature1": "Fresh produce straight from farms",
+    "feature2": "Delivery at a time that suits you",
+    "feature3": "Pay by card, wallet or cash"
   },
   "catalog": {
     "title": "Catalogue",
@@ -86,7 +89,9 @@
     "moreFilters": "More filters",
     "lowStock": "Only {{count}} left",
     "inCart": "In cart: {{count}}",
-    "emptyHint": "Try a different search or reset the filters."
+    "emptyHint": "Try a different search or reset the filters.",
+    "addedShort": "Added",
+    "goToCart": "View cart"
   },
   "cart": {
     "title": "Cart",
@@ -242,7 +247,9 @@
     "payment": "Payment",
     "refunded": "Refunded",
     "emptyHint": "After checkout you can follow the delivery of your orders here.",
-    "progress": "Step {{step}} of {{total}}"
+    "progress": "Step {{step}} of {{total}}",
+    "placedTitle": "Thank you for your order!",
+    "placedHint": "The farmer has already received it. The status below updates by itself."
   },
   "status": {
     "Placed": "Placed",
@@ -357,7 +364,9 @@
     "orderNew": "New order No. {{id}} for {{total}}",
     "orderStatus": "Order No. {{id}}: {{status}}",
     "deliveryAssigned": "New delivery No. {{id}}",
-    "other": "New event"
+    "other": "New event",
+    "newTitle": "New notification",
+    "open": "Open"
   },
   "admin": {
     "section": {

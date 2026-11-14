@@ -1,5 +1,6 @@
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CheckIcon from '@mui/icons-material/Check';
 import PlaceIcon from '@mui/icons-material/Place';
 import StarIcon from '@mui/icons-material/Star';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -7,18 +8,21 @@ import { Box, Button, Card, CardActions, CardContent, Chip, Stack, Typography } 
 import { useTranslation } from 'react-i18next';
 import type { CatalogItem } from '../../api/types';
 import { formatMoney, formatNumber, useLang } from '../../i18n';
+import { EASE_SPRING, popIn } from '../../shared/motion';
 import { categoryLook, LOW_STOCK } from './categoryLook';
 
 
 interface Props {
   item: CatalogItem;
   adding: boolean;
+  /** Товар щойно додано: кнопка коротко показує «Додано ✓». */
+  justAdded?: boolean;
   /** Скільки одиниць цього товару вже в кошику покупця (0 - немає). */
   inCart?: number;
   onAdd: (item: CatalogItem) => void;
 }
 
-export function ProductCard({ item, adding, inCart = 0, onAdd }: Props) {
+export function ProductCard({ item, adding, justAdded = false, inCart = 0, onAdd }: Props) {
   const { t } = useTranslation();
   const { lang, pick } = useLang();
   const name = pick(item.name);
@@ -36,15 +40,20 @@ export function ProductCard({ item, adding, inCart = 0, onAdd }: Props) {
         height: '100%',
         position: 'relative',
         transition: 'box-shadow 160ms ease, transform 160ms ease',
-        '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' },
+        '&:hover': { boxShadow: 4, transform: 'translateY(-3px)' },
+        '&:hover .product-art span': { transform: 'scale(1.12) rotate(-6deg)' },
         '@media (prefers-reduced-motion: reduce)': { transition: 'none', '&:hover': { transform: 'none' } },
       }}
     >
       {item.photoUrl ? (
         <Box component="img" src={item.photoUrl} alt="" loading="lazy" sx={{ width: '100%', height: 150, objectFit: 'cover' }} />
       ) : (
-        <Box aria-hidden sx={{ height: 150, display: 'grid', placeItems: 'center', fontSize: 64, background: look.tint }}>
-          {look.icon}
+        <Box
+          aria-hidden
+          className="product-art"
+          sx={{ height: 150, display: 'grid', placeItems: 'center', fontSize: 64, background: look.tint, '& span': { transition: `transform 500ms ${EASE_SPRING}` } }}
+        >
+          <span>{look.icon}</span>
         </Box>
       )}
       {item.certified && (
@@ -58,10 +67,19 @@ export function ProductCard({ item, adding, inCart = 0, onAdd }: Props) {
       )}
       {inCart > 0 && (
         <Chip
+          key={inCart}
           size="small"
           icon={<CheckCircleIcon />}
           label={t('catalog.inCart', { count: inCart })}
-          sx={{ position: 'absolute', top: 116, right: 10, bgcolor: 'background.paper', boxShadow: 1, '& .MuiChip-icon': { color: 'primary.main' } }}
+          sx={{
+            position: 'absolute',
+            top: 116,
+            right: 10,
+            bgcolor: 'background.paper',
+            boxShadow: 1,
+            animation: `${popIn} 420ms ${EASE_SPRING} backwards`,
+            '& .MuiChip-icon': { color: 'primary.main' },
+          }}
         />
       )}
       <CardContent sx={{ flex: 1, pb: 1, display: 'flex', flexDirection: 'column' }}>
@@ -100,14 +118,15 @@ export function ProductCard({ item, adding, inCart = 0, onAdd }: Props) {
       <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
         <Button
           fullWidth
-          variant={inCart > 0 ? 'outlined' : 'contained'}
-          startIcon={<AddShoppingCartIcon />}
+          variant={inCart > 0 && !justAdded ? 'outlined' : 'contained'}
+          color={justAdded ? 'success' : 'primary'}
+          startIcon={justAdded ? <CheckIcon sx={{ animation: `${popIn} 360ms ${EASE_SPRING}` }} /> : <AddShoppingCartIcon />}
           loading={adding}
           disabled={item.stock <= 0}
           onClick={() => onAdd(item)}
           aria-label={t('catalog.addNamedToCart', { name })}
         >
-          {t('catalog.addToCart')}
+          {justAdded ? t('catalog.addedShort') : t('catalog.addToCart')}
         </Button>
       </CardActions>
     </Card>

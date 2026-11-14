@@ -11,6 +11,7 @@ import { api } from '../../api/client';
 import type { AuditEntry, FarmerProfile, PromoCode, Slot } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatDateTime, formatSlot, localIso } from '../../shared/dates';
+import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 
@@ -54,8 +55,8 @@ function Verification() {
     <Loading pending={pending.isPending} error={pending.error}>
       {pending.data?.length === 0 && <EmptyState icon={<VerifiedUserOutlinedIcon />} title={t('admin.noPending')} />}
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {pending.data?.map((farmer) => (
-          <Paper component="li" key={farmer.id} aria-label={pick(farmer.name)} elevation={1} sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
+        {pending.data?.map((farmer, index) => (
+          <Paper component="li" key={farmer.id} aria-label={pick(farmer.name)} elevation={1} sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', ...enter(index) }}>
             <Box aria-hidden sx={{ width: 48, height: 48, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 26, bgcolor: 'background.default' }}>
               🌾
             </Box>
@@ -171,8 +172,8 @@ function Slots() {
           aria-label={t('admin.upcomingSlots')}
           sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid', gap: 1, gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))' }}
         >
-          {slots.data?.map((slot) => (
-            <Paper component="li" key={slot.id} variant="outlined" sx={{ px: 2, py: 1.5 }}>
+          {slots.data?.map((slot, index) => (
+            <Paper component="li" key={slot.id} variant="outlined" sx={{ px: 2, py: 1.5, ...enter(index, 35) }}>
               <Typography sx={{ fontWeight: 600 }}>{formatSlot(slot.start, slot.end, lang)}</Typography>
               <Typography variant="body2" sx={{ color: slot.remaining === 0 ? 'error.main' : slot.remaining === 1 ? 'warning.dark' : 'text.secondary' }}>
                 {slot.remaining > 0 ? t('checkout.slotLeft', { count: slot.remaining }) : t('checkout.slotFull')}
@@ -249,8 +250,8 @@ function Promo() {
       </Paper>
       <Loading pending={codes.isPending} error={codes.error}>
         <Stack component="ul" spacing={1} aria-label={t('admin.createdPromo')} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-          {codes.data?.map((promo) => (
-            <Paper component="li" key={promo.code} variant="outlined" sx={{ px: 2, py: 1.25, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5 }}>
+          {codes.data?.map((promo, index) => (
+            <Paper component="li" key={promo.code} variant="outlined" sx={{ px: 2, py: 1.25, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, ...enter(index) }}>
               <Box
                 component="strong"
                 sx={{
@@ -290,8 +291,8 @@ function Audit() {
     <Loading pending={audit.isPending} error={audit.error}>
       {entries.length === 0 && <EmptyState icon={<HistoryIcon />} title={t('admin.noAudit')} />}
       <Stack component="ol" spacing={1} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {entries.map((entry) => (
-          <Paper component="li" key={entry.id} variant="outlined" sx={{ px: 2, py: 1.25, borderLeft: 3, borderLeftColor: 'primary.main' }}>
+        {entries.map((entry, index) => (
+          <Paper component="li" key={entry.id} variant="outlined" sx={{ px: 2, py: 1.25, borderLeft: 3, borderLeftColor: 'primary.main', ...enter(index, 30) }}>
             <Typography sx={{ fontWeight: 600 }}>
               {actionTitle(entry.action)} <Typography component="span" color="text.secondary">· {entry.target}</Typography>
             </Typography>

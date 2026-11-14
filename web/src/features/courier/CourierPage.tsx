@@ -12,6 +12,7 @@ import { api } from '../../api/client';
 import type { DeliveryTask, Order } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatSlot } from '../../shared/dates';
+import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { POLL_MS } from '../orders/orders';
@@ -47,7 +48,7 @@ function Detail({ icon, label, children }: { icon: ReactNode; label: string; chi
   );
 }
 
-function DeliveryCard({ task }: { task: DeliveryTask }) {
+function DeliveryCard({ task, index }: { task: DeliveryTask; index: number }) {
   const { t } = useTranslation();
   const { lang, pick } = useLang();
   const toast = useToast();
@@ -69,7 +70,7 @@ function DeliveryCard({ task }: { task: DeliveryTask }) {
   };
 
   return (
-    <Paper component="li" aria-label={label} elevation={1} sx={{ p: { xs: 2, sm: 2.5 } }}>
+    <Paper component="li" aria-label={label} elevation={1} sx={{ p: { xs: 2, sm: 2.5 }, ...enter(index, 80) }}>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 2 }}>
         <Typography component="h2" variant="h5" sx={{ mr: 'auto' }}>
           {label}
@@ -154,7 +155,7 @@ export function CourierPage() {
       )}
       {deliveries.data?.length === 0 && <EmptyState icon={<LocalShippingOutlinedIcon />} title={t('courier.empty')} hint={t('courier.emptyHint')} />}
       <Stack component="ul" spacing={2} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {deliveries.data?.map((task) => <DeliveryCard key={task.orderId} task={task} />)}
+        {deliveries.data?.map((task, index) => <DeliveryCard key={task.orderId} task={task} index={index} />)}
       </Stack>
     </Box>
   );

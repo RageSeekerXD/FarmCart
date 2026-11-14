@@ -32,6 +32,7 @@ import { api } from '../../api/client';
 import type { CheckoutRequest, Order, PaymentMethod, Slot } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatSlot } from '../../shared/dates';
+import { EASE_SPRING, enter, popIn } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { useCart } from '../cart/useCart';
@@ -66,9 +67,11 @@ const tile = (selected: boolean, disabled = false) => ({
   bgcolor: (theme: Theme) => (selected ? alpha(theme.palette.primary.main, 0.06) : theme.palette.background.paper),
   boxShadow: (theme: Theme) => (selected ? `0 0 0 1px ${theme.palette.primary.main}` : 'none'),
   opacity: disabled ? 0.55 : 1,
-  transition: 'border-color 120ms ease, background-color 120ms ease',
+  transition: 'border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 120ms ease',
   '&:hover': disabled || selected ? {} : { borderColor: 'text.secondary' },
   '& .MuiFormControlLabel-label': { flex: 1, minWidth: 0 },
+  '& .Mui-checked svg:last-of-type': { animation: `${popIn} 300ms ${EASE_SPRING}` },
+  '&:active': disabled ? {} : { transform: 'scale(0.98)' },
 });
 
 /** UI-05: оформлення - адреса, слот, промокод, спосіб оплати. Запит іде з Idempotency-Key: повтор не створить дубль. */
@@ -100,7 +103,7 @@ export function CheckoutPage() {
       void queryClient.invalidateQueries({ queryKey: ['catalog'] });
       queryClient.setQueryData(['order', order.id], order);
       toast.show(t('checkout.placed', { id: order.id }));
-      void navigate(`/orders/${order.id}`, { replace: true });
+      void navigate(`/orders/${order.id}`, { replace: true, state: { placed: true } });
     },
     onError: () => void slots.refetch(),
   });
@@ -159,7 +162,7 @@ export function CheckoutPage() {
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 340px' }, alignItems: 'start' }}>
         <Stack spacing={2} sx={{ minWidth: 0 }}>
-          <Paper component="section" elevation={1} aria-labelledby="checkout-delivery" sx={section}>
+          <Paper component="section" elevation={1} aria-labelledby="checkout-delivery" sx={{ ...section, ...enter(0, 90) }}>
             <Typography id="checkout-delivery" component="h2" variant="h6" sx={{ mb: 2 }}>
               <StepNumber n={1} />
               {t('checkout.delivery')}
@@ -226,7 +229,7 @@ export function CheckoutPage() {
             </Stack>
           </Paper>
 
-          <Paper component="section" elevation={1} aria-labelledby="checkout-payment" sx={section}>
+          <Paper component="section" elevation={1} aria-labelledby="checkout-payment" sx={{ ...section, ...enter(1, 90) }}>
             <Typography id="checkout-payment" component="h2" variant="h6" sx={{ mb: 2 }}>
               <StepNumber n={2} />
               {t('checkout.payment')}
@@ -287,7 +290,7 @@ export function CheckoutPage() {
           </Paper>
         </Stack>
 
-        <Paper component="aside" elevation={1} aria-labelledby="checkout-order" sx={{ ...section, position: { md: 'sticky' }, top: { md: 128 } }}>
+        <Paper component="aside" elevation={1} aria-labelledby="checkout-order" sx={{ ...section, position: { md: 'sticky' }, top: { md: 128 }, ...enter(2, 90) }}>
           <Typography id="checkout-order" component="h2" variant="h6" sx={{ mb: 1.5 }}>
             {t('checkout.yourOrder')}
           </Typography>

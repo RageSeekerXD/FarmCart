@@ -74,6 +74,31 @@ describe('UI-12 Сповіщення в реальному часі', () => {
     await waitFor(() => expect(screen.getByRole('status', { name: 'Статус замовлення' })).toHaveTextContent('Прийнято фермером'), { timeout: 2000 });
   });
 
+  it('тост події має заголовок і кнопку «Відкрити», що веде до замовлення', async () => {
+    backend.addOrder('Placed');
+    const { user } = await renderApp('/', { signedIn: true });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 0' });
+
+    backend.moveOrder(1001, 'Accepted');
+    push('order.status', 1001, { status: 'Accepted' });
+
+    const toast = await screen.findByRole('alert');
+    expect(toast).toHaveTextContent('Нове сповіщення');
+    await user.click(within(toast).getByRole('button', { name: 'Відкрити' }));
+
+    expect(await screen.findByRole('heading', { name: 'Замовлення №1001' })).toBeInTheDocument();
+  });
+
+  it('власне оформлення не дублюється тостом сповіщення, але лічильник росте', async () => {
+    await renderApp('/', { signedIn: true });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 0' });
+
+    push('order.placed', 1001, { total: '160' });
+
+    expect(await screen.findByRole('button', { name: 'Сповіщення, нових: 1' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('старі сповіщення при вході тостом не показуються', async () => {
     backend.notify('order.placed', 1001, { total: '160' });
     await renderApp('/', { signedIn: true });

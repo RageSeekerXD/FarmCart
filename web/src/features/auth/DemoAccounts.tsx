@@ -1,13 +1,27 @@
+import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
+import AgricultureOutlinedIcon from '@mui/icons-material/AgricultureOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import ShoppingBasketOutlinedIcon from '@mui/icons-material/ShoppingBasketOutlined';
 import SwitchAccountIcon from '@mui/icons-material/SwitchAccount';
-import { Alert, Box, Button, IconButton, ListItemText, Menu, MenuItem, Stack, Tooltip, Typography } from '@mui/material';
+import { alpha, Alert, Box, Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, Tooltip, Typography } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { CodeResponse, LocalizedText, Role, SessionResponse } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
+import { enter } from '../../shared/motion';
+import { BRANDS } from '../../theme';
 import { ROLE_HOME, useAuth } from './AuthContext';
+
+/** Піктограма ролі - та сама на кнопках входу й у перемикачі демо-акаунтів. */
+const ROLE_ICON: Record<Role, ReactNode> = {
+  Buyer: <ShoppingBasketOutlinedIcon />,
+  Farmer: <AgricultureOutlinedIcon />,
+  Courier: <LocalShippingOutlinedIcon />,
+  Admin: <AdminPanelSettingsOutlinedIcon />,
+};
 
 /** Демонстраційний акаунт сервера: телефон, роль, заради якої його показують, і підпис двома мовами. */
 export interface DemoAccount {
@@ -50,7 +64,7 @@ export function DemoAccountButtons() {
   const { t } = useTranslation();
   const { pick } = useLang();
   const accounts = useDemoAccounts();
-  const enter = useDemoSignIn();
+  const signInAs = useDemoSignIn();
 
   if (!accounts.data?.length) {
     return null;
@@ -65,22 +79,32 @@ export function DemoAccountButtons() {
         {t('demo.hint')}
       </Typography>
       <Stack spacing={1}>
-        {accounts.data.map((account) => (
+        {accounts.data.map((account, index) => (
+          // Кожна роль - своїм кольором, як і шапка після входу в цю роль.
           <Button
             key={account.phone}
             variant="outlined"
-            loading={enter.isPending && enter.variables?.phone === account.phone}
-            disabled={enter.isPending}
-            onClick={() => enter.mutate(account)}
-            sx={{ justifyContent: 'flex-start', textAlign: 'left' }}
+            startIcon={ROLE_ICON[account.role]}
+            loading={signInAs.isPending && signInAs.variables?.phone === account.phone}
+            disabled={signInAs.isPending}
+            onClick={() => signInAs.mutate(account)}
+            sx={{
+              justifyContent: 'flex-start',
+              textAlign: 'left',
+              color: BRANDS[account.role].main,
+              borderColor: alpha(BRANDS[account.role].main, 0.4),
+              borderLeft: `4px solid ${BRANDS[account.role].main}`,
+              '&:hover': { borderColor: BRANDS[account.role].main, bgcolor: alpha(BRANDS[account.role].main, 0.06), transform: 'translateX(3px)' },
+              ...enter(index, 70),
+            }}
           >
             {t(`roles.${account.role}`)} · {pick(account.title)}
           </Button>
         ))}
       </Stack>
-      {enter.isError && (
+      {signInAs.isError && (
         <Alert severity="error" sx={{ mt: 1.5 }}>
-          {errorMessage(enter.error)}
+          {errorMessage(signInAs.error)}
         </Alert>
       )}
     </Box>
@@ -93,7 +117,7 @@ export function DemoAccountSwitcher() {
   const { pick } = useLang();
   const { user } = useAuth();
   const accounts = useDemoAccounts();
-  const enter = useDemoSignIn();
+  const signInAs = useDemoSignIn();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 
   if (!accounts.data?.length) {
@@ -114,9 +138,10 @@ export function DemoAccountSwitcher() {
             selected={user?.phone === account.phone}
             onClick={() => {
               setAnchor(null);
-              enter.mutate(account);
+              signInAs.mutate(account);
             }}
           >
+            <ListItemIcon sx={{ color: BRANDS[account.role].main }}>{ROLE_ICON[account.role]}</ListItemIcon>
             <ListItemText primary={t(`roles.${account.role}`)} secondary={pick(account.title)} />
           </MenuItem>
         ))}

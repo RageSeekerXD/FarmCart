@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import type { Order, OrderStatus } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatSlot } from '../../shared/dates';
+import { enter, pulseDot } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { StatusChip } from '../orders/OrdersPage';
@@ -219,7 +220,7 @@ export function FarmerOrdersPage() {
       {all.length > 0 && shown.length === 0 && <Typography color="text.secondary">{t('farmOrders.noneInFilter')}</Typography>}
 
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {shown.map((order) => {
+        {shown.map((order, index) => {
           const label = t('orders.number', { id: order.id });
           const isNew = order.status === 'Placed';
           const next = NEXT_STEP.includes(order.status) ? t(`farmOrders.next.${order.status}`) : null;
@@ -229,11 +230,19 @@ export function FarmerOrdersPage() {
               key={order.id}
               aria-label={label}
               elevation={1}
-              sx={{ p: { xs: 2, sm: 2.5 }, borderLeft: 4, borderColor: isNew ? 'secondary.main' : 'transparent' }}
+              sx={{ p: { xs: 2, sm: 2.5 }, borderLeft: 4, borderColor: isNew ? 'secondary.main' : 'transparent', transition: 'box-shadow 200ms ease', '&:hover': { boxShadow: 4 }, ...enter(index) }}
             >
               <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                <Typography component="h2" variant="h6" sx={{ mr: 'auto' }}>
+                <Typography component="h2" variant="h6" sx={{ mr: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
                   {label}
+                  {/* Нове замовлення чекає рішення: поруч із номером пульсує бурштинова крапка. */}
+                  {isNew && (
+                    <Box
+                      component="span"
+                      aria-hidden
+                      sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: 'secondary.main', animation: `${pulseDot} 1.8s ease-out infinite` }}
+                    />
+                  )}
                 </Typography>
                 <StatusChip status={order.status} />
               </Box>

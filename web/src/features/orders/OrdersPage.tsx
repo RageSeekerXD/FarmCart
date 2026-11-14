@@ -6,6 +6,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import type { OrderStatus } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatSlot } from '../../shared/dates';
+import { EASE_OUT, enter, growX } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { ORDER_PATH, useOrders } from './orders';
 
@@ -72,7 +73,7 @@ export function OrdersPage() {
       )}
 
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-        {orders.data?.map((order) => {
+        {orders.data?.map((order, index) => {
           // Відхилене замовлення далі не йде: смуга повна й червона, щоб не виглядала «застряглою».
           const step = order.status === 'Rejected' ? ORDER_PATH.length : ORDER_PATH.indexOf(order.status) + 1;
           return (
@@ -80,7 +81,7 @@ export function OrdersPage() {
               component="li"
               key={order.id}
               elevation={1}
-              sx={{ p: { xs: 2, sm: 2.5 }, transition: 'box-shadow 160ms ease', '&:hover': { boxShadow: 4 } }}
+              sx={{ p: { xs: 2, sm: 2.5 }, transition: 'box-shadow 200ms ease, transform 200ms ease', '&:hover': { boxShadow: 4, transform: 'translateY(-2px)' }, ...enter(index) }}
               aria-label={t('orders.number', { id: order.id })}
             >
               <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -100,7 +101,7 @@ export function OrdersPage() {
                 value={(step / ORDER_PATH.length) * 100}
                 color={PROGRESS_COLOR[order.status]}
                 aria-label={t('orders.progress', { step, total: ORDER_PATH.length })}
-                sx={{ my: 1.5, height: 6 }}
+                sx={{ my: 1.5, height: 6, '& .MuiLinearProgress-bar': { animation: `${growX} 900ms ${EASE_OUT} ${200 + Math.min(index, 10) * 45}ms backwards` } }}
               />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography sx={{ fontWeight: 700, fontSize: '1.05rem' }}>{formatMoney(order.total, lang)}</Typography>

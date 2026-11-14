@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import type { CartLine } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
+import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { cartCount, useCart, useChangeQuantity, useRemoveFromCart } from './useCart';
@@ -97,10 +98,10 @@ export function CartPage() {
               {t('cart.oneFarm')}
             </Alert>
             <Stack component="ul" divider={<Divider component="li" aria-hidden />} sx={{ listStyle: 'none', p: 0, m: 0 }}>
-              {lines.map((line) => {
+              {lines.map((line, index) => {
                 const name = pick(line.name);
                 return (
-                  <Box component="li" key={line.productId} sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, py: 1.5, flexWrap: 'wrap' }}>
+                  <Box component="li" key={line.productId} sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, py: 1.5, flexWrap: 'wrap', ...enter(index) }}>
                     <Box sx={{ flex: '1 1 180px', minWidth: 0 }}>
                       <Typography sx={{ fontWeight: 600 }}>{name}</Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -134,7 +135,7 @@ export function CartPage() {
             </Stack>
           </Paper>
 
-          <Paper elevation={1} component="aside" sx={{ p: { xs: 2, sm: 2.5 }, position: { md: 'sticky' }, top: { md: 128 } }}>
+          <Paper elevation={1} component="aside" sx={{ p: { xs: 2, sm: 2.5 }, position: { md: 'sticky' }, top: { md: 128 }, ...enter(2, 80) }}>
             <Typography color="text.secondary" sx={{ mb: 1 }}>
               {t('cart.items', { count: cartCount(cart.data) })}
             </Typography>
