@@ -20,5 +20,10 @@ export function categoryLook(category: string): CategoryLook {
   return LOOKS[category] ?? DEFAULT_LOOK;
 }
 
+/** Тло картинки товару: у темній темі пастельний колір категорії притемнено, щоб не сліпив на темному тлі. */
+export function artBackground(tint: string, mode: 'light' | 'dark'): string {
+  return mode === 'dark' ? `linear-gradient(rgba(0, 0, 0, 0.38), rgba(0, 0, 0, 0.38)), ${tint}` : tint;
+}
+
 /** Залишок, з якого товар вважається «майже розпроданим». */
 export const LOW_STOCK = 10;

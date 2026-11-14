@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FarmCart.Api;
 
-/// <summary>Застосунок покупця: каталог і слоти (US-04), кошик і оформлення (US-05, US-06), відгуки (US-10).</summary>
+/// <summary>Застосунок покупця: каталог і слоти (US-04), кошик, оформлення й скасування (US-05, US-06), відгуки (US-10).</summary>
 internal static class BuyerEndpoints
 {
     public static void MapBuyerEndpoints(this RouteGroupBuilder api)
@@ -26,6 +26,11 @@ internal static class BuyerEndpoints
         });
         api.MapGet("/orders", (Caller caller, OrderService orders) => orders.MyOrders(caller.User).Select(OrderDto.ForBuyer));
         api.MapGet("/orders/{id:int}", (int id, Caller caller, OrderService orders) => OrderDto.ForBuyer(orders.MyOrder(caller.User, id)));
+        api.MapPost("/orders/{id:int}/reorder", (int id, Caller caller, CartService carts) => carts.Reorder(caller.User, id));
+        api.MapPost("/orders/{id:int}/reschedule", (int id, Caller caller, RescheduleRequest body, DeliveryService deliveries) =>
+            OrderDto.ForBuyer(deliveries.Reschedule(caller.User, id, body.SlotId)));
+        api.MapPost("/orders/{id:int}/cancel", (int id, Caller caller, FulfillmentService fulfillment) =>
+            OrderDto.ForBuyer(fulfillment.Cancel(caller.User, id)));
 
         api.MapPost("/orders/{id:int}/review", (int id, Caller caller, ReviewRequest body, ReviewService reviews) =>
         {

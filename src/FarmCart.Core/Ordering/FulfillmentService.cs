@@ -1,7 +1,10 @@
 namespace FarmCart.Core;
 
-/// <summary>US-07 (B-FR-09): фермер приймає, частково виконує або відхиляє замовлення; кошти повертаються автоматично.</summary>
-public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway payments, OrderWorkflow workflow)
+/// <summary>
+/// US-07 (B-FR-09): фермер приймає, частково виконує або відхиляє замовлення; покупець може скасувати замовлення,
+/// поки фермер його не прийняв. Кошти повертаються автоматично.
+/// </summary>
+public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway payments, OrderWorkflow workflow, INotifier notifier)
 {
     public IReadOnlyList<Order> Incoming(User farmerUser)
     {
@@ -35,17 +38,35 @@ public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway paym
         {
             var order = FarmerOrder(farmerUser, orderId);
             OrderWorkflow.EnsureCanMove(order, OrderStatus.Rejected);
+            var note = RefundNote(ReturnAll(order));
+            order.RejectionReason = reason.Trim();
+            workflow.Move(order, OrderStatus.Rejected, $" ({order.RejectionReason}).{note}");
+            return order;
+        }
+    }
 
-            // Спершу зовнішній виклик провайдера: якщо повернення не вдалося, залишки й замовлення не змінюються (DEF-04).
-            var refund = Refund(order, order.Unrefunded);
-            foreach (var line in order.Lines)
+    /// <summary>
+    /// Покупець скасовує власне замовлення, поки фермер його не прийняв: кошти повертаються, товар - на склад,
+    /// місце в слоті доставки звільняється, фермер отримує сповіщення. Повторне скасування нічого не змінює.
+    /// </summary>
+    public Order Cancel(User buyer, int orderId)
+    {
+        lock (store.Sync)
+        {
+            var order = store.BuyerOrder(buyer, orderId);
+            if (order.Status == OrderStatus.Cancelled)
             {
-                store.Products[line.ProductId].Stock += line.Quantity;
+                return order;
             }
 
-            order.RejectionReason = reason.Trim();
-            var note = refund > 0 ? $" Кошти {Money.Format(refund)} повернено на картку." : "";
-            workflow.Move(order, OrderStatus.Rejected, $" ({order.RejectionReason}).{note}");
+            if (!OrderWorkflow.CanMove(order.Status, OrderStatus.Cancelled))
+            {
+                throw Fail.Conflict("cancel_unavailable", $"Замовлення №{order.Id} має статус «{order.Status.Title()}»: скасувати його вже не можна");
+            }
+
+            var note = RefundNote(ReturnAll(order));
+            workflow.Move(order, OrderStatus.Cancelled, note.Length > 0 ? $".{note}" : "");
+            notifier.Push(store.Farmers[order.FarmerId].UserId, NotificationKind.OrderCancelled, $"Покупець скасував замовлення №{order.Id}", order.Id);
             return order;
         }
     }
@@ -100,6 +121,23 @@ public sealed class FulfillmentService(InMemoryStore store, IPaymentGateway paym
         order.ApplyShortages(shortages);
         return refund;
     }
+
+    /// <summary>
+    /// Замовлення не виконуватиметься (відхилення чи скасування): повертає покупцю все сплачене й товар на склад.
+    /// Спершу зовнішній виклик провайдера: якщо повернення не вдалося, залишки й замовлення не змінюються (DEF-04).
+    /// </summary>
+    private decimal ReturnAll(Order order)
+    {
+        var refund = Refund(order, order.Unrefunded);
+        foreach (var line in order.Lines)
+        {
+            store.Products[line.ProductId].Stock += line.Quantity;
+        }
+
+        return refund;
+    }
+
+    private static string RefundNote(decimal refund) => refund > 0 ? $" Кошти {Money.Format(refund)} повернено на картку." : "";
 
     private decimal Refund(Order order, decimal amount)
     {

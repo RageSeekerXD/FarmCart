@@ -1,4 +1,5 @@
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Badge, Box, IconButton, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 import { useCallback, useState } from 'react';
@@ -8,6 +9,7 @@ import type { AppNotification, User } from '../../api/types';
 import { useLang } from '../../i18n';
 import { formatDateTime } from '../../shared/dates';
 import { bump, EASE_SPRING, ring } from '../../shared/motion';
+import { browserPermission, requestBrowserPermission, showBrowserNotification, type BrowserPermission } from './browserNotify';
 import { useToast } from '../../shared/Toast';
 import { useAuth } from '../auth/AuthContext';
 import { notificationTarget, notificationText, useNotifications } from './notifications';
@@ -33,23 +35,27 @@ export function NotificationBell({ user }: { user: User }) {
   );
 
   // Нова подія спливає тостом із заголовком і кнопкою «Відкрити» - до замовлення чи доставки, яких вона стосується.
-  // «Замовлення оформлено» - наслідок дії самого покупця: її вже підтвердив тост оформлення, другий був би повтором.
-  // Сповіщення все одно лягає в стрічку й лічильник дзвіночка.
+  // «Замовлення оформлено» й «скасовано» - наслідки дій самого покупця: їх уже підтвердив власний тост,
+  // другий був би повтором. Сповіщення все одно лягає в стрічку й лічильник дзвіночка.
   const announce = useCallback(
     (notification: AppNotification) => {
-      if (notification.kind === 'order.placed') {
+      if (notification.kind === 'order.placed' || (notification.kind === 'order.status' && notification.params.status === 'Cancelled')) {
         return;
       }
 
-      toast.show(notificationText(notification, t, lang), 'info', {
+      const text = notificationText(notification, t, lang);
+      toast.show(text, 'info', {
         title: t('notify.newTitle'),
         icon: <NotificationsActiveIcon />,
         action: { label: t('notify.open'), onClick: () => go(notification) },
       });
+      // Вкладка у фоні: тост ніхто не побачить, тож ще й системне сповіщення браузера (якщо його дозволено).
+      showBrowserNotification(t('notify.newTitle'), text, () => go(notification));
     },
     [toast, t, lang, go],
   );
   const { items, unread, seenId, live, markAllRead } = useNotifications(user, announce);
+  const [permission, setPermission] = useState<BrowserPermission>(browserPermission);
 
   const close = () => {
     setAnchor(null);
@@ -99,7 +105,18 @@ export function NotificationBell({ user }: { user: User }) {
               {t('notify.offline')}
             </Typography>
           )}
+          {(permission === 'granted' || permission === 'denied') && (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              {t(permission === 'granted' ? 'notify.browserOn' : 'notify.browserBlocked')}
+            </Typography>
+          )}
         </Box>
+        {permission === 'default' && (
+          <MenuItem onClick={() => void requestBrowserPermission().then(setPermission)} sx={{ color: 'primary.main' }}>
+            <NotificationsNoneOutlinedIcon fontSize="small" sx={{ mr: 1.5 }} />
+            {t('notify.browserEnable')}
+          </MenuItem>
+        )}
         {items.length === 0 && (
           <MenuItem disabled>
             <ListItemText primary={t('notify.empty')} />

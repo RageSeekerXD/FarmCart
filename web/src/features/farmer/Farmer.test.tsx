@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderApp } from '../../test/render';
 import { backend } from '../../test/server';
@@ -98,7 +98,7 @@ describe('UI-08 Товари фермера', () => {
     expect(await screen.findByText('Збережено: Мед липовий')).toBeInTheDocument();
     expect(await screen.findByRole('listitem', { name: 'Мед липовий' })).toBeInTheDocument();
     expect(backend.productRequests).toEqual([
-      { method: 'POST', id: null, body: { name: { uk: 'Мед липовий', en: 'Linden honey' }, category: 'honey', unit: 'l', price: 290.5, stock: 20, seasonMonths: [6, 7] } },
+      { method: 'POST', id: null, body: { name: { uk: 'Мед липовий', en: 'Linden honey' }, category: 'honey', unit: 'l', price: 290.5, stock: 20, seasonMonths: [6, 7], description: { uk: '', en: '' } } },
     ]);
   });
 
@@ -129,7 +129,7 @@ describe('UI-08 Товари фермера', () => {
 
     await waitFor(() =>
       expect(backend.productRequests).toEqual([
-        { method: 'PATCH', id: 4, body: { name: { uk: 'Полуниця', en: 'Strawberries' }, price: 95, stock: 40, seasonMonths: [5, 6] } },
+        { method: 'PATCH', id: 4, body: { name: { uk: 'Полуниця', en: 'Strawberries' }, price: 95, stock: 40, seasonMonths: [5, 6], description: { uk: '', en: '' } } },
       ]),
     );
     expect(await within(await screen.findByRole('listitem', { name: 'Полуниця' })).findByText('В наявності: 40')).toBeInTheDocument();
@@ -258,5 +258,67 @@ describe('UI-09 Вхідні замовлення фермера', () => {
     await renderApp('/farmer/orders', { signedIn: true });
 
     expect(await screen.findByRole('heading', { name: 'Розділ недоступний для вашої ролі' })).toBeInTheDocument();
+  });
+});
+
+describe('Опис товару', () => {
+  it('опис однією мовою не зберігається; обома - потрапляє в товар', async () => {
+    const { user } = await asFarmer('/farmer/products');
+    await user.click(await screen.findByRole('button', { name: 'Додати товар' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Новий товар' });
+    await user.type(within(dialog).getByLabelText(/Назва товару українською/), 'Мед липовий');
+    await user.type(within(dialog).getByLabelText(/Назва товару англійською/), 'Linden honey');
+    await user.click(within(dialog).getByRole('combobox', { name: /Категорія/ }));
+    await user.click(await screen.findByRole('option', { name: 'Мед' }));
+    await user.click(within(dialog).getByRole('combobox', { name: /Одиниця продажу/ }));
+    await user.click(await screen.findByRole('option', { name: 'л' }));
+    await user.type(within(dialog).getByLabelText(/Ціна за одиницю/), '290');
+    await user.type(within(dialog).getByLabelText(/Залишок/), '20');
+    await user.type(within(dialog).getByLabelText('Опис українською'), 'Світлий липовий мед');
+    await user.click(within(dialog).getByRole('button', { name: 'Зберегти' }));
+
+    expect(within(dialog).getByText('Опис потрібен обома мовами або жодною.')).toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText('Опис англійською'), 'Light linden honey');
+    await user.click(within(dialog).getByRole('button', { name: 'Зберегти' }));
+
+    expect(await screen.findByText('Збережено: Мед липовий')).toBeInTheDocument();
+    expect(backend.farmProducts.at(-1)!.description).toEqual({ uk: 'Світлий липовий мед', en: 'Light linden honey' });
+  });
+});
+
+describe('Відхилена заявка продавця', () => {
+  it('фермер бачить причину відхилення й подає заявку повторно', async () => {
+    backend.asFarmer(false);
+    backend.farm = { ...backend.farm!, rejectionReason: 'Немає документів' };
+    localStorage.setItem('farmcart.role', 'Farmer');
+    const { user } = await renderApp('/farmer/products', { signedIn: true });
+
+    expect(await screen.findByText('Адміністратор відхилив заявку. Причина: Немає документів')).toBeInTheDocument();
+    expect(screen.getByText('Заявку відхилено')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Подати повторно' }));
+
+    expect(await screen.findByText('Заявку подано повторно - чекайте на перевірку')).toBeInTheDocument();
+    expect(await screen.findByText('Очікує верифікації')).toBeInTheDocument();
+  });
+});
+
+describe('Фото товару', () => {
+  it('фото додають файлом; завелике не надсилається; фото можна прибрати', async () => {
+    const { user } = await asFarmer('/farmer/products');
+    const row = await screen.findByRole('listitem', { name: 'Морква' });
+    const input = row.querySelector<HTMLInputElement>('input[type="file"]')!;
+
+    const tooLarge = new File([new Uint8Array(2 * 1024 * 1024 + 1)], 'big.jpg', { type: 'image/jpeg' });
+    fireEvent.change(input, { target: { files: [tooLarge] } });
+    expect(await screen.findByText('Фото завелике: не більше 2 МБ.')).toBeInTheDocument();
+    expect(backend.photoUploads).toHaveLength(0);
+
+    fireEvent.change(input, { target: { files: [new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47])], 'carrots.png', { type: 'image/png' })] } });
+
+    expect(await screen.findByText('Фото збережено: Морква')).toBeInTheDocument();
+    expect(backend.photoUploads).toEqual([{ id: 1, type: 'image/png', bytes: 4 }]);
+    await user.click(await within(row).findByRole('button', { name: 'Прибрати фото: Морква' }));
+    expect(await screen.findByText('Фото прибрано: Морква')).toBeInTheDocument();
+    await waitFor(() => expect(within(screen.getByRole('listitem', { name: 'Морква' })).queryByRole('button', { name: 'Прибрати фото: Морква' })).not.toBeInTheDocument());
   });
 });

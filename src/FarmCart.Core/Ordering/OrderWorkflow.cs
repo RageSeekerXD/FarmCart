@@ -8,10 +8,13 @@ public sealed class OrderWorkflow(INotifier notifier, IClock clock)
 {
     private static readonly Dictionary<OrderStatus, OrderStatus[]> Transitions = new()
     {
-        [OrderStatus.Placed] = [OrderStatus.Accepted, OrderStatus.Rejected],
+        // Скасувати може лише покупець і лише до прийняття: далі фермер уже збирає замовлення.
+        [OrderStatus.Placed] = [OrderStatus.Accepted, OrderStatus.Rejected, OrderStatus.Cancelled],
         [OrderStatus.Accepted] = [OrderStatus.Assembling],
         [OrderStatus.Assembling] = [OrderStatus.InTransit],
-        [OrderStatus.InTransit] = [OrderStatus.Delivered],
+        // Невдала доставка повертається «в дорогу», щойно покупець обере новий час.
+        [OrderStatus.InTransit] = [OrderStatus.Delivered, OrderStatus.DeliveryFailed],
+        [OrderStatus.DeliveryFailed] = [OrderStatus.InTransit],
     };
 
     public static bool CanMove(OrderStatus from, OrderStatus to) =>

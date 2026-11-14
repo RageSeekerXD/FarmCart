@@ -76,3 +76,29 @@ public sealed class CourierDeliveryTests
         Assert.Equal(("PaidOnDelivery", 96m), (order.Str("paymentStatus"), order.Dec("paidAmount")));
     }
 }
+
+/// <summary>Невдала доставка через API: кур'єр фіксує причину, покупець переносить доставку.</summary>
+public sealed class FailedDeliveryTests
+{
+    [Fact(DisplayName = "DLV-1 Кур'єр фіксує, що покупця не було вдома; покупець обирає новий слот, і доставка повертається кур'єру")]
+    public async Task FailedDeliveryIsRescheduledByBuyer()
+    {
+        using var app = new FarmCartApp();
+        var (farmer, apples, slot) = await Journeys.FarmWithApplesAsync(app);
+        var (courier, courierId) = await Journeys.CourierAsync(app);
+        var buyer = await app.LoginAsync("+380971111111");
+        var orderId = await Journeys.OrderAsync(buyer, apples, 2, slot);
+        await Journeys.SendAsync(farmer, orderId, courierId);
+        var later = await app.SlotAsync(hoursFromNow: 48);
+
+        var failed = await courier.PostJson($"/api/courier/deliveries/{orderId}/fail", new { problem = "BuyerAbsent" });
+        var seen = await buyer.GetJson($"/api/orders/{orderId}");
+        var tasksAfterFailure = await courier.GetJson("/api/courier/deliveries");
+        var rescheduled = await buyer.PostJson($"/api/orders/{orderId}/reschedule", new { slotId = later });
+
+        Assert.Equal(("DeliveryFailed", "BuyerAbsent"), (failed.Str("status"), seen.Str("deliveryProblem")));
+        Assert.Empty(tasksAfterFailure.EnumerateArray());
+        Assert.Equal("InTransit", rescheduled.Str("status"));
+        Assert.Equal(orderId, (await courier.GetJson("/api/courier/deliveries"))[0].GetProperty("orderId").GetInt32());
+    }
+}

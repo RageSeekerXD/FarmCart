@@ -142,3 +142,86 @@ describe('UI-11 Журнал аудиту', () => {
     expect(await screen.findByText('Журнал порожній.')).toBeInTheDocument();
   });
 });
+
+describe('Модерація відгуків', () => {
+  it('адміністратор бачить усі відгуки, приховує з причиною й повертає', async () => {
+    backend.addFarmReview(5, 'Чудова ферма');
+    const spam = backend.addFarmReview(1, 'Купуйте в іншому магазині!', 'Тролль');
+    const { user } = await asAdmin();
+    await user.click(await screen.findByRole('tab', { name: 'Відгуки' }));
+
+    const card = await screen.findByRole('listitem', { name: `Відгук #${spam.id}` });
+    await user.click(within(card).getByRole('button', { name: `Приховати відгук #${spam.id}` }));
+    const dialog = await screen.findByRole('dialog', { name: 'Приховати відгук?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Приховати' }));
+    expect(within(dialog).getByText('Вкажіть причину.')).toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText(/Причина/), 'Реклама конкурента');
+    await user.click(within(dialog).getByRole('button', { name: 'Приховати' }));
+
+    expect(await screen.findByText('Відгук приховано')).toBeInTheDocument();
+    await waitFor(() => expect(within(screen.getByRole('listitem', { name: `Відгук #${spam.id}` })).getByText('Причина: Реклама конкурента')).toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: `Показати знову відгук #${spam.id}` }));
+    expect(await screen.findByText('Відгук знову видимий')).toBeInTheDocument();
+    await waitFor(() => expect(within(screen.getByRole('listitem', { name: `Відгук #${spam.id}` })).queryByText('Приховано')).not.toBeInTheDocument());
+  });
+});
+
+describe('Дії адміністратора: відхилення, слоти, промокоди', () => {
+  it('заявку продавця відхиляють лише з причиною; вона зникає з черги', async () => {
+    backend.pendingFarmers = [{ ...farmProfile, id: 10, name: { uk: 'Еко-ферма «Сокільники»', en: 'Sokilnyky Eco Farm' }, verified: false }];
+    const { user } = await asAdmin();
+
+    await user.click(await screen.findByRole('button', { name: 'Відхилити заявку: Еко-ферма «Сокільники»' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Відхилити' }));
+    expect(within(dialog).getByText('Вкажіть причину.')).toBeInTheDocument();
+    await user.type(within(dialog).getByLabelText(/Причина/), 'Немає документів');
+    await user.click(within(dialog).getByRole('button', { name: 'Відхилити' }));
+
+    expect(await screen.findByText('Заявку відхилено: Еко-ферма «Сокільники»')).toBeInTheDocument();
+    expect(await screen.findByText('Заявок на верифікацію немає.')).toBeInTheDocument();
+  });
+
+  it('порожній слот змінюють і видаляють; у слоті із замовленнями час заблоковано, а кнопки видалення немає', async () => {
+    const { user } = await asAdmin();
+    await user.click(await screen.findByRole('tab', { name: 'Слоти доставки' }));
+    const list = await screen.findByRole('list', { name: 'Майбутні слоти' });
+    const [free, full] = within(list).getAllByRole('listitem');
+
+    expect(within(full!).queryByRole('button', { name: /Видалити слот/ })).not.toBeInTheDocument();
+    await user.click(within(full!).getByRole('button', { name: /Змінити слот/ }));
+    const locked = await screen.findByRole('dialog', { name: 'Зміна слоту доставки' });
+    expect(within(locked).getByLabelText('Дата')).toBeDisabled();
+    await user.clear(within(locked).getByLabelText('Місць'));
+    await user.type(within(locked).getByLabelText('Місць'), '1');
+    await user.click(within(locked).getByRole('button', { name: 'Зберегти' }));
+    expect(await within(locked).findByText('Ємність не може бути меншою за кількість уже заброньованих місць.')).toBeInTheDocument();
+    await user.click(within(locked).getByRole('button', { name: 'Скасувати' }));
+
+    await user.click(within(free!).getByRole('button', { name: /Змінити слот/ }));
+    const editing = await screen.findByRole('dialog', { name: 'Зміна слоту доставки' });
+    await user.clear(within(editing).getByLabelText('Місць'));
+    await user.type(within(editing).getByLabelText('Місць'), '5');
+    await user.click(within(editing).getByRole('button', { name: 'Зберегти' }));
+    expect(await screen.findByText('Слот доставки змінено')).toBeInTheDocument();
+    expect(backend.slotList[0]!.capacity).toBe(5);
+
+    await user.click(within(screen.getAllByRole('listitem')[0]!).getByRole('button', { name: /Видалити слот/ }));
+    await user.click(within(await screen.findByRole('dialog', { name: 'Видалити слот доставки?' })).getByRole('button', { name: 'Видалити слот' }));
+    expect(await screen.findByText('Слот доставки видалено')).toBeInTheDocument();
+    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Майбутні слоти' })).getAllByRole('listitem')).toHaveLength(1));
+  });
+
+  it('промокод вимикають і вмикають', async () => {
+    const { user } = await asAdmin();
+    await user.click(await screen.findByRole('tab', { name: 'Промокоди' }));
+
+    await user.click(await screen.findByRole('button', { name: 'Вимкнути промокод FARM10' }));
+
+    expect(await screen.findByText('Промокод FARM10 вимкнено')).toBeInTheDocument();
+    expect(await within(screen.getByRole('list', { name: 'Промокоди' })).findByText('Вимкнено')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Увімкнути промокод FARM10' }));
+    expect(await screen.findByText('Промокод FARM10 знову діє')).toBeInTheDocument();
+  });
+});

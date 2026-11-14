@@ -138,13 +138,15 @@ describe('UI-02 Каталог з фільтрами', () => {
     expect(await screen.findByRole('heading', { name: 'Кошик' })).toBeInTheDocument();
   });
 
-  it('товар іншого фермера не додається, причина - мовою інтерфейсу', async () => {
+  // Раніше товар іншого фермера не додавався (cart_other_farmer); тепер кошик спільний для всіх ферм (п. 8 покращень).
+  it('товар іншої ферми додається в той самий кошик', async () => {
     backend.putInCart(1, 1);
     const { user } = await renderApp('/', { signedIn: true, lang: 'en' });
 
     await user.click(await screen.findByRole('button', { name: "Add to cart: Cow's milk" }));
 
-    expect(await screen.findByText(/already has products from another farmer/)).toBeInTheDocument();
+    expect(await screen.findByText("Added to cart: Cow's milk")).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Items in cart: 2' })).toBeInTheDocument();
   });
 
   it('без доступу до геолокації відстань рахується від центру Львова', async () => {
@@ -170,5 +172,45 @@ describe('UI-02 Каталог з фільтрами', () => {
     expect(await screen.findByText('Відстань рахується від вашого місця')).toBeInTheDocument();
     await waitFor(() => expect(lastRequest().get('lat')).toBe('49.8'));
     Reflect.deleteProperty(navigator, 'geolocation');
+  });
+});
+
+describe('Картка товару', () => {
+  it('назва відкриває картку з описом, сезоном і відгуками ферми; кількість додається в кошик', async () => {
+    backend.addFarmReview(5, 'Морква солодка, як цукерка', 'Оксана Д.');
+    const { user } = await renderApp('/', { signedIn: true });
+
+    await user.click(await screen.findByRole('button', { name: 'Докладніше: Морква' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Морква' });
+    expect(dialog).toHaveTextContent('Солодка морква без гербіцидів');
+    expect(dialog).toHaveTextContent(/Сезон: лип/);
+    expect(await within(dialog).findByText('Морква солодка, як цукерка')).toBeInTheDocument();
+    expect(within(dialog).getByText('Оксана Д.')).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Більше' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Більше' }));
+    await user.click(within(dialog).getByRole('button', { name: /У кошик: 3 · 48,00/ }));
+
+    expect(await screen.findByText('Додано в кошик: Морква')).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(await screen.findByRole('link', { name: 'Товарів у кошику: 3' })).toBeInTheDocument();
+  });
+
+  it('кнопка ферми в картці показує в каталозі лише її товари', async () => {
+    const { user } = await renderApp('/');
+
+    await user.click(await screen.findByRole('button', { name: "Докладніше: Молоко коров'яче" }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Усі товари ферми: Сироварня «Карпатська бринза»' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(await screen.findByText('Товари ферми: Сироварня «Карпатська бринза»')).toBeInTheDocument();
+  });
+
+  it('без відгуків картка так і каже', async () => {
+    const { user } = await renderApp('/');
+
+    await user.click(await screen.findByRole('button', { name: 'Докладніше: Картопля' }));
+
+    expect(await within(await screen.findByRole('dialog')).findByText('Відгуків ще немає.')).toBeInTheDocument();
   });
 });

@@ -1,5 +1,6 @@
-import { alpha, createTheme, type Shadows, type Theme } from '@mui/material';
+import { alpha, createTheme, lighten, type Shadows, type Theme } from '@mui/material';
 import type { Role } from './api/types';
+import type { ColorMode } from './shared/colorMode';
 import { EASE_OUT, EASE_SPRING, fadeUp, growWidth, popIn } from './shared/motion';
 
 /** Візуальний стиль ролі: основний колір, градієнт шапки, тло сторінки й емодзі-знак. */
@@ -7,10 +8,12 @@ export interface Brand {
   main: string;
   dark: string;
   light: string;
-  /** Градієнт шапки. */
+  /** Градієнт шапки (однаковий у світлій і темній темі: білий текст на ньому контрастний). */
   gradient: string;
-  /** Тло сторінки під вмістом. */
+  /** Тло сторінки під вмістом у світлій темі. */
   background: string;
+  /** Темна тема: світліший основний колір (текст і кнопки на темному тлі), тло сторінки й поверхонь. */
+  night: { main: string; background: string; paper: string };
   emoji: string;
 }
 
@@ -27,7 +30,8 @@ export type BrandKey = Role | 'Guest';
 
 /**
  * Покупець і гість - зелений «фермерський ринок»; фермер - теплий «урожай»; кур'єр - синій «дорога»;
- * адміністратор - індиго. Білий текст на основному кольорі кожної ролі має контраст не нижче WCAG AA (4,5:1).
+ * адміністратор - індиго. Білий текст на основному кольорі кожної ролі має контраст не нижче WCAG AA (4,5:1);
+ * у темній темі основний колір світлий, а текст на ньому - темний.
  */
 const MARKET: Brand = {
   main: '#2e7d32',
@@ -35,6 +39,7 @@ const MARKET: Brand = {
   light: '#4c9a50',
   gradient: 'linear-gradient(120deg, #1b5e20 0%, #2e7d32 55%, #43a047 100%)',
   background: '#f5f6f0',
+  night: { main: '#81c784', background: '#0f1511', paper: '#18201a' },
   emoji: '🧺',
 };
 
@@ -47,6 +52,7 @@ export const BRANDS: Record<BrandKey, Brand> = {
     light: '#c67a3c',
     gradient: 'linear-gradient(120deg, #6d3a17 0%, #a0522d 55%, #c67a3c 100%)',
     background: '#f8f4ee',
+    night: { main: '#e0a36b', background: '#15110d', paper: '#201a14' },
     emoji: '🌾',
   },
   Courier: {
@@ -55,6 +61,7 @@ export const BRANDS: Record<BrandKey, Brand> = {
     light: '#1e88e5',
     gradient: 'linear-gradient(120deg, #0d47a1 0%, #1565c0 55%, #1e88e5 100%)',
     background: '#f2f5f9',
+    night: { main: '#64b5f6', background: '#0d1219', paper: '#151c26' },
     emoji: '🚚',
   },
   Admin: {
@@ -63,36 +70,44 @@ export const BRANDS: Record<BrandKey, Brand> = {
     light: '#5e35b1',
     gradient: 'linear-gradient(120deg, #311b92 0%, #4527a0 55%, #5e35b1 100%)',
     background: '#f4f3f8',
+    night: { main: '#b39ddb', background: '#110f18', paper: '#1b1824' },
     emoji: '🛡️',
   },
 };
 
-const BORDER = '#e3e6dc';
-
 /**
- * Рівні 1, 2 і 4 - тонке «кільце» з м'якою тінню замість важких тіней MUI: картки читаються як пласкі
+ * Рівні 1, 2, 4 і 6 - тонке «кільце» з м'якою тінню замість важких тіней MUI: картки читаються як пласкі
  * поверхні з рамкою, а Alert і інші поверхні з elevation 0 лишаються без рамки. Решта рівнів (меню, діалоги) - типові.
  */
-const shadows = [...createTheme().shadows] as Shadows;
-shadows[1] = '0 0 0 1px rgba(25, 40, 30, 0.08), 0 1px 3px rgba(25, 40, 30, 0.06)';
-shadows[2] = '0 0 0 1px rgba(25, 40, 30, 0.08), 0 2px 6px rgba(25, 40, 30, 0.08)';
-shadows[4] = '0 0 0 1px rgba(25, 40, 30, 0.06), 0 10px 24px rgba(25, 40, 30, 0.14)';
-shadows[6] = '0 0 0 1px rgba(25, 40, 30, 0.06), 0 14px 32px rgba(25, 40, 30, 0.18)';
+function ringShadows(mode: ColorMode): Shadows {
+  const shadows = [...createTheme().shadows] as Shadows;
+  const ring = mode === 'dark' ? 'rgba(255, 255, 255, 0.09)' : 'rgba(25, 40, 30, 0.08)';
+  const shade = mode === 'dark' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(25, 40, 30, 0.08)';
+  shadows[1] = `0 0 0 1px ${ring}, 0 1px 3px ${shade}`;
+  shadows[2] = `0 0 0 1px ${ring}, 0 2px 6px ${shade}`;
+  shadows[4] = `0 0 0 1px ${ring}, 0 10px 24px ${mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : 'rgba(25, 40, 30, 0.14)'}`;
+  shadows[6] = `0 0 0 1px ${ring}, 0 14px 32px ${mode === 'dark' ? 'rgba(0, 0, 0, 0.65)' : 'rgba(25, 40, 30, 0.18)'}`;
+  return shadows;
+}
 
-/** Тема FarmCart для ролі. Контраст тексту не нижче WCAG AA; рух вимикається, якщо користувач просить менше руху. */
-export function createAppTheme(key: BrandKey): Theme {
+/** Тема FarmCart для ролі й режиму. Контраст тексту не нижче WCAG AA; рух вимикається, якщо користувач просить менше руху. */
+export function createAppTheme(key: BrandKey, mode: ColorMode = 'light'): Theme {
   const brand = BRANDS[key];
+  const dark = mode === 'dark';
+  const main = dark ? brand.night.main : brand.main;
+  const border = dark ? 'rgba(255, 255, 255, 0.12)' : '#e3e6dc';
   return createTheme({
     brand,
     palette: {
-      primary: { main: brand.main, dark: brand.dark, light: brand.light },
+      mode,
+      primary: dark ? { main } : { main, dark: brand.dark, light: brand.light },
       secondary: { main: '#ffb300' },
-      background: { default: brand.background, paper: '#ffffff' },
-      text: { primary: '#1d2a1e', secondary: '#55605a' },
-      divider: BORDER,
+      background: dark ? { default: brand.night.background, paper: brand.night.paper } : { default: brand.background, paper: '#ffffff' },
+      text: dark ? { primary: '#e6ebe4', secondary: '#a6b0a8' } : { primary: '#1d2a1e', secondary: '#55605a' },
+      divider: border,
     },
     shape: { borderRadius: 12 },
-    shadows,
+    shadows: ringShadows(mode),
     typography: {
       fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
       h4: { fontWeight: 700, letterSpacing: '-0.02em' },
@@ -104,7 +119,7 @@ export function createAppTheme(key: BrandKey): Theme {
     components: {
       MuiCssBaseline: {
         styleOverrides: {
-          '::selection': { background: alpha(brand.main, 0.2) },
+          '::selection': { background: alpha(main, 0.25) },
           // Заголовок кожної сторінки має короткий кольоровий акцент, що «виростає» при відкритті сторінки.
           '#main h1::after': {
             content: '""',
@@ -128,7 +143,7 @@ export function createAppTheme(key: BrandKey): Theme {
         },
       },
       MuiPaper: {
-        styleOverrides: { outlined: { borderColor: BORDER } },
+        styleOverrides: { outlined: { borderColor: border } },
       },
       MuiButton: {
         defaultProps: { disableElevation: true },
@@ -142,8 +157,10 @@ export function createAppTheme(key: BrandKey): Theme {
                 // Основна кнопка - градієнт кольору ролі й м'яке світіння при наведенні.
                 props: { variant: 'contained', color: 'primary' },
                 style: {
-                  backgroundImage: `linear-gradient(135deg, ${brand.light} 0%, ${brand.main} 55%, ${brand.dark} 140%)`,
-                  '&:hover': { boxShadow: `0 6px 16px ${alpha(brand.main, 0.35)}` },
+                  backgroundImage: dark
+                    ? `linear-gradient(135deg, ${lighten(main, 0.18)} 0%, ${main} 100%)`
+                    : `linear-gradient(135deg, ${brand.light} 0%, ${brand.main} 55%, ${brand.dark} 140%)`,
+                  '&:hover': { boxShadow: `0 6px 16px ${alpha(main, 0.35)}` },
                   '&.Mui-disabled': { backgroundImage: 'none' },
                 },
               },
@@ -163,10 +180,10 @@ export function createAppTheme(key: BrandKey): Theme {
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
-            backgroundColor: '#fff',
+            backgroundColor: dark ? 'rgba(255, 255, 255, 0.04)' : '#fff',
             borderRadius: 10,
             transition: 'box-shadow 200ms ease',
-            '&.Mui-focused': { boxShadow: `0 0 0 4px ${alpha(brand.main, 0.12)}` },
+            '&.Mui-focused': { boxShadow: `0 0 0 4px ${alpha(main, 0.16)}` },
           },
         },
       },
@@ -183,7 +200,7 @@ export function createAppTheme(key: BrandKey): Theme {
         styleOverrides: { tooltip: { fontSize: '0.8rem' } },
       },
       MuiLinearProgress: {
-        styleOverrides: { root: { borderRadius: 4, backgroundColor: alpha(brand.main, 0.12) } },
+        styleOverrides: { root: { borderRadius: 4, backgroundColor: alpha(main, 0.14) } },
       },
     },
   });

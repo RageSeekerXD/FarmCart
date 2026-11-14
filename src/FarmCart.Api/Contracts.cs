@@ -39,6 +39,10 @@ public sealed record HandOverRequest(int CourierId);
 
 public sealed record ConfirmRequest(string? Code);
 
+public sealed record DeliveryFailureRequest(DeliveryProblem Problem, string? Note);
+
+public sealed record RescheduleRequest(int SlotId);
+
 public sealed record ReviewRequest(int Rating, string? Comment);
 
 public sealed record ModerationRequest(string Reason);
@@ -78,7 +82,16 @@ public sealed record UserDto(int Id, string Phone, string Name, IEnumerable<Role
     public static UserDto From(User user) => new(user.Id, user.Phone, user.Name, user.Roles.Order());
 }
 
-public sealed record FarmerDto(int Id, LocalizedText Name, double Lat, double Lon, bool Certified, bool Verified, double? Rating, int ReviewCount)
+public sealed record FarmerDto(
+    int Id,
+    LocalizedText Name,
+    double Lat,
+    double Lon,
+    bool Certified,
+    bool Verified,
+    double? Rating,
+    int ReviewCount,
+    string? RejectionReason)
 {
     public static FarmerDto From(Farmer farmer) => new(
         farmer.Id,
@@ -88,7 +101,8 @@ public sealed record FarmerDto(int Id, LocalizedText Name, double Lat, double Lo
         farmer.Certified,
         farmer.Verified,
         farmer.Rating,
-        farmer.ReviewCount);
+        farmer.ReviewCount,
+        farmer.RejectionReason);
 }
 
 /// <summary>Товар у каталозі фермера: знімок доменної сутності, щоб зміни в класі Product не змінювали HTTP-контракт непомітно.</summary>
@@ -102,7 +116,8 @@ public sealed record ProductDto(
     decimal Price,
     int Stock,
     string? PhotoUrl,
-    IReadOnlyList<int> SeasonMonths)
+    IReadOnlyList<int> SeasonMonths,
+    LocalizedText? Description)
 {
     public static ProductDto From(Product product) => new(
         product.Id,
@@ -114,14 +129,41 @@ public sealed record ProductDto(
         product.Price,
         product.Stock,
         product.PhotoUrl,
-        [.. product.SeasonMonths]);
+        [.. product.SeasonMonths],
+        product.Description);
 }
 
 public sealed record CourierDto(int Id, string Name);
 
-public sealed record ReviewDto(int Id, int OrderId, int Rating, string? Comment, DateTimeOffset At)
+public sealed record ReviewDto(int Id, int OrderId, int Rating, string? Comment, string Author, DateTimeOffset At)
 {
-    public static ReviewDto From(Review review) => new(review.Id, review.OrderId, review.Rating, review.Comment, review.At);
+    public static ReviewDto From(Review review) => new(review.Id, review.OrderId, review.Rating, review.Comment, review.Author, review.At);
+}
+
+/// <summary>Відгук у кабінеті адміністратора: з назвою ферми й станом модерації.</summary>
+public sealed record AdminReviewDto(
+    int Id,
+    int OrderId,
+    int FarmerId,
+    LocalizedText FarmName,
+    int Rating,
+    string? Comment,
+    string Author,
+    DateTimeOffset At,
+    bool Hidden,
+    string? HiddenReason)
+{
+    public static AdminReviewDto From(ModerationItem item) => new(
+        item.Review.Id,
+        item.Review.OrderId,
+        item.Review.FarmerId,
+        item.FarmName,
+        item.Review.Rating,
+        item.Review.Comment,
+        item.Review.Author,
+        item.Review.At,
+        item.Review.Hidden,
+        item.Review.HiddenReason);
 }
 
 public sealed record OrderLineDto(int ProductId, LocalizedText Name, LocalizedText Unit, decimal UnitPrice, int Quantity, decimal Total);
@@ -149,7 +191,10 @@ public sealed record OrderDto(
     string? PromoCode,
     string? DeliveryCode,
     string? RejectionReason,
-    IReadOnlyList<StatusChangeDto> History)
+    IReadOnlyList<StatusChangeDto> History,
+    DeliveryProblem? DeliveryProblem,
+    string? DeliveryProblemNote,
+    IReadOnlyList<int> CheckoutOrderIds)
 {
     public static OrderDto ForBuyer(Order order) => From(order, order.DeliveryCode);
 
@@ -177,5 +222,8 @@ public sealed record OrderDto(
         order.PromoCode,
         deliveryCode,
         order.RejectionReason,
-        [.. order.History.Select(h => new StatusChangeDto(h.Status, h.Status.Title(), h.At))]);
+        [.. order.History.Select(h => new StatusChangeDto(h.Status, h.Status.Title(), h.At))],
+        order.Problem,
+        order.ProblemNote,
+        order.CheckoutOrderIds.Count > 0 ? order.CheckoutOrderIds : [order.Id]);
 }

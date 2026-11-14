@@ -31,7 +31,7 @@ test.describe('ширина 360 px', () => {
     await expectFits(page, 'оформлення');
 
     await page.goto('/orders');
-    await expect(page.getByRole('listitem', { name: /Замовлення №/ })).toHaveCount(6);
+    await expect(page.getByRole('listitem', { name: /Замовлення №/ })).toHaveCount(8);
     await expectFits(page, 'мої замовлення');
 
     await page.getByRole('link', { name: /Відстежити замовлення/ }).first().click();

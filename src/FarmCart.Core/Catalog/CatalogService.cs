@@ -39,7 +39,10 @@ public sealed record CatalogItem(
     LocalizedText FarmerName,
     bool Certified,
     double? FarmerRating,
-    double? DistanceKm);
+    double? DistanceKm,
+    LocalizedText? Description,
+    IReadOnlyList<int> SeasonMonths,
+    int FarmerReviewCount);
 
 /// <summary>Верифікована ферма на мапі покупця (BE-1): відстань рахується від точки покупця, якщо її передано.</summary>
 public sealed record FarmOnMap(
@@ -142,7 +145,10 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
         farmer.Name,
         farmer.Certified,
         farmer.Rating,
-        Distance(from, farmer));
+        Distance(from, farmer),
+        product.Description,
+        [.. product.SeasonMonths.Order()],
+        farmer.ReviewCount);
 
     private static double? Distance(GeoPoint? from, Farmer farmer) =>
         from is { } point ? Math.Round(point.DistanceKmTo(farmer.Location), 1) : null;

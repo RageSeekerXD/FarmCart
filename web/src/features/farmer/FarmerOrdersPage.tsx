@@ -38,9 +38,9 @@ function inFilter(status: OrderStatus, filter: Filter): boolean {
     case 'new':
       return status === 'Placed';
     case 'active':
-      return status === 'Accepted' || status === 'Assembling';
+      return status === 'Accepted' || status === 'Assembling' || status === 'DeliveryFailed';
     case 'done':
-      return status === 'InTransit' || status === 'Delivered' || status === 'Rejected';
+      return status === 'InTransit' || status === 'Delivered' || status === 'Rejected' || status === 'Cancelled';
     default:
       return true;
   }

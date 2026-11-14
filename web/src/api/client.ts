@@ -35,7 +35,7 @@ export const session = {
 };
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   headers?: Record<string, string>;
   signal?: AbortSignal;
@@ -48,8 +48,10 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     headers.Authorization = `Bearer ${token}`;
   }
 
+  // Файл (фото товару) надсилається як є, зі своїм типом; решта тіл - JSON.
+  const file = options.body instanceof Blob ? options.body : null;
   if (options.body !== undefined) {
-    headers['Content-Type'] = 'application/json';
+    headers['Content-Type'] = file ? file.type || 'application/octet-stream' : 'application/json';
   }
 
   let response: Response;
@@ -57,7 +59,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
     response = await fetch(`${location.origin}/api${path}`, {
       method: options.method ?? 'GET',
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: file ?? (options.body === undefined ? undefined : JSON.stringify(options.body)),
       signal: options.signal,
     });
   } catch (error) {

@@ -1,5 +1,8 @@
 namespace FarmCart.Core;
 
+/// <summary>Фото товару: вміст, тип і версія (версія в адресі фото оновлює кеш браузера після заміни).</summary>
+public sealed record ProductPhoto(string ContentType, byte[] Data, int Version);
+
 public sealed class Product
 {
     public required int Id { get; init; }
@@ -22,7 +25,10 @@ public sealed class Product
 
     public int Stock { get; set; }
 
-    public string? PhotoUrl { get; init; }
+    public string? PhotoUrl { get; set; }
+
+    /// <summary>Опис товару двома мовами або null: необов'язковий, але якщо є - обома мовами (BE-9).</summary>
+    public LocalizedText? Description { get; set; }
 
     /// <summary>Місяці сезону (1-12); порожня множина - товар доступний цілий рік.</summary>
     public IReadOnlySet<int> SeasonMonths { get; set; } = new HashSet<int>();

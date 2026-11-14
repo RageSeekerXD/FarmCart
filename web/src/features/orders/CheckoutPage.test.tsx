@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
 import { CYRILLIC, renderApp } from '../../test/render';
@@ -131,5 +131,55 @@ describe('UI-05 Оформлення замовлення', () => {
     await user.click(await screen.findByRole('link', { name: 'Оформити замовлення' }));
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Оформлення замовлення' })).toBeInTheDocument());
+  });
+});
+
+describe('Оформлення кошика кількох ферм', () => {
+  it('підсумок показує ферми; після оформлення - список з усіма замовленнями', async () => {
+    backend.putInCart(1, 10);
+    backend.putInCart(3, 2);
+    const { user } = await renderApp('/checkout', { signedIn: true });
+    await screen.findByRole('heading', { name: 'Оформлення замовлення' });
+
+    const summary = screen.getByRole('complementary', { name: 'Ваше замовлення' });
+    expect(within(summary).getByText('Ферма «Зелений Гай»')).toBeInTheDocument();
+    expect(within(summary).getByText('Сироварня «Карпатська бринза»')).toBeInTheDocument();
+    expect(within(summary).getByText(/замовлень: 2/)).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(/Адреса доставки/), 'Львів, вул. Городоцька, 15');
+    await user.click(screen.getAllByRole('radio', { name: /вільних місць: 3/ })[0]!);
+    await user.click(screen.getByRole('button', { name: /Замовити на 236,00/ }));
+
+    expect(await screen.findByText('Оформлено замовлення №1001, №1002')).toBeInTheDocument();
+    expect(await screen.findByText(/Оформлено замовлень: 2/)).toBeInTheDocument();
+    expect(await screen.findByRole('listitem', { name: 'Замовлення №1002' })).toBeInTheDocument();
+    expect(screen.getByRole('listitem', { name: 'Замовлення №1001' })).toBeInTheDocument();
+  });
+});
+
+describe('Запам’ятовані адреси доставки', () => {
+  it('після оформлення адреса запам’ятовується й наступного разу підставлена; нещодавні - одним натисканням', async () => {
+    localStorage.setItem('farmcart.addresses.7', JSON.stringify(['Львів, вул. Зелена, 1']));
+    const { user } = await openCheckout();
+
+    expect(screen.getByLabelText(/Адреса доставки/)).toHaveValue('Львів, вул. Зелена, 1');
+    await user.clear(screen.getByLabelText(/Адреса доставки/));
+    await user.type(screen.getByLabelText(/Адреса доставки/), 'Львів, вул. Городоцька, 15');
+    expect(screen.getByRole('button', { name: 'Львів, вул. Зелена, 1', pressed: false })).toBeInTheDocument();
+    await user.click(screen.getAllByRole('radio', { name: /вільних місць: 3/ })[0]!);
+    await user.click(screen.getByRole('button', { name: /Замовити на/ }));
+
+    await screen.findByRole('heading', { name: 'Замовлення №1001' });
+    expect(JSON.parse(localStorage.getItem('farmcart.addresses.7')!)).toEqual(['Львів, вул. Городоцька, 15', 'Львів, вул. Зелена, 1']);
+  });
+
+  it('нещодавня адреса підставляється натисканням', async () => {
+    localStorage.setItem('farmcart.addresses.7', JSON.stringify(['Львів, вул. Зелена, 1', 'Винники, вул. Галицька, 3']));
+    const { user } = await openCheckout();
+
+    await user.click(screen.getByRole('button', { name: 'Винники, вул. Галицька, 3' }));
+
+    expect(screen.getByLabelText(/Адреса доставки/)).toHaveValue('Винники, вул. Галицька, 3');
+    expect(screen.getByRole('button', { name: 'Винники, вул. Галицька, 3', pressed: true })).toBeInTheDocument();
   });
 });

@@ -168,7 +168,7 @@ public sealed class FulfillmentServiceTests
     public void Reject_WhenRefundFails_ChangesNothingAndRetryRestoresStockOnce()
     {
         var order = _world.BuyMany(_buyer, [(_apples, 3), (_potatoes, 5)]);
-        var unavailable = new FulfillmentService(_world.Store, new UnavailableRefunds(_world.Payments), _world.Workflow);
+        var unavailable = new FulfillmentService(_world.Store, new UnavailableRefunds(_world.Payments), _world.Workflow, _world.Notifier);
 
         Assert.Throws<InvalidOperationException>(() => unavailable.Reject(_farm, order.Id, "Град пошкодив урожай"));
         var afterFailure = (order.Status, order.RefundedAmount, _apples.Stock, _potatoes.Stock);
@@ -182,7 +182,7 @@ public sealed class FulfillmentServiceTests
     public void Accept_WithShortage_WhenRefundFails_ChangesNothing()
     {
         var order = _world.BuyMany(_buyer, [(_apples, 3), (_potatoes, 5)]);
-        var unavailable = new FulfillmentService(_world.Store, new UnavailableRefunds(_world.Payments), _world.Workflow);
+        var unavailable = new FulfillmentService(_world.Store, new UnavailableRefunds(_world.Payments), _world.Workflow, _world.Notifier);
 
         Assert.Throws<InvalidOperationException>(() => unavailable.Accept(_farm, order.Id, [new Shortage(_potatoes.Id, 1)]));
 

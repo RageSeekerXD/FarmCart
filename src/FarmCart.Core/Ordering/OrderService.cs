@@ -8,7 +8,7 @@ public sealed record CheckoutRequest(
     string? PromoCode = null,
     string? Comment = null);
 
-public sealed record SlotView(int Id, DateTimeOffset Start, DateTimeOffset End, int Remaining);
+public sealed record SlotView(int Id, DateTimeOffset Start, DateTimeOffset End, int Remaining, int Capacity);
 
 /// <summary>
 /// US-05, US-06 (B-FR-03, B-FR-04, B-NFR-02): оформлення й оплата замовлення одним атомарним кроком.
@@ -26,35 +26,44 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
             return [.. store.Slots.Values
                 .Where(slot => slot.Start > clock.Now)
                 .OrderBy(slot => slot.Start)
-                .Select(slot => new SlotView(slot.Id, slot.Start, slot.End, slot.Capacity - Taken(slot)))];
+                .Select(slot => new SlotView(slot.Id, slot.Start, slot.End, slot.Capacity - Taken(slot), slot.Capacity))];
         }
     }
 
-    public Order PlaceOrder(User buyer, CheckoutRequest request, string? idempotencyKey = null)
+    /// <summary>Оформлення; повертає перше з замовлень (усі номери - у <see cref="Order.CheckoutOrderIds"/>).</summary>
+    public Order PlaceOrder(User buyer, CheckoutRequest request, string? idempotencyKey = null) =>
+        Checkout(buyer, request, idempotencyKey)[0];
+
+    /// <summary>
+    /// Оформлення кошика (п. 8 покращень): по замовленню на кожну ферму, з одним списанням коштів на всю суму.
+    /// Кожне замовлення має власну сплачену суму, тож відхилення, скасування й нестача повертають кошти окремо.
+    /// Промокод перевіряється за сумою всього кошика; у слоті доставки має бути місце для кожного замовлення.
+    /// </summary>
+    public IReadOnlyList<Order> Checkout(User buyer, CheckoutRequest request, string? idempotencyKey = null)
     {
         lock (store.Sync)
         {
             if (FindPlaced(buyer, idempotencyKey) is { } placed)
             {
-                return placed;
+                return [.. placed.CheckoutOrderIds.Select(id => store.Orders[id])];
             }
 
-            var cart = store.CartOf(buyer.Id);
-            var lines = SnapshotLines(cart);
+            var lines = SnapshotLines(store.CartOf(buyer.Id));
             var address = RequireAddress(request.Address);
-            var slot = FreeSlot(request.SlotId);
-            var promo = ResolvePromo(request.PromoCode, lines.Sum(line => line.Total));
+            var farms = lines.GroupBy(x => x.FarmerId).ToList();
+            var slot = FreeSlot(request.SlotId, places: farms.Count);
+            var promo = ResolvePromo(request.PromoCode, lines.Sum(x => x.Line.Total));
             var discountPercent = promo?.Percent ?? 0;
-            var total = Order.TotalFor(lines, discountPercent);
+            var totals = farms.Select(farm => Order.TotalFor(farm.Select(x => x.Line), discountPercent)).ToList();
 
-            // Кошти списуються до створення замовлення: відхилена оплата нічого не змінює й не займає номер (DEF-02).
-            var chargeId = ChargeUnlessCash(request, total, ChargeReference(buyer, idempotencyKey));
-            var order = new Order(chargeId, total)
+            // Кошти списуються до створення замовлень: відхилена оплата нічого не змінює й не займає номерів (DEF-02).
+            var chargeId = ChargeUnlessCash(request, totals.Sum(), ChargeReference(buyer, idempotencyKey));
+            var orders = farms.Select((farm, index) => new Order(chargeId, totals[index])
             {
                 Id = store.NextId<Order>(),
                 BuyerId = buyer.Id,
-                FarmerId = cart.FarmerId!.Value,
-                Lines = lines,
+                FarmerId = farm.Key,
+                Lines = [.. farm.Select(x => x.Line)],
                 Address = address,
                 Slot = slot,
                 Comment = request.Comment,
@@ -62,10 +71,22 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
                 DiscountPercent = discountPercent,
                 PaymentMethod = request.PaymentMethod,
                 DeliveryCode = SecretCode.Digits(DeliveryCodeDigits),
-            };
-            Register(order, idempotencyKey);
-            NotifyPlaced(order);
-            return order;
+            }).ToList();
+            IReadOnlyList<int> ids = [.. orders.Select(order => order.Id)];
+            foreach (var order in orders)
+            {
+                order.CheckoutOrderIds = ids;
+                Register(order);
+                NotifyPlaced(order);
+            }
+
+            if (idempotencyKey is not null)
+            {
+                store.OrderKeys[(buyer.Id, idempotencyKey)] = orders[0].Id;
+            }
+
+            store.Carts.Remove(buyer.Id);
+            return orders;
         }
     }
 
@@ -100,8 +121,8 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
             ? throw Fail.Validation("address_required", "Вкажіть адресу доставки")
             : address.Trim();
 
-    /// <summary>Резервує залишки, фіксує статус «оформлено», зберігає замовлення з ключем ідемпотентності й очищає кошик.</summary>
-    private void Register(Order order, string? idempotencyKey)
+    /// <summary>Резервує залишки, фіксує статус «оформлено» й зберігає замовлення.</summary>
+    private void Register(Order order)
     {
         foreach (var line in order.Lines)
         {
@@ -110,12 +131,6 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
 
         order.RecordStatus(OrderStatus.Placed, clock.Now);
         store.Orders.Add(order.Id, order);
-        if (idempotencyKey is not null)
-        {
-            store.OrderKeys[(order.BuyerId, idempotencyKey)] = order.Id;
-        }
-
-        store.Carts.Remove(order.BuyerId);
     }
 
     private void NotifyPlaced(Order order)
@@ -125,7 +140,7 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
         notifier.Push(store.Farmers[order.FarmerId].UserId, NotificationKind.OrderNew, $"Нове замовлення №{order.Id} на {Money.Format(order.Total)}", order.Id, total);
     }
 
-    private List<OrderLine> SnapshotLines(Cart cart)
+    private List<(int FarmerId, OrderLine Line)> SnapshotLines(Cart cart)
     {
         if (cart.Quantities.Count == 0)
         {
@@ -142,10 +157,10 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
             throw Fail.Conflict("out_of_stock", $"Недостатньо на складі: {string.Join(", ", missing)}");
         }
 
-        return [.. items.Select(x => new OrderLine(x.Product.Id, x.Product.Name, x.Product.Unit, x.Product.Price, x.Quantity))];
+        return [.. items.Select(x => (x.Product.FarmerId, new OrderLine(x.Product.Id, x.Product.Name, x.Product.Unit, x.Product.Price, x.Quantity)))];
     }
 
-    private DeliverySlot FreeSlot(int slotId)
+    private DeliverySlot FreeSlot(int slotId, int places)
     {
         var slot = store.Slots.GetValueOrDefault(slotId)
             ?? throw Fail.NotFound("slot_not_found", $"Слот доставки #{slotId} не знайдено");
@@ -154,13 +169,12 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
             throw Fail.Validation("slot_in_past", "Цей слот доставки вже недоступний");
         }
 
-        return Taken(slot) < slot.Capacity
+        return Taken(slot) + places <= slot.Capacity
             ? slot
             : throw Fail.Conflict("slot_full", $"Слот {slot.Start:dd.MM HH:mm}-{slot.End:HH:mm} заповнений, оберіть інший");
     }
 
-    private int Taken(DeliverySlot slot) =>
-        store.Orders.Values.Count(o => o.Slot.Id == slot.Id && o.Status != OrderStatus.Rejected);
+    private int Taken(DeliverySlot slot) => store.Booked(slot.Id);
 
     private PromoCode? ResolvePromo(string? code, decimal subtotal)
     {
@@ -171,6 +185,11 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
 
         var promo = store.PromoCodes.GetValueOrDefault(code.Trim())
             ?? throw Fail.Validation("promo_unknown", $"Промокоду «{code.Trim()}» не існує");
+        if (!promo.Active)
+        {
+            throw Fail.Validation("promo_inactive", $"Промокод {promo.Code} більше не діє");
+        }
+
         if (promo.ValidUntil < clock.Now)
         {
             throw Fail.Validation("promo_expired", $"Строк дії промокоду {promo.Code} минув");

@@ -18,6 +18,7 @@ import { OrderPage } from './features/orders/OrderPage';
 import { OrdersPage } from './features/orders/OrdersPage';
 import { Layout } from './shared/Layout';
 import { NotFoundPage, RequireRole } from './shared/pages';
+import { ColorModeProvider, useColorMode, type ColorMode } from './shared/colorMode';
 import { ToastProvider } from './shared/Toast';
 import { BRANDS, createAppTheme, type BrandKey } from './theme';
 
@@ -34,15 +35,18 @@ export function createQueryClient(): QueryClient {
   });
 }
 
-/** Теми ролей створюються один раз: перемикання ролі лише вибирає готову. */
-const THEMES = Object.fromEntries((Object.keys(BRANDS) as BrandKey[]).map((key) => [key, createAppTheme(key)])) as Record<BrandKey, Theme>;
+/** Теми ролей створюються один раз: перемикання ролі чи світлої/темної теми лише вибирає готову. */
+const THEMES = Object.fromEntries(
+  (Object.keys(BRANDS) as BrandKey[]).map((key) => [key, { light: createAppTheme(key, 'light'), dark: createAppTheme(key, 'dark') }]),
+) as Record<BrandKey, Record<ColorMode, Theme>>;
 
-/** Візуальний стиль за роллю, у якій користувач працює зараз; гість бачить стиль покупця. */
+/** Візуальний стиль за роллю, у якій користувач працює зараз (гість бачить стиль покупця), і за обраним режимом. */
 function RoleTheme({ children }: { children: ReactNode }) {
   const { user, role } = useAuth();
+  const { mode } = useColorMode();
   return (
-    <ThemeProvider theme={THEMES[user ? role : 'Guest']}>
-      <CssBaseline />
+    <ThemeProvider theme={THEMES[user ? role : 'Guest'][mode]}>
+      <CssBaseline enableColorScheme />
       {children}
     </ThemeProvider>
   );
@@ -54,9 +58,11 @@ export function Providers({ children, client }: { children: ReactNode; client?: 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <RoleTheme>
-          <ToastProvider>{children}</ToastProvider>
-        </RoleTheme>
+        <ColorModeProvider>
+          <RoleTheme>
+            <ToastProvider>{children}</ToastProvider>
+          </RoleTheme>
+        </ColorModeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

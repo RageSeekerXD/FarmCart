@@ -7,6 +7,23 @@ export function useReference() {
   return useQuery({ queryKey: ['reference'], queryFn: () => api<ReferenceData>('/reference'), staleTime: Infinity });
 }
 
+/** Типи й розмір фото, які приймає сервер (п. 5 покращень). */
+export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+export const PHOTO_MAX_BYTES = 2 * 1024 * 1024;
+
+/** Завантаження чи видалення фото товару; після нього оновлюються товари фермера й каталог. */
+export function useProductPhoto() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, file }: { id: number; file: File | null }) =>
+      api<Product>(`/farmer/products/${id}/photo`, file ? { method: 'PUT', body: file } : { method: 'DELETE' }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: PRODUCTS });
+      void queryClient.invalidateQueries({ queryKey: ['catalog'] });
+    },
+  });
+}
+
 export function useFarmerProfile() {
   return useQuery({ queryKey: ['farmer', 'profile'], queryFn: () => api<FarmerProfile>('/farmer/profile') });
 }
@@ -26,7 +43,7 @@ export function useSaveProduct() {
         return api<Product>('/farmer/products', { method: 'POST', body: draft });
       }
 
-      const changes: ProductChanges = { name: draft.name, price: draft.price, stock: draft.stock, seasonMonths: draft.seasonMonths };
+      const changes: ProductChanges = { name: draft.name, price: draft.price, stock: draft.stock, seasonMonths: draft.seasonMonths, description: draft.description };
       return api<Product>(`/farmer/products/${id}`, { method: 'PATCH', body: changes });
     },
     onSuccess: () => {

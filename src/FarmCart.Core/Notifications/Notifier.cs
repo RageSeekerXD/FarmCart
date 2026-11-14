@@ -14,6 +14,9 @@ public static class NotificationKind
 
     /// <summary>Кур'єру: йому передано доставку.</summary>
     public const string DeliveryAssigned = "delivery.assigned";
+
+    /// <summary>Фермеру: покупець скасував замовлення до прийняття.</summary>
+    public const string OrderCancelled = "order.cancelled";
 }
 
 /// <summary>

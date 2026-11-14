@@ -20,7 +20,16 @@ public static class Titles
         OrderStatus.InTransit => "в дорозі",
         OrderStatus.Delivered => "доставлено",
         OrderStatus.Rejected => "відхилено",
+        OrderStatus.Cancelled => "скасовано",
+        OrderStatus.DeliveryFailed => "не вручено",
         _ => status.ToString(),
+    };
+
+    public static string Title(this DeliveryProblem problem) => problem switch
+    {
+        DeliveryProblem.BuyerAbsent => "покупця не було вдома",
+        DeliveryProblem.AddressNotFound => "адресу не знайдено",
+        _ => "інша причина",
     };
 
     public static string Title(this PaymentStatus status) => status switch

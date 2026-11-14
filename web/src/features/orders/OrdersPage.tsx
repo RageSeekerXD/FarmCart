@@ -2,13 +2,15 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import { Alert, Box, Button, Chip, CircularProgress, LinearProgress, Paper, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import type { OrderStatus } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatSlot } from '../../shared/dates';
 import { EASE_OUT, enter, growX } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
-import { ORDER_PATH, useOrders } from './orders';
+import { CancelOrderButton } from './CancelOrder';
+import { ReorderButton } from './Reorder';
+import { isFinal, ORDER_PATH, progressStep, useOrders } from './orders';
 
 const STATUS_COLOR: Record<OrderStatus, 'default' | 'info' | 'warning' | 'success' | 'error'> = {
   Placed: 'info',
@@ -17,15 +19,19 @@ const STATUS_COLOR: Record<OrderStatus, 'default' | 'info' | 'warning' | 'succes
   InTransit: 'warning',
   Delivered: 'success',
   Rejected: 'error',
+  Cancelled: 'default',
+  DeliveryFailed: 'error',
 };
 
-const PROGRESS_COLOR: Record<OrderStatus, 'primary' | 'warning' | 'success' | 'error'> = {
+const PROGRESS_COLOR: Record<OrderStatus, 'primary' | 'warning' | 'success' | 'error' | 'inherit'> = {
   Placed: 'primary',
   Accepted: 'primary',
   Assembling: 'warning',
   InTransit: 'warning',
   Delivered: 'success',
   Rejected: 'error',
+  Cancelled: 'inherit',
+  DeliveryFailed: 'error',
 };
 
 export function StatusChip({ status }: { status: OrderStatus }) {
@@ -38,6 +44,8 @@ export function OrdersPage() {
   const { t } = useTranslation();
   const { lang, pick } = useLang();
   const orders = useOrders();
+  // Щойно оформлено кілька замовлень (по одному від кожної ферми) - кажемо про це над списком.
+  const placed = (useLocation().state as { placed?: number[] } | null)?.placed ?? [];
 
   return (
     <Box sx={{ maxWidth: 760, mx: 'auto' }}>
@@ -45,6 +53,11 @@ export function OrdersPage() {
         {t('orders.title')}
       </Typography>
 
+      {placed.length > 1 && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {t('orders.placedMany', { count: placed.length })}
+        </Alert>
+      )}
       {orders.isPending && <CircularProgress aria-label={t('common.loading')} />}
       {orders.isError && (
         <Alert
@@ -74,8 +87,8 @@ export function OrdersPage() {
 
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
         {orders.data?.map((order, index) => {
-          // Відхилене замовлення далі не йде: смуга повна й червона, щоб не виглядала «застряглою».
-          const step = order.status === 'Rejected' ? ORDER_PATH.length : ORDER_PATH.indexOf(order.status) + 1;
+          // Відхилене чи скасоване замовлення далі не йде: смуга повна (червона чи сіра), щоб не виглядала «застряглою».
+          const step = progressStep(order.status);
           return (
             <Paper
               component="li"
@@ -101,10 +114,12 @@ export function OrdersPage() {
                 value={(step / ORDER_PATH.length) * 100}
                 color={PROGRESS_COLOR[order.status]}
                 aria-label={t('orders.progress', { step, total: ORDER_PATH.length })}
-                sx={{ my: 1.5, height: 6, '& .MuiLinearProgress-bar': { animation: `${growX} 900ms ${EASE_OUT} ${200 + Math.min(index, 10) * 45}ms backwards` } }}
+                sx={{ my: 1.5, height: 6, color: order.status === 'Cancelled' ? 'text.disabled' : undefined, '& .MuiLinearProgress-bar': { animation: `${growX} 900ms ${EASE_OUT} ${200 + Math.min(index, 10) * 45}ms backwards` } }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography sx={{ fontWeight: 700, fontSize: '1.05rem' }}>{formatMoney(order.total, lang)}</Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', mr: 'auto' }}>{formatMoney(order.total, lang)}</Typography>
+                <CancelOrderButton order={order} compact />
+                {isFinal(order.status) && <ReorderButton orderId={order.id} compact />}
                 <Button
                   component={RouterLink}
                   to={`/orders/${order.id}`}

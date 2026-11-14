@@ -63,3 +63,25 @@ describe('UI-10 Мої доставки', () => {
     expect(CYRILLIC.test(document.body.textContent ?? '')).toBe(false);
   });
 });
+
+describe('Невдала доставка', () => {
+  it('кур’єр фіксує причину; «інша причина» без коментаря не надсилається; доставка зникає зі списку', async () => {
+    backend.deliveries = [delivery];
+    const { user } = await asCourier();
+    const card = await screen.findByRole('listitem', { name: 'Доставка №1001' });
+
+    await user.click(within(card).getByRole('button', { name: 'Не вдалося вручити' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Не вдалося вручити замовлення №1001' });
+    await user.click(within(dialog).getByRole('radio', { name: 'Інша причина' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Зафіксувати' }));
+    expect(within(dialog).getByText('Опишіть, що завадило вручити замовлення.')).toBeInTheDocument();
+    expect(backend.actions).toHaveLength(0);
+
+    await user.click(within(dialog).getByRole('radio', { name: 'Покупця не було вдома' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Зафіксувати' }));
+
+    expect(await screen.findByText('Доставку №1001 позначено як не вручену')).toBeInTheDocument();
+    expect(backend.actions).toEqual([{ orderId: 1001, kind: 'fail', body: { problem: 'BuyerAbsent', note: null } }]);
+    expect(await screen.findByText('Активних доставок немає.')).toBeInTheDocument();
+  });
+});

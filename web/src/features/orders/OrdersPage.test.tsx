@@ -129,3 +129,144 @@ describe('UI-06 Трекер замовлення', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Замовлення не знайдено.');
   });
 });
+
+describe('Скасування замовлення покупцем', () => {
+  it('скасоване замовлення закінчується після «оформлено»', () => {
+    const steps = timeline(backend.addOrder('Cancelled'));
+
+    expect(steps.map((step) => [step.status, step.state])).toEqual([
+      ['Placed', 'done'],
+      ['Cancelled', 'current'],
+    ]);
+  });
+
+  it('з трекера: підтвердження з сумою повернення, далі статус «Скасовано», тост і без коду вручення', async () => {
+    backend.addOrder('Placed');
+    const { user } = await renderApp('/orders/1001', { signedIn: true });
+
+    await user.click(await screen.findByRole('button', { name: 'Скасувати замовлення №1001' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Скасувати замовлення №1001?' });
+    expect(dialog).toHaveTextContent(/Кошти 160,00\s?₴ повернуться автоматично/);
+    expect(dialog).toHaveTextContent('Скасування не можна відмінити.');
+    await user.click(within(dialog).getByRole('button', { name: 'Так, скасувати' }));
+
+    await waitFor(() => expect(screen.getByRole('status', { name: 'Статус замовлення' })).toHaveTextContent('Скасовано'));
+    expect(await screen.findByText('Замовлення №1001 скасовано')).toBeInTheDocument();
+    expect(screen.getByText(/Ви скасували це замовлення\. Повернено: 160,00/)).toBeInTheDocument();
+    expect(screen.queryByTestId('delivery-code')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Скасувати замовлення №1001' })).not.toBeInTheDocument();
+  });
+
+  it('фермер щойно прийняв: діалог пояснює, чому не можна, а трекер показує новий статус', async () => {
+    backend.addOrder('Placed');
+    const { user } = await renderApp('/orders/1001', { signedIn: true });
+    await user.click(await screen.findByRole('button', { name: 'Скасувати замовлення №1001' }));
+    const dialog = await screen.findByRole('dialog');
+
+    backend.moveOrder(1001, 'Accepted');
+    await user.click(within(dialog).getByRole('button', { name: 'Так, скасувати' }));
+
+    expect(await within(dialog).findByText('Фермер уже прийняв замовлення - скасувати його не можна.')).toBeInTheDocument();
+    expect(within(dialog).queryByRole('button', { name: 'Так, скасувати' })).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Ні, залишити' }));
+
+    await waitFor(() => expect(screen.getByRole('status', { name: 'Статус замовлення' })).toHaveTextContent('Прийнято фермером'));
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Скасувати замовлення №1001' })).not.toBeInTheDocument());
+  });
+
+  it('після прийняття фермером кнопки скасування немає', async () => {
+    backend.addOrder('Accepted');
+    await renderApp('/orders/1001', { signedIn: true });
+
+    expect(await screen.findByRole('status', { name: 'Статус замовлення' })).toHaveTextContent('Прийнято фермером');
+    expect(screen.queryByRole('button', { name: /Скасувати замовлення/ })).not.toBeInTheDocument();
+  });
+
+  it('зі списку: «Ні, залишити» нічого не змінює, «Так, скасувати» змінює статус картки', async () => {
+    backend.addOrder('Delivered');
+    backend.addOrder('Placed');
+    const { user } = await renderApp('/orders', { signedIn: true });
+
+    const placed = await screen.findByRole('listitem', { name: 'Замовлення №1002' });
+    expect(within(screen.getByRole('listitem', { name: 'Замовлення №1001' })).queryByRole('button', { name: /Скасувати/ })).not.toBeInTheDocument();
+
+    await user.click(within(placed).getByRole('button', { name: 'Скасувати замовлення №1002' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Ні, залишити' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(within(placed).getByText('Оформлено')).toBeInTheDocument();
+
+    await user.click(within(placed).getByRole('button', { name: 'Скасувати замовлення №1002' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Так, скасувати' }));
+
+    await waitFor(() => expect(within(screen.getByRole('listitem', { name: 'Замовлення №1002' })).getByText('Скасовано')).toBeInTheDocument());
+  });
+
+  it('готівкове замовлення: у підтвердженні сказано, що повертати нічого', async () => {
+    backend.addOrder('Placed', { paymentMethod: 'Cash', paymentStatus: 'PayOnDelivery', paidAmount: 0 });
+    const { user } = await renderApp('/orders/1001', { signedIn: true });
+
+    await user.click(await screen.findByRole('button', { name: 'Скасувати замовлення №1001' }));
+
+    expect(await screen.findByRole('dialog')).toHaveTextContent('Оплату ще не стягнуто - повертати нічого не треба.');
+  });
+});
+
+describe('Замовити знову', () => {
+  it('завершене замовлення повторюється в кошик; кнопки немає в замовлення в роботі', async () => {
+    backend.addOrder('Placed');
+    backend.addOrder('Delivered');
+    const { user } = await renderApp('/orders', { signedIn: true });
+
+    const active = await screen.findByRole('listitem', { name: 'Замовлення №1001' });
+    expect(within(active).queryByRole('button', { name: /Замовити знову/ })).not.toBeInTheDocument();
+    await user.click(within(screen.getByRole('listitem', { name: 'Замовлення №1002' })).getByRole('button', { name: 'Замовити знову: №1002' }));
+
+    expect(await screen.findByText('Товари замовлення додано в кошик')).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Товарів у кошику: 10' })).toBeInTheDocument();
+  });
+
+  it('чого бракує на складі - тост каже, скільки вдалося додати', async () => {
+    backend.addOrder('Delivered');
+    backend.stock[1] = 4;
+    const { user } = await renderApp('/orders/1001', { signedIn: true });
+
+    await user.click(await screen.findByRole('button', { name: 'Замовити знову: №1001' }));
+
+    const toast = (await screen.findByText('Додано не все')).closest<HTMLElement>('[role="alert"]')!;
+    expect(toast).toHaveTextContent('Морква - додано 4 з 10');
+    expect(await screen.findByRole('link', { name: 'Товарів у кошику: 4' })).toBeInTheDocument();
+  });
+});
+
+describe('Невдала доставка: перенесення покупцем', () => {
+  it('таймлайн: шлях до «в дорозі», далі «не вручено», «доставлено» ще попереду', () => {
+    const steps = timeline(backend.addOrder('DeliveryFailed'));
+
+    expect(steps.map((step) => [step.status, step.state])).toEqual([
+      ['Placed', 'done'],
+      ['Accepted', 'done'],
+      ['Assembling', 'done'],
+      ['InTransit', 'done'],
+      ['DeliveryFailed', 'current'],
+      ['Delivered', 'upcoming'],
+    ]);
+  });
+
+  it('покупець бачить причину й переносить доставку на інший слот', async () => {
+    backend.addOrder('DeliveryFailed');
+    const { user } = await renderApp('/orders/1001', { signedIn: true });
+
+    expect(await screen.findByText('Кур\'єр не зміг вручити замовлення')).toBeInTheDocument();
+    expect(screen.getByText(/Покупця не було вдома/)).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Статус замовлення' })).toHaveTextContent('Не вручено');
+    expect(screen.getByRole('button', { name: 'Перенести доставку' })).toBeDisabled();
+    expect(await screen.findByRole('radio', { name: /місць немає/ })).toBeDisabled();
+
+    await user.click(screen.getByRole('radio', { name: /вільних місць: 3/ }));
+    await user.click(screen.getByRole('button', { name: 'Перенести доставку' }));
+
+    expect(await screen.findByText(/Доставку перенесено/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('status', { name: 'Статус замовлення' })).toHaveTextContent('В дорозі'));
+    expect(screen.queryByRole('button', { name: 'Перенести доставку' })).not.toBeInTheDocument();
+  });
+});

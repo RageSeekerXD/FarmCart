@@ -16,6 +16,7 @@ import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { POLL_MS } from '../orders/orders';
+import { ReportFailureButton } from './ReportFailure';
 
 const DELIVERIES = ['courier', 'deliveries'] as const;
 
@@ -128,6 +129,7 @@ function DeliveryCard({ task, index }: { task: DeliveryTask; index: number }) {
           {t('courier.confirm')}
         </Button>
       </Stack>
+      <ReportFailureButton task={task} deliveriesKey={DELIVERIES} />
     </Paper>
   );
 }

@@ -7,13 +7,83 @@ public sealed record ProductDraft(
     decimal Price,
     int Stock,
     IReadOnlyCollection<int>? SeasonMonths = null,
-    string? PhotoUrl = null);
+    string? PhotoUrl = null,
+    LocalizedText? Description = null);
 
-public sealed record ProductChanges(LocalizedText? Name = null, decimal? Price = null, int? Stock = null, IReadOnlyCollection<int>? SeasonMonths = null);
+/// <summary>Зміни товару; Description з обома порожніми мовами прибирає опис.</summary>
+public sealed record ProductChanges(
+    LocalizedText? Name = null,
+    decimal? Price = null,
+    int? Stock = null,
+    IReadOnlyCollection<int>? SeasonMonths = null,
+    LocalizedText? Description = null);
 
 /// <summary>US-02, US-03 (B-FR-07, B-FR-08): реєстрація продавця та керування власним каталогом.</summary>
 public sealed class FarmerService(InMemoryStore store)
 {
+    /// <summary>Найбільша довжина опису товару кожною мовою.</summary>
+    public const int DescriptionMaxLength = 600;
+
+    /// <summary>Найбільший розмір фото товару: 2 МБ.</summary>
+    public const int PhotoMaxBytes = 2 * 1024 * 1024;
+
+    /// <summary>
+    /// Фото товару (п. 5 покращень): JPEG, PNG чи WebP до 2 МБ. Тип визначається за сигнатурою файлу, а не лише
+    /// за заголовком запиту, тож під виглядом зображення не завантажити довільний файл.
+    /// </summary>
+    public Product SetPhoto(User user, int productId, byte[] data)
+    {
+        if (data.Length > PhotoMaxBytes)
+        {
+            throw Fail.Validation("photo_too_large", "Фото має бути не більше 2 МБ");
+        }
+
+        var type = DetectImageType(data) ?? throw Fail.Validation("photo_type_invalid", "Завантажте фото у форматі JPEG, PNG або WebP");
+        lock (store.Sync)
+        {
+            var product = OwnProduct(user, productId);
+            var version = (store.Photos.GetValueOrDefault(product.Id)?.Version ?? 0) + 1;
+            store.Photos[product.Id] = new ProductPhoto(type, data, version);
+            product.PhotoUrl = $"/img/products/{product.Id}?v={version}";
+            return product;
+        }
+    }
+
+    public Product RemovePhoto(User user, int productId)
+    {
+        lock (store.Sync)
+        {
+            var product = OwnProduct(user, productId);
+            store.Photos.Remove(product.Id);
+            product.PhotoUrl = null;
+            return product;
+        }
+    }
+
+    /// <summary>Фото для покупців: публічне, як і каталог.</summary>
+    public ProductPhoto? Photo(int productId)
+    {
+        lock (store.Sync)
+        {
+            return store.Photos.GetValueOrDefault(productId);
+        }
+    }
+
+    /// <summary>JPEG (FF D8 FF), PNG (89 50 4E 47 0D 0A 1A 0A) чи WebP (RIFF....WEBP); інакше null.</summary>
+    public static string? DetectImageType(ReadOnlySpan<byte> data)
+    {
+        if (data.Length >= 3 && data[0] == 0xFF && data[1] == 0xD8 && data[2] == 0xFF)
+        {
+            return "image/jpeg";
+        }
+
+        if (data.Length >= 8 && data[..8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }))
+        {
+            return "image/png";
+        }
+
+        return data.Length >= 12 && data[..4].SequenceEqual("RIFF"u8) && data[8..12].SequenceEqual("WEBP"u8) ? "image/webp" : null;
+    }
     public Farmer Register(User user, LocalizedText farmName, GeoPoint location, bool certified, string? documents)
     {
         if (farmName is not { IsComplete: true })
@@ -48,6 +118,22 @@ public sealed class FarmerService(InMemoryStore store)
         }
     }
 
+    /// <summary>Повторна заявка після відхилення: господарство знову в черзі на верифікацію.</summary>
+    public Farmer Reapply(User user)
+    {
+        lock (store.Sync)
+        {
+            var farmer = store.FarmerOf(user);
+            if (farmer.RejectionReason is null)
+            {
+                throw Fail.Conflict("not_rejected", "Заявку не відхилено - повторно подавати її не треба");
+            }
+
+            farmer.RejectionReason = null;
+            return farmer;
+        }
+    }
+
     /// <summary>Господарство продавця: за ним веб-кабінет показує, чи пройдено верифікацію.</summary>
     public Farmer Profile(User user)
     {
@@ -65,6 +151,7 @@ public sealed class FarmerService(InMemoryStore store)
         RequirePositive(draft.Price);
         RequireNonNegative(draft.Stock);
         var season = ToSeason(draft.SeasonMonths);
+        var description = ToDescription(draft.Description);
         lock (store.Sync)
         {
             var farmer = store.FarmerOf(user);
@@ -85,6 +172,7 @@ public sealed class FarmerService(InMemoryStore store)
                 Stock = draft.Stock,
                 PhotoUrl = draft.PhotoUrl,
                 SeasonMonths = season,
+                Description = description,
             };
             store.Products.Add(product.Id, product);
             return product;
@@ -119,8 +207,35 @@ public sealed class FarmerService(InMemoryStore store)
                 product.SeasonMonths = ToSeason(months);
             }
 
+            if (changes.Description is { } text)
+            {
+                product.Description = ToDescription(text);
+            }
+
             return product;
         }
+    }
+
+    /// <summary>
+    /// Опис необов'язковий: обидві мови порожні - опису немає; заповнено лише одну - помилка, бо покупець іншою мовою
+    /// побачив би порожнечу (BE-9).
+    /// </summary>
+    private static LocalizedText? ToDescription(LocalizedText? text)
+    {
+        if (text is null || (string.IsNullOrWhiteSpace(text.Uk) && string.IsNullOrWhiteSpace(text.En)))
+        {
+            return null;
+        }
+
+        if (!text.IsComplete)
+        {
+            throw Fail.Validation("description_incomplete", "Опис товару потрібен обома мовами або жодною");
+        }
+
+        var trimmed = text.Trimmed();
+        return trimmed.Uk.Length > DescriptionMaxLength || trimmed.En.Length > DescriptionMaxLength
+            ? throw Fail.Validation("description_too_long", $"Опис товару - не довше {DescriptionMaxLength} символів кожною мовою")
+            : trimmed;
     }
 
     public Product ChangeStock(User user, int productId, int delta)

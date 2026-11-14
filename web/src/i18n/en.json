@@ -22,7 +22,9 @@
     "logout": "Sign out",
     "account": "Account",
     "skipToContent": "Skip to content",
-    "cartItems": "Items in cart: {{count}}"
+    "cartItems": "Items in cart: {{count}}",
+    "darkMode": "Dark theme",
+    "lightMode": "Light theme"
   },
   "roles": {
     "Buyer": "Buyer",
@@ -91,13 +93,18 @@
     "inCart": "In cart: {{count}}",
     "emptyHint": "Try a different search or reset the filters.",
     "addedShort": "Added",
-    "goToCart": "View cart"
+    "goToCart": "View cart",
+    "details": "Details: {{name}}",
+    "season": "Season",
+    "farmProductsNamed": "All products from: {{name}}",
+    "less": "Fewer",
+    "more": "More",
+    "addQuantity": "Add {{count}} · {{total}}"
   },
   "cart": {
     "title": "Cart",
     "empty": "Your cart is empty",
     "goToCatalog": "Go to catalogue",
-    "oneFarm": "A cart holds products from one farmer: one stall, one order.",
     "product": "Product",
     "price": "Price",
     "quantity": "Quantity",
@@ -110,7 +117,9 @@
     "continue": "Continue shopping",
     "increase": "Increase quantity: {{name}}",
     "decrease": "Decrease quantity: {{name}}",
-    "items": "Items: {{count}}"
+    "items": "Items: {{count}}",
+    "restore": "Undo",
+    "manyFarms": "Products from several farms ({{count}}): checkout creates a separate order for each farm, with a single payment."
   },
   "common": {
     "loading": "Loading…",
@@ -182,7 +191,18 @@
     "rating_invalid": "Give a rating from 1 to 5.",
     "not_delivered": "You can leave a review only after delivery.",
     "already_reviewed": "A review for this order already exists.",
-    "review_not_found": "Review not found."
+    "review_not_found": "Review not found.",
+    "cancel_unavailable": "The farmer has already accepted the order, so it can no longer be cancelled.",
+    "description_incomplete": "The description needs both languages or none.",
+    "description_too_long": "The description is too long: 600 characters per language at most.",
+    "promo_inactive": "This promo code is no longer active.",
+    "slot_in_use": "This slot already has orders: it cannot be moved or deleted.",
+    "slot_capacity_below_booked": "Capacity cannot be lower than the places already booked.",
+    "farmer_already_verified": "This seller is already verified.",
+    "not_rejected": "The application was not rejected, so there is nothing to resubmit.",
+    "note_required": "Describe what prevented the delivery.",
+    "photo_type_invalid": "Upload a JPEG, PNG or WebP photo.",
+    "photo_too_large": "The photo is too large: 2 MB at most."
   },
   "map": {
     "title": "Farm map",
@@ -226,7 +246,10 @@
     "promoHint": "The discount appears in the order summary",
     "submit": "Place order for {{total}}",
     "backToCart": "Back to cart",
-    "placed": "Order No. {{id}} placed"
+    "placed": "Order No. {{id}} placed",
+    "recentAddresses": "Recent addresses",
+    "splitNote": "Each farm gets its own order ({{count}} orders), paid in a single payment.",
+    "placedMany": "Orders {{ids}} placed"
   },
   "orders": {
     "title": "My orders",
@@ -249,7 +272,36 @@
     "emptyHint": "After checkout you can follow the delivery of your orders here.",
     "progress": "Step {{step}} of {{total}}",
     "placedTitle": "Thank you for your order!",
-    "placedHint": "The farmer has already received it. The status below updates by itself."
+    "placedHint": "The farmer has already received it. The status below updates by itself.",
+    "cancel": "Cancel order",
+    "cancelNamed": "Cancel order No. {{id}}",
+    "cancelHint": "You can cancel until the farmer accepts the order.",
+    "cancelTitle": "Cancel order No. {{id}}?",
+    "cancelBody": "The farmer has not accepted the order yet, so it can still be cancelled.",
+    "cancelRefund": "{{amount}} will be refunded automatically to the same payment method.",
+    "cancelCash": "Nothing has been charged yet, so there is nothing to refund.",
+    "cancelFinal": "A cancellation cannot be undone.",
+    "keep": "No, keep it",
+    "confirmCancel": "Yes, cancel",
+    "cancelled": "Order No. {{id}} cancelled",
+    "cancelledNote": "You cancelled this order.",
+    "problem": {
+      "BuyerAbsent": "Nobody was at home",
+      "AddressNotFound": "The address could not be found",
+      "Other": "Another reason"
+    },
+    "notDelivered": "The courier could not deliver the order",
+    "pickNewTime": "Choose a new delivery time and the courier will bring the order again.",
+    "newTime": "New delivery time",
+    "reschedule": "Reschedule delivery",
+    "rescheduled": "Delivery rescheduled: {{slot}}",
+    "placedMany": "{{count}} orders placed - one from each farm. Each farm confirms and delivers its own order.",
+    "reorder": "Order again",
+    "reorderNamed": "Order again: No. {{id}}",
+    "reordered": "The order's items were added to your cart",
+    "reorderShort": "Not everything was added",
+    "reorderNone": "{{name}} - out of stock",
+    "reorderPart": "{{name}} - added {{added}} of {{requested}}"
   },
   "status": {
     "Placed": "Placed",
@@ -257,7 +309,9 @@
     "Assembling": "Being packed",
     "InTransit": "On the way",
     "Delivered": "Delivered",
-    "Rejected": "Rejected"
+    "Rejected": "Rejected",
+    "Cancelled": "Cancelled",
+    "DeliveryFailed": "Not delivered"
   },
   "paymentMethod": {
     "Card": "Card",
@@ -307,7 +361,22 @@
     "noProducts": "No products yet. Add your first one.",
     "saved": "Saved: {{name}}",
     "lowStock": "Only {{count}} left",
-    "productsCount": "Products: {{count}}"
+    "productsCount": "Products: {{count}}",
+    "descriptionUk": "Description in Ukrainian",
+    "descriptionEn": "Description in English",
+    "descriptionHint": "Optional. If you fill it in, use both languages.",
+    "rejected": "The administrator rejected your application. Reason: {{reason}}",
+    "rejectedChip": "Application rejected",
+    "reapply": "Apply again",
+    "reapplied": "Application submitted again - please wait for the review",
+    "photoAdd": "Add photo",
+    "photoAddNamed": "Add photo: {{name}}",
+    "photoReplace": "Replace photo",
+    "photoReplaceNamed": "Replace photo: {{name}}",
+    "photoRemove": "Remove photo",
+    "photoRemoveNamed": "Remove photo: {{name}}",
+    "photoSaved": "Photo saved: {{name}}",
+    "photoRemoved": "Photo removed: {{name}}"
   },
   "farmOrders": {
     "title": "Incoming orders",
@@ -353,7 +422,14 @@
     "delivered": "Order No. {{id}} delivered",
     "empty": "No active deliveries.",
     "count": "Active deliveries: {{count}}",
-    "emptyHint": "New deliveries appear here automatically once a farmer hands an order over."
+    "emptyHint": "New deliveries appear here automatically once a farmer hands an order over.",
+    "reportFailure": "Could not deliver",
+    "failTitle": "Could not deliver order No. {{id}}",
+    "failReason": "Reason",
+    "failNote": "Note for the buyer",
+    "failNoteHint": "Optional, except for \"Another reason\".",
+    "failConfirm": "Report",
+    "failed": "Delivery No. {{id}} marked as not delivered"
   },
   "notify": {
     "title": "Notifications",
@@ -366,14 +442,19 @@
     "deliveryAssigned": "New delivery No. {{id}}",
     "other": "New event",
     "newTitle": "New notification",
-    "open": "Open"
+    "open": "Open",
+    "orderCancelled": "The buyer cancelled order No. {{id}}",
+    "browserEnable": "Notify me when this tab is in the background",
+    "browserOn": "Browser notifications are on",
+    "browserBlocked": "Browser notifications are blocked in your browser settings"
   },
   "admin": {
     "section": {
       "verification": "Seller verification",
       "slots": "Delivery slots",
       "promo": "Promo codes",
-      "audit": "Audit log"
+      "audit": "Audit log",
+      "reviews": "Reviews"
     },
     "noPending": "No applications awaiting verification.",
     "verify": "Verify",
@@ -402,9 +483,51 @@
       "farmer.verify": "Seller verified",
       "slot.create": "Delivery slot created",
       "promo.create": "Promo code created",
-      "review.hide": "Review hidden"
+      "review.hide": "Review hidden",
+      "review.restore": "Review restored",
+      "farmer.reject": "Seller application rejected",
+      "slot.update": "Delivery slot updated",
+      "slot.delete": "Delivery slot deleted",
+      "promo.deactivate": "Promo code switched off",
+      "promo.activate": "Promo code switched on"
     },
-    "openMap": "Show on map: {{name}}"
+    "openMap": "Show on map: {{name}}",
+    "noReviews": "No reviews yet.",
+    "reviewNamed": "Review #{{id}}",
+    "hide": "Hide",
+    "hideNamed": "Hide review #{{id}}",
+    "restore": "Show again",
+    "restoreNamed": "Show review #{{id}} again",
+    "hideTitle": "Hide this review?",
+    "hideReason": "Reason",
+    "hideHint": "Customers will no longer see the review and the farm rating will be recalculated. The reason goes to the audit log.",
+    "hidden": "Hidden",
+    "hiddenBecause": "Reason: {{reason}}",
+    "reviewHidden": "Review hidden",
+    "reviewRestored": "The review is visible again",
+    "reject": "Reject",
+    "rejectNamed": "Reject application: {{name}}",
+    "rejectTitle": "Reject the application from {{name}}?",
+    "rejectHint": "The seller will see the reason in their account and can apply again.",
+    "rejectedNamed": "Application rejected: {{name}}",
+    "bookedOf": "Booked: {{booked}} of {{capacity}}",
+    "editSlot": "Edit slot",
+    "editSlotNamed": "Edit slot {{slot}}",
+    "editSlotTitle": "Edit delivery slot",
+    "slotLockedHint": "This slot already has orders ({{count}}): its time cannot change, and capacity cannot go below what is booked.",
+    "slotUpdated": "Delivery slot updated",
+    "deleteSlot": "Delete slot",
+    "deleteSlotNamed": "Delete slot {{slot}}",
+    "deleteSlotTitle": "Delete this delivery slot?",
+    "slotDeleted": "Delivery slot deleted",
+    "promoActive": "Active",
+    "promoOff": "Switched off",
+    "deactivate": "Switch off",
+    "deactivateNamed": "Switch off promo code {{code}}",
+    "activate": "Switch on",
+    "activateNamed": "Switch on promo code {{code}}",
+    "promoOffToast": "Promo code {{code}} switched off",
+    "promoOnToast": "Promo code {{code}} is active again"
   },
   "review": {
     "title": "Rate the farmer",
@@ -419,5 +542,15 @@
     "title": "Demo accounts",
     "hint": "Development mode: one-click sign-in to show each role.",
     "switch": "Switch demo account"
+  },
+  "reviews": {
+    "title": "Customer reviews",
+    "count": "reviews: {{count}}",
+    "empty": "No reviews yet.",
+    "anonymous": "Customer",
+    "stars": "Rating: {{rating}} out of 5",
+    "showAll": "Show all ({{count}})",
+    "farmTitle": "Reviews: {{name}}",
+    "open": "Reviews ({{count}})"
   }
 }

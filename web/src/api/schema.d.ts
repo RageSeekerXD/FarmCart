@@ -4,6 +4,41 @@
  */
 
 export interface paths {
+    "/img/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -602,6 +637,121 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/orders/{id}/reorder": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReorderResult"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RescheduleRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OrderDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OrderDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/orders/{id}/review": {
         parameters: {
             query?: never;
@@ -728,6 +878,99 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/farmer/products/{id}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProductDto"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProductDto"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/farmer/reapply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FarmerDto"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1137,6 +1380,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/courier/deliveries/{id}/fail": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DeliveryFailureRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["OrderDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/courier/deliveries/{id}/confirm": {
         parameters: {
             query?: never;
@@ -1287,6 +1571,181 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/farmers/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RejectRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FarmerDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/slots/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SlotRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeliverySlot"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/admin/promocodes/{code}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    code: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PromoCode"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/promocodes/{code}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    code: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PromoCode"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/promocodes": {
         parameters: {
             query?: never;
@@ -1384,6 +1843,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdminReviewDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/reviews/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReviewDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/audit": {
         parameters: {
             query?: never;
@@ -1425,6 +1956,23 @@ export interface components {
     schemas: {
         AcceptRequest: {
             shortages: null | components["schemas"]["Shortage"][];
+        };
+        AdminReviewDto: {
+            /** Format: int32 */
+            id: number | string;
+            /** Format: int32 */
+            orderId: number | string;
+            /** Format: int32 */
+            farmerId: number | string;
+            farmName: components["schemas"]["LocalizedText"];
+            /** Format: int32 */
+            rating: number | string;
+            comment: null | string;
+            author: string;
+            /** Format: date-time */
+            at: string;
+            hidden: boolean;
+            hiddenReason: null | string;
         };
         AnonymousTypeOfReviewDto: {
             review: components["schemas"]["ReviewDto"];
@@ -1469,6 +2017,9 @@ export interface components {
             quantity: number | string;
             /** Format: double */
             total: number | string;
+            /** Format: int32 */
+            farmerId: number | string;
+            farmerName: components["schemas"]["LocalizedText"];
         };
         CartView: {
             /** Format: int32 */
@@ -1497,6 +2048,10 @@ export interface components {
             farmerRating: null | number | string;
             /** Format: double */
             distanceKm: null | number | string;
+            description: null | components["schemas"]["LocalizedText"];
+            seasonMonths: (number | string)[];
+            /** Format: int32 */
+            farmerReviewCount: number | string;
         };
         /** @enum {unknown} */
         CatalogSort: "Name" | "PriceAsc" | "PriceDesc" | "Distance" | "Rating" | null;
@@ -1516,6 +2071,22 @@ export interface components {
             /** Format: int32 */
             id: number | string;
             name: string;
+        };
+        DeliveryFailureRequest: {
+            problem: components["schemas"]["DeliveryProblem"];
+            note: null | string;
+        };
+        /** @enum {unknown} */
+        DeliveryProblem: "BuyerAbsent" | "AddressNotFound" | "Other" | null;
+        DeliverySlot: {
+            /** Format: int32 */
+            id: number | string;
+            /** Format: date-time */
+            start: string;
+            /** Format: date-time */
+            end: string;
+            /** Format: int32 */
+            capacity: number | string;
         };
         DeliveryTask: {
             /** Format: int32 */
@@ -1551,6 +2122,7 @@ export interface components {
             rating: null | number | string;
             /** Format: int32 */
             reviewCount: number | string;
+            rejectionReason: null | string;
         };
         FarmerRegistration: {
             farmName: components["schemas"]["LocalizedText"];
@@ -1637,6 +2209,9 @@ export interface components {
             deliveryCode: null | string;
             rejectionReason: null | string;
             history: components["schemas"]["StatusChangeDto"][];
+            deliveryProblem: null | components["schemas"]["DeliveryProblem"];
+            deliveryProblemNote: null | string;
+            checkoutOrderIds: (number | string)[];
         };
         OrderLineDto: {
             /** Format: int32 */
@@ -1651,7 +2226,7 @@ export interface components {
             total: number | string;
         };
         /** @enum {unknown} */
-        OrderStatus: "Placed" | "Accepted" | "Assembling" | "InTransit" | "Delivered" | "Rejected";
+        OrderStatus: "Placed" | "Accepted" | "Assembling" | "InTransit" | "Delivered" | "Rejected" | "Cancelled" | "DeliveryFailed";
         /** @enum {unknown} */
         PaymentMethod: "Card" | "ApplePay" | "GooglePay" | "Cash";
         /** @enum {unknown} */
@@ -1666,6 +2241,7 @@ export interface components {
             /** Format: int32 */
             stock?: null | number | string;
             seasonMonths?: null | (number | string)[];
+            description?: null | components["schemas"]["LocalizedText"];
         };
         ProductDraft: {
             name: components["schemas"]["LocalizedText"];
@@ -1677,6 +2253,7 @@ export interface components {
             stock: number | string;
             seasonMonths?: null | (number | string)[];
             photoUrl?: null | string;
+            description?: null | components["schemas"]["LocalizedText"];
         };
         ProductDto: {
             /** Format: int32 */
@@ -1693,6 +2270,7 @@ export interface components {
             stock: number | string;
             photoUrl: null | string;
             seasonMonths: (number | string)[];
+            description: null | components["schemas"]["LocalizedText"];
         };
         PromoCode: {
             code: string;
@@ -1702,6 +2280,8 @@ export interface components {
             minTotal: number | string;
             /** Format: date-time */
             validUntil: string;
+            /** @default true */
+            active: boolean;
         };
         PromoRequest: {
             code: string;
@@ -1723,6 +2303,21 @@ export interface components {
         RejectRequest: {
             reason: string;
         };
+        ReorderResult: {
+            cart: components["schemas"]["CartView"];
+            shortfalls: components["schemas"]["ReorderShortfall"][];
+        };
+        ReorderShortfall: {
+            name: components["schemas"]["LocalizedText"];
+            /** Format: int32 */
+            requested: number | string;
+            /** Format: int32 */
+            added: number | string;
+        };
+        RescheduleRequest: {
+            /** Format: int32 */
+            slotId: number | string;
+        };
         ReviewDto: {
             /** Format: int32 */
             id: number | string;
@@ -1731,6 +2326,7 @@ export interface components {
             /** Format: int32 */
             rating: number | string;
             comment: null | string;
+            author: string;
             /** Format: date-time */
             at: string;
         };
@@ -1764,6 +2360,8 @@ export interface components {
             end: string;
             /** Format: int32 */
             remaining: number | string;
+            /** Format: int32 */
+            capacity: number | string;
         };
         StatusChangeDto: {
             status: components["schemas"]["OrderStatus"];

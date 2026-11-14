@@ -14,10 +14,19 @@ public sealed class Review
 
     public string? Comment { get; init; }
 
+    /// <summary>Підпис автора для інших покупців: ім'я й ініціал прізвища («Оксана Д.»), без телефону й повного прізвища.</summary>
+    public string Author { get; init; } = "";
+
     public required DateTimeOffset At { get; init; }
 
     public bool Hidden { get; set; }
+
+    /// <summary>Причина, з якою адміністратор приховав відгук (B-FR-12); null - відгук видимий.</summary>
+    public string? HiddenReason { get; set; }
 }
+
+/// <summary>Відгук у черзі модерації разом із назвою господарства, про яке його залишено.</summary>
+public sealed record ModerationItem(Review Review, LocalizedText FarmName);
 
 /// <summary>US-10 (B-FR-06): відгуки про фермера після доставки; модерація адміністратором (B-FR-12).</summary>
 public sealed class ReviewService(InMemoryStore store, AuditLog audit, IClock clock)
@@ -50,6 +59,7 @@ public sealed class ReviewService(InMemoryStore store, AuditLog audit, IClock cl
                 FarmerId = order.FarmerId,
                 Rating = rating,
                 Comment = comment?.Trim(),
+                Author = ShortName(buyer.Name),
                 At = clock.Now,
             };
             store.Reviews.Add(review.Id, review);
@@ -89,10 +99,54 @@ public sealed class ReviewService(InMemoryStore store, AuditLog audit, IClock cl
             var review = store.Reviews.GetValueOrDefault(reviewId)
                 ?? throw Fail.NotFound("review_not_found", $"Відгук #{reviewId} не знайдено");
             review.Hidden = true;
+            review.HiddenReason = reason.Trim();
             Recalculate(review.FarmerId);
-            audit.Record(admin, "review.hide", $"review#{review.Id}", reason.Trim());
+            audit.Record(admin, "review.hide", $"review#{review.Id}", review.HiddenReason);
             return review;
         }
+    }
+
+    /// <summary>Модерація: усі відгуки, зокрема приховані, від найновішого - адміністратор бачить і те, що вже прибрав.</summary>
+    public IReadOnlyList<ModerationItem> ForModeration(User admin)
+    {
+        admin.Require(Role.Admin);
+        lock (store.Sync)
+        {
+            return [.. store.Reviews.Values.OrderByDescending(r => r.Id).Select(r => new ModerationItem(r, store.Farmers[r.FarmerId].Name))];
+        }
+    }
+
+    /// <summary>Помилково прихований відгук знову видимий і знову враховується в рейтингу ферми.</summary>
+    public Review Restore(User admin, int reviewId)
+    {
+        admin.Require(Role.Admin);
+        lock (store.Sync)
+        {
+            var review = store.Reviews.GetValueOrDefault(reviewId)
+                ?? throw Fail.NotFound("review_not_found", $"Відгук #{reviewId} не знайдено");
+            if (!review.Hidden)
+            {
+                return review;
+            }
+
+            review.Hidden = false;
+            review.HiddenReason = null;
+            Recalculate(review.FarmerId);
+            audit.Record(admin, "review.restore", $"review#{review.Id}", "Відгук знову видимий");
+            return review;
+        }
+    }
+
+    /// <summary>«Оксана Демченко» → «Оксана Д.»; одне слово лишається як є; без імені - порожньо (клієнт пише «Покупець»).</summary>
+    public static string ShortName(string? name)
+    {
+        var parts = (name ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return parts.Length switch
+        {
+            0 => "",
+            1 => parts[0],
+            _ => $"{parts[0]} {parts[1][0]}.",
+        };
     }
 
     /// <summary>Середня оцінка видимих відгуків оновлюється одразу (вимога B-FR-06: не пізніше ніж за 1 хв).</summary>

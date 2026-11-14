@@ -58,7 +58,7 @@ for (const lang of LANGS) {
     await shot(page, '06-checkout', lang);
 
     await page.goto('/orders');
-    await expect(page.locator('main ul > li')).toHaveCount(6);
+    await expect(page.locator('main ul > li')).toHaveCount(8);
     await shot(page, '07-orders', lang);
 
     await page.goto('/orders/1004');

@@ -18,8 +18,8 @@ public sealed class TestWorld
         Carts = new CartService(Store);
         Orders = new OrderService(Store, Payments, Notifier, Clock);
         Workflow = new OrderWorkflow(Notifier, Clock);
-        Fulfillment = new FulfillmentService(Store, Payments, Workflow);
-        Deliveries = new DeliveryService(Store, Workflow);
+        Fulfillment = new FulfillmentService(Store, Payments, Workflow, Notifier);
+        Deliveries = new DeliveryService(Store, Workflow, Clock);
         Reviews = new ReviewService(Store, Audit, Clock);
     }
 

@@ -46,6 +46,7 @@ import {
   type CatalogFilters,
 } from './filters';
 import { ProductCard } from './ProductCard';
+import { ProductDetails } from './ProductDetails';
 import { useBuyerLocation } from './useBuyerLocation';
 
 const SORT_LABEL: Record<CatalogSort, string> = {
@@ -131,7 +132,11 @@ export function CatalogPage() {
     setParams(toSearchParams({ ...filters, ...patch }), { replace: true });
   };
 
-  const add = (item: CatalogItem) => {
+  // Відкрита картка товару; береться з поточного списку, тож після зміни фільтрів закривається сама.
+  const [detailId, setDetailId] = useState<number | null>(null);
+  const detail = items.find((item) => item.productId === detailId) ?? null;
+
+  const add = (item: CatalogItem, quantity = 1, done?: () => void) => {
     if (!user) {
       toast.show(t('catalog.loginToBuy'), 'info');
       void navigate('/login', { state: { from: '/' } });
@@ -140,9 +145,10 @@ export function CatalogPage() {
 
     setAddingId(item.productId);
     addToCart.mutate(
-      { productId: item.productId, quantity: 1 },
+      { productId: item.productId, quantity },
       {
         onSuccess: () => {
+          done?.();
           setAddedId(item.productId);
           toast.show(t('catalog.added', { name: pick(item.name) }), 'success', {
             action: { label: t('catalog.goToCart'), onClick: () => void navigate('/cart') },
@@ -359,11 +365,26 @@ export function CatalogPage() {
                   justAdded={addedId === item.productId}
                   inCart={inCart.get(item.productId) ?? 0}
                   onAdd={add}
+                  onOpen={(item) => setDetailId(item.productId)}
                 />
               </Box>
             ))}
           </Box>
         </>
+      )}
+
+      {detail && (
+        <ProductDetails
+          key={detail.productId}
+          item={detail}
+          adding={addingId === detail.productId}
+          onClose={() => setDetailId(null)}
+          onAdd={(item, quantity) => add(item, quantity, () => setDetailId(null))}
+          onShowFarm={(farmerId) => {
+            setDetailId(null);
+            change({ farmerId });
+          }}
+        />
       )}
     </Box>
   );

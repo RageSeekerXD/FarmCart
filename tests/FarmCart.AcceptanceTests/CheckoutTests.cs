@@ -106,20 +106,27 @@ public sealed class CheckoutTests
         Assert.Equal(HttpStatusCode.OK, otherFarm.StatusCode);
     }
 
-    [Fact(DisplayName = "US-05.5 У кошику можуть бути товари лише одного фермера")]
-    public async Task CartHoldsProductsOfOneFarmer()
+    // Раніше: «у кошику можуть бути товари лише одного фермера». Тепер кошик спільний, а оформлення ділить його на замовлення.
+    [Fact(DisplayName = "US-05.5 Кошик із товарами двох ферм оформлюється як два замовлення з одним списанням коштів")]
+    public async Task CartWithTwoFarmsBecomesTwoOrders()
     {
         using var app = new FarmCartApp();
         var green = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
         var cheese = await app.VerifiedFarmerAsync("+380671110002", "Сироварня «Карпатська бринза»");
         var apples = await green.PublishAsync("Яблука", "fruits", 32m);
         var brynza = await cheese.PublishAsync("Бринза", "dairy", 165m);
+        var slot = await app.SlotAsync();
         var buyer = await app.LoginAsync("+380971111111");
-        await buyer.AddToCartAsync(apples, 1);
+        await buyer.AddToCartAsync(apples, 2);
+        (await buyer.AddToCartAsync(brynza, 1)).EnsureSuccessStatusCode();
 
-        var response = await buyer.AddToCartAsync(brynza, 1);
+        var placed = await (await buyer.CheckoutAsync(slot)).Json();
+        var ids = placed.GetProperty("checkoutOrderIds").EnumerateArray().Select(id => id.GetInt32()).ToList();
 
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        Assert.Equal("cart_other_farmer", await response.ErrorCode());
+        Assert.Equal(2, ids.Count);
+        Assert.Equal(229m, Assert.Single(app.Payments.Charges).Amount);
+        Assert.Single((await green.GetJson("/api/farmer/orders")).EnumerateArray());
+        Assert.Single((await cheese.GetJson("/api/farmer/orders")).EnumerateArray());
+        Assert.Equal(165m, (await buyer.GetJson($"/api/orders/{ids[1]}")).Dec("total"));
     }
 }

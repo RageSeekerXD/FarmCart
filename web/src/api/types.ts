@@ -50,6 +50,7 @@ export type AppNotification = Wire<Schemas['Notification']>;
 export type AuditEntry = Wire<Schemas['AuditEntry']>;
 export type PromoCode = Wire<Schemas['PromoCode']>;
 export type Review = Wire<Schemas['ReviewDto']>;
+export type AdminReview = Wire<Schemas['AdminReviewDto']>;
 
 // --- Відповіді з анонімних типів сервера та тіла запитів ---
 
@@ -93,9 +94,11 @@ export interface ProductDraft {
   stock: number;
   /** Місяці сезону 1-12; порожній список - цілий рік. */
   seasonMonths: number[];
+  /** Опис обома мовами; обидві порожні - опису немає. */
+  description?: LocalizedText | null;
 }
 
-export type ProductChanges = Partial<Pick<ProductDraft, 'name' | 'price' | 'stock' | 'seasonMonths'>>;
+export type ProductChanges = Partial<Pick<ProductDraft, 'name' | 'price' | 'stock' | 'seasonMonths' | 'description'>>;
 
 export interface ApiErrorBody {
   error: string;

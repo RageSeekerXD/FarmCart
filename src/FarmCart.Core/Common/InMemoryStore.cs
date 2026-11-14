@@ -20,6 +20,9 @@ public sealed class InMemoryStore
 
     public Dictionary<int, Product> Products { get; } = [];
 
+    /// <summary>Фото товарів за ідентифікатором товару (зберігаються в пам'яті, як і решта даних).</summary>
+    public Dictionary<int, ProductPhoto> Photos { get; } = [];
+
     public Dictionary<int, DeliverySlot> Slots { get; } = [];
 
     public Dictionary<string, PromoCode> PromoCodes { get; } = new(StringComparer.OrdinalIgnoreCase);
@@ -52,6 +55,10 @@ public sealed class InMemoryStore
     public Cart CartOf(int buyerId) => Carts.TryGetValue(buyerId, out var cart) ? cart : Carts[buyerId] = new Cart();
 
     /// <summary>Замовлення покупця; чуже замовлення для нього «не існує», щоб не розкривати чужі номери.</summary>
+    /// <summary>Скільки місць у слоті зайнято: відхилені й скасовані замовлення місця не займають.</summary>
+    public int Booked(int slotId) =>
+        Orders.Values.Count(o => o.Slot.Id == slotId && o.Status is not (OrderStatus.Rejected or OrderStatus.Cancelled));
+
     public Order BuyerOrder(User buyer, int orderId) =>
         Orders.GetValueOrDefault(orderId) is { } order && order.BuyerId == buyer.Id
             ? order

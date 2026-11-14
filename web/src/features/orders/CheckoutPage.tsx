@@ -9,6 +9,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Divider,
   FormControl,
@@ -35,7 +36,10 @@ import { formatSlot } from '../../shared/dates';
 import { EASE_SPRING, enter, popIn } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
+import { useAuth } from '../auth/AuthContext';
+import { byFarm } from '../cart/CartPage';
 import { useCart } from '../cart/useCart';
+import { recentAddresses, rememberAddress } from './addressBook';
 
 const METHODS: readonly PaymentMethod[] = ['Card', 'ApplePay', 'GooglePay', 'Cash'];
 const METHOD_ICON: Record<PaymentMethod, ReactNode> = {
@@ -82,9 +86,12 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const cart = useCart();
+  const { user } = useAuth();
+  // Остання адреса підставляється одразу, інші нещодавні - одним натисканням (п. 3 покращень).
+  const [recent] = useState(() => (user ? recentAddresses(user.id) : []));
   const slots = useQuery({ queryKey: ['slots'], queryFn: () => api<Slot[]>('/slots'), staleTime: 0 });
 
-  const [address, setAddress] = useState('');
+  const [address, setAddress] = useState(() => recent[0] ?? '');
   const [slotId, setSlotId] = useState<number | null>(null);
   const [promoCode, setPromoCode] = useState('');
   const [comment, setComment] = useState('');
@@ -97,11 +104,21 @@ export function CheckoutPage() {
   const place = useMutation({
     mutationFn: (request: CheckoutRequest) =>
       api<Order>('/orders', { method: 'POST', body: request, headers: { 'Idempotency-Key': idempotencyKey } }),
-    onSuccess: (order) => {
+    onSuccess: (order, request) => {
+      if (user) {
+        rememberAddress(user.id, request.address);
+      }
       queryClient.setQueryData(['cart'], { farmerId: null, lines: [], total: 0 });
       void queryClient.invalidateQueries({ queryKey: ['orders'] });
       void queryClient.invalidateQueries({ queryKey: ['catalog'] });
       queryClient.setQueryData(['order', order.id], order);
+      // Кілька ферм - кілька замовлень (п. 8 покращень): ведемо до списку, де видно їх усі.
+      if (order.checkoutOrderIds.length > 1) {
+        toast.show(t('checkout.placedMany', { ids: order.checkoutOrderIds.map((id) => `№${id}`).join(', ') }));
+        void navigate('/orders', { replace: true, state: { placed: order.checkoutOrderIds } });
+        return;
+      }
+
       toast.show(t('checkout.placed', { id: order.id }));
       void navigate(`/orders/${order.id}`, { replace: true, state: { placed: true } });
     },
@@ -132,6 +149,7 @@ export function CheckoutPage() {
     );
   }
 
+  const farms = byFarm(cart.data.lines);
   const addressMissing = address.trim() === '';
   const slotMissing = slotId === null;
 
@@ -178,6 +196,26 @@ export function CheckoutPage() {
                 error={touched && addressMissing}
                 helperText={touched && addressMissing ? t('errors.address_required') : t('checkout.addressHint')}
               />
+              {recent.length > 0 && (
+                <Box role="group" aria-label={t('checkout.recentAddresses')} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mt: -1 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('checkout.recentAddresses')}:
+                  </Typography>
+                  {recent.map((item) => (
+                    <Chip
+                      key={item}
+                      size="small"
+                      label={item}
+                      clickable
+                      color={item === address.trim() ? 'primary' : 'default'}
+                      variant={item === address.trim() ? 'filled' : 'outlined'}
+                      aria-pressed={item === address.trim()}
+                      onClick={() => setAddress(item)}
+                      sx={{ maxWidth: '100%' }}
+                    />
+                  ))}
+                </Box>
+              )}
               <FormControl required error={touched && slotMissing}>
                 <FormLabel id="checkout-slot" sx={{ mb: 1 }}>
                   {t('checkout.slot')}
@@ -295,16 +333,23 @@ export function CheckoutPage() {
             {t('checkout.yourOrder')}
           </Typography>
           <Stack component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }} spacing={1}>
-            {cart.data.lines.map((line) => (
-              <Box component="li" key={line.productId} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
-                <Typography variant="body2">
-                  {pick(line.name)} × {line.quantity}
+            {farms.map((farm) => [
+              farms.length > 1 && (
+                <Typography component="li" key={`farm-${farm.farmerId}`} variant="caption" color="text.secondary" sx={{ fontWeight: 600, pt: 0.5 }}>
+                  {pick(farm.farmerName)}
                 </Typography>
-                <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
-                  {formatMoney(line.total, lang)}
-                </Typography>
-              </Box>
-            ))}
+              ),
+              ...farm.lines.map((line) => (
+                <Box component="li" key={line.productId} sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+                  <Typography variant="body2">
+                    {pick(line.name)} × {line.quantity}
+                  </Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+                    {formatMoney(line.total, lang)}
+                  </Typography>
+                </Box>
+              )),
+            ])}
           </Stack>
           <TextField
             label={t('checkout.promo')}
@@ -316,6 +361,11 @@ export function CheckoutPage() {
             slotProps={{ htmlInput: { maxLength: 16, autoCapitalize: 'characters' } }}
             sx={{ mt: 2 }}
           />
+          {farms.length > 1 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              {t('checkout.splitNote', { count: farms.length })}
+            </Alert>
+          )}
           <Divider sx={{ my: 1.5 }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 2 }}>
             <Typography sx={{ fontWeight: 600 }}>{t('cart.total')}</Typography>

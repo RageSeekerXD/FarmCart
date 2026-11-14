@@ -138,3 +138,17 @@ describe('UI-03 Мапа ферм', () => {
     expect(await screen.findByRole('heading', { name: 'Ферма «Зелений Гай»' })).toBeInTheDocument();
   });
 });
+
+describe('Відгуки ферми на мапі', () => {
+  it('кнопка «Відгуки» відкриває відгуки ферми; прихованих там немає', async () => {
+    backend.addFarmReview(4, 'Свіжі овочі, привезли вчасно', 'Ігор П.');
+    backend.addFarmReview(1, 'Спам', 'Тролль', true);
+    const { user } = await renderApp('/map');
+
+    await user.click(await screen.findByRole('button', { name: 'Відгуки: Ферма «Зелений Гай»' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Відгуки: Ферма «Зелений Гай»' });
+    expect(await within(dialog).findByText('Свіжі овочі, привезли вчасно')).toBeInTheDocument();
+    expect(within(dialog).queryByText('Спам')).not.toBeInTheDocument();
+  });
+});

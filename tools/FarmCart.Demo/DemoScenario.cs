@@ -150,12 +150,16 @@ public sealed class DemoScenario(HttpClient http, TextWriter output)
     /// <summary>Повертає суму кошика - від неї сценарій обчислює очікувану знижку й повернення коштів.</summary>
     private async Task<decimal> FillCartAsync(Actor buyer, JsonArray catalog)
     {
-        _protocol.Step("US-05. Кошик: товари одного фермера («покупки з одного прилавка»)");
+        _protocol.Step("US-05. Кошик: товари різних ферм разом (при оформленні - по замовленню на ферму)");
         await buyer.Post("/api/cart/items", new { productId = ProductId(catalog, "Морква"), quantity = 10 });
         var cart = await buyer.Post("/api/cart/items", new { productId = ProductId(catalog, "Картопля"), quantity = 15 });
         _protocol.Detail($"У кошику {cart.Body!["lines"]!.AsArray().Count} позиції на {Uah(cart["total"])}");
-        var otherFarm = await buyer.Post("/api/cart/items", new { productId = ProductId(catalog, "Бринза овеча"), quantity = 1 });
-        _protocol.Check(otherFarm.Status == 409, "товар іншого фермера не додано (409)");
+        var brynza = ProductId(catalog, "Бринза овеча");
+        var otherFarm = await buyer.Post("/api/cart/items", new { productId = brynza, quantity = 1 });
+        _protocol.Check(otherFarm.Status == 200 && otherFarm.Body!["lines"]!.AsArray().Count == 3, "товар іншої ферми додано в той самий кошик");
+        // Далі сценарій оформлює одне замовлення однієї ферми, тож бринзу прибираємо.
+        var back = await buyer.Delete($"/api/cart/items/{brynza}");
+        _protocol.Check(back.Body!["lines"]!.AsArray().Count == 2, "товар іншої ферми прибрано з кошика");
         return Amount(cart["total"]);
     }
 

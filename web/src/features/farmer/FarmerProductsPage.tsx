@@ -2,10 +2,12 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import { Alert, Box, Button, Chip, CircularProgress, Paper, Stack, Typography } from '@mui/material';
+import { alpha, Alert, Box, Button, Chip, CircularProgress, Paper, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Product } from '../../api/types';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '../../api/client';
+import type { FarmerProfile, Product } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
@@ -13,6 +15,7 @@ import { useToast } from '../../shared/Toast';
 import { categoryLook, LOW_STOCK } from '../catalog/categoryLook';
 import { useFarmerProfile, useMyProducts, useReference } from './api';
 import { ProductDialog, monthName } from './ProductDialog';
+import { ProductPhoto } from './ProductPhoto';
 
 /** Залишок товару одним поглядом: немає - червоний, мало - помаранчевий, решта - нейтральний. */
 function StockChip({ stock }: { stock: number }) {
@@ -40,6 +43,16 @@ export function FarmerProductsPage() {
   const products = useMyProducts();
   const reference = useReference();
   const [editing, setEditing] = useState<Product | 'new' | null>(null);
+  const queryClient = useQueryClient();
+  const reapply = useMutation({
+    mutationFn: () => api<FarmerProfile>('/farmer/reapply', { method: 'POST', body: {} }),
+    onSuccess: (farm) => {
+      queryClient.setQueryData(['farmer', 'profile'], farm);
+      void queryClient.invalidateQueries({ queryKey: ['farmer', 'profile'] });
+      toast.show(t('farm.reapplied'));
+    },
+    onError: (error) => toast.show(errorMessage(error), 'error'),
+  });
 
   const error = profile.error ?? products.error ?? reference.error;
   const canAdd = Boolean(profile.data?.verified && reference.data);
@@ -69,7 +82,7 @@ export function FarmerProductsPage() {
       {profile.data && (
         <Paper
           elevation={1}
-          sx={{ p: { xs: 2, sm: 2.5 }, mb: 2, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, background: 'linear-gradient(135deg, #ffffff 0%, #eef5ea 100%)' }}
+          sx={{ p: { xs: 2, sm: 2.5 }, mb: 2, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, background: (theme) => `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%)` }}
         >
           <Box aria-hidden sx={{ width: 56, height: 56, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 30, bgcolor: 'background.paper', boxShadow: 1 }}>
             🌾
@@ -81,17 +94,31 @@ export function FarmerProductsPage() {
             <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap', mt: 0.5 }}>
               <Chip
                 size="small"
-                color={profile.data.verified ? 'success' : 'warning'}
+                color={profile.data.verified ? 'success' : profile.data.rejectionReason ? 'error' : 'warning'}
                 icon={profile.data.verified ? <VerifiedIcon /> : undefined}
-                label={t(profile.data.verified ? 'farm.verified' : 'farm.pending')}
+                label={t(profile.data.verified ? 'farm.verified' : profile.data.rejectionReason ? 'farm.rejectedChip' : 'farm.pending')}
               />
               {profile.data.certified && <Chip size="small" variant="outlined" color="success" label={t('catalog.organic')} />}
               {products.data && <Chip size="small" variant="outlined" label={t('farm.productsCount', { count: products.data.length })} sx={{ bgcolor: 'background.paper' }} />}
             </Stack>
           </Box>
-          {!profile.data.verified && (
+          {!profile.data.verified && !profile.data.rejectionReason && (
             <Alert severity="info" sx={{ flexBasis: '100%' }}>
               {t('farm.pendingHint')}
+            </Alert>
+          )}
+          {profile.data.rejectionReason && (
+            // Заявку відхилено (п. 6 покращень): фермер бачить причину й може подати заявку повторно.
+            <Alert
+              severity="error"
+              sx={{ flexBasis: '100%' }}
+              action={
+                <Button color="inherit" size="small" loading={reapply.isPending} onClick={() => reapply.mutate()}>
+                  {t('farm.reapply')}
+                </Button>
+              }
+            >
+              {t('farm.rejected', { reason: profile.data.rejectionReason })}
             </Alert>
           )}
         </Paper>
@@ -120,9 +147,7 @@ export function FarmerProductsPage() {
                 ...enter(index),
               }}
             >
-              <Box aria-hidden sx={{ width: 64, height: 64, flexShrink: 0, borderRadius: 2, display: 'grid', placeItems: 'center', fontSize: 32, background: look.tint }}>
-                {look.icon}
-              </Box>
+              <ProductPhoto product={product} look={look} />
               <Box sx={{ flex: '1 1 220px', minWidth: 0 }}>
                 <Typography component="h2" variant="subtitle1" sx={{ fontWeight: 650, lineHeight: 1.3 }}>
                   {pick(product.name)}

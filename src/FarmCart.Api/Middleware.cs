@@ -46,7 +46,9 @@ public static partial class Middleware
     {
         var request = context.Request;
         var body = "";
-        if (HttpMethods.IsPost(request.Method) || HttpMethods.IsPut(request.Method) || HttpMethods.IsPatch(request.Method))
+        // Двійкове тіло (фото товару) - не текст: шукати в ньому номер картки безглуздо й ризиковано (хибні збіги).
+        var binary = request.ContentType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) == true;
+        if (!binary && (HttpMethods.IsPost(request.Method) || HttpMethods.IsPut(request.Method) || HttpMethods.IsPatch(request.Method)))
         {
             request.EnableBuffering();
             using var reader = new StreamReader(request.Body, Encoding.UTF8, leaveOpen: true);

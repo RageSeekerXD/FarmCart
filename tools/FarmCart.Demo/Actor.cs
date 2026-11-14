@@ -24,6 +24,8 @@ internal sealed class Actor(string name, HttpClient http, Protocol protocol)
     public Task<Reply> Post(string path, object? body = null, string? idempotencyKey = null) =>
         Send(HttpMethod.Post, path, body ?? new { }, idempotencyKey);
 
+    public Task<Reply> Delete(string path) => Send(HttpMethod.Delete, path, body: null, idempotencyKey: null);
+
     private async Task<Reply> Send(HttpMethod method, string path, object? body, string? idempotencyKey)
     {
         using var request = new HttpRequestMessage(method, path);

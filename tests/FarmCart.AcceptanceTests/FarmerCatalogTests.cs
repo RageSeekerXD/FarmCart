@@ -53,3 +53,30 @@ public sealed class FarmerCatalogTests
         Assert.Equal(["Полуниця"], inJune.Names());
     }
 }
+
+/// <summary>Фото товару через API: завантаження файлом, публічна адреса для каталогу, видалення.</summary>
+public sealed class ProductPhotoApiTests
+{
+    [Fact(DisplayName = "PHOTO-1 Фермер завантажує фото товару; каталог показує його за публічною адресою; фото можна прибрати")]
+    public async Task FarmerUploadsAndRemovesPhoto()
+    {
+        using var app = new FarmCartApp();
+        var (farmer, apples, _) = await Journeys.FarmWithApplesAsync(app);
+        byte[] png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3, 4];
+        var anonymous = app.CreateClient();
+
+        var uploaded = await farmer.PutAsync($"/api/farmer/products/{apples}/photo", new ByteArrayContent(png) { Headers = { ContentType = new("image/png") } });
+        var photoUrl = (await uploaded.Json()).Str("photoUrl");
+        var served = await anonymous.GetAsync(photoUrl);
+        var inCatalog = (await anonymous.GetJson("/api/catalog"))[0].Str("photoUrl");
+        var wrongType = await farmer.PutAsync($"/api/farmer/products/{apples}/photo", new StringContent("<svg/>", System.Text.Encoding.UTF8, "image/svg+xml"));
+        (await farmer.DeleteAsync($"/api/farmer/products/{apples}/photo")).EnsureSuccessStatusCode();
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, uploaded.StatusCode);
+        Assert.Equal("image/png", served.Content.Headers.ContentType?.MediaType);
+        Assert.Equal(png, await served.Content.ReadAsByteArrayAsync());
+        Assert.Equal(photoUrl, inCatalog);
+        Assert.Equal("photo_type_invalid", await wrongType.ErrorCode());
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, (await anonymous.GetAsync(photoUrl)).StatusCode);
+    }
+}

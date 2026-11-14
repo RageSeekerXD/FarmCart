@@ -8,6 +8,20 @@ public enum OrderStatus
     InTransit,
     Delivered,
     Rejected,
+
+    /// <summary>Покупець скасував замовлення до того, як фермер його прийняв.</summary>
+    Cancelled,
+
+    /// <summary>Кур'єр не зміг вручити замовлення; покупець обирає новий час доставки.</summary>
+    DeliveryFailed,
+}
+
+/// <summary>Чому кур'єр не зміг вручити замовлення.</summary>
+public enum DeliveryProblem
+{
+    BuyerAbsent,
+    AddressNotFound,
+    Other,
 }
 
 public enum PaymentMethod
@@ -28,7 +42,8 @@ public enum PaymentStatus
 
 public sealed record DeliverySlot(int Id, DateTimeOffset Start, DateTimeOffset End, int Capacity);
 
-public sealed record PromoCode(string Code, int Percent, decimal MinTotal, DateTimeOffset ValidUntil);
+/// <summary>Промокод; вимкнений адміністратором (Active = false) не приймається при оформленні.</summary>
+public sealed record PromoCode(string Code, int Percent, decimal MinTotal, DateTimeOffset ValidUntil, bool Active = true);
 
 public sealed record OrderLine(int ProductId, LocalizedText Name, LocalizedText Unit, decimal UnitPrice, int Quantity)
 {
@@ -40,11 +55,9 @@ public sealed record StatusChange(OrderStatus Status, DateTimeOffset At);
 /// <summary>Нестача товару, яку фермер виявив під час прийняття замовлення.</summary>
 public sealed record Shortage(int ProductId, int Quantity);
 
-/// <summary>Кошик покупця: товари одного фермера («покупки з одного прилавка»).</summary>
+/// <summary>Кошик покупця: товари будь-яких ферм; при оформленні - по замовленню на кожну ферму (п. 8 покращень).</summary>
 public sealed class Cart
 {
-    public int? FarmerId { get; set; }
-
     /// <summary>Кількість за ідентифікатором товару.</summary>
     public Dictionary<int, int> Quantities { get; } = [];
 }
@@ -82,7 +95,13 @@ public sealed class Order
 
     public required string Address { get; init; }
 
-    public required DeliverySlot Slot { get; init; }
+    /// <summary>Слот доставки; змінюється лише перенесенням після невдалої доставки.</summary>
+    public required DeliverySlot Slot { get; set; }
+
+    /// <summary>Остання невдала спроба доставки: причина й коментар кур'єра; null - невдач не було.</summary>
+    public DeliveryProblem? Problem { get; internal set; }
+
+    public string? ProblemNote { get; internal set; }
 
     public string? Comment { get; init; }
 
@@ -110,6 +129,9 @@ public sealed class Order
     public int? CourierId { get; internal set; }
 
     public IReadOnlyList<StatusChange> History => _history;
+
+    /// <summary>Усі замовлення того самого оформлення (по одному на ферму, одне списання коштів), зокрема це.</summary>
+    public IReadOnlyList<int> CheckoutOrderIds { get; internal set; } = [];
 
     public decimal Subtotal => Lines.Sum(line => line.Total);
 

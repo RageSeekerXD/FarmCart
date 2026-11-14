@@ -29,6 +29,8 @@ export function notificationText(notification: AppNotification, t: TFunction, la
       return t('notify.orderStatus', { id, status: t(`status.${notification.params.status}`) });
     case 'delivery.assigned':
       return t('notify.deliveryAssigned', { id });
+    case 'order.cancelled':
+      return t('notify.orderCancelled', { id });
     default:
       return t('notify.other');
   }
@@ -38,6 +40,7 @@ export function notificationText(notification: AppNotification, t: TFunction, la
 export function notificationTarget(notification: AppNotification): { to: string; role: Role } {
   switch (notification.kind) {
     case 'order.new':
+    case 'order.cancelled':
       return { to: '/farmer/orders', role: 'Farmer' };
     case 'delivery.assigned':
       return { to: '/courier', role: 'Courier' };

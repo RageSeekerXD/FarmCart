@@ -33,17 +33,19 @@ public sealed class CartServiceTests
         Assert.Empty(_world.Carts.Get(buyer).Lines);
     }
 
+    // Раніше кошик тримав товари лише одного фермера (cart_other_farmer); тепер - будь-яких, з назвою ферми в рядку.
     [Fact]
-    public void Add_ProductOfAnotherFarmer_IsConflict()
+    public void Add_ProductsOfSeveralFarmers_ShareOneCart()
     {
         var (first, _) = _world.NewFarmer("Перша");
         var (second, _) = _world.NewFarmer("Друга");
         var buyer = _world.NewUser();
         _world.Carts.Add(buyer, _world.NewProduct(first, "Сир").Id, 1);
 
-        var error = Assert.Throws<DomainException>(() => _world.Carts.Add(buyer, _world.NewProduct(second, "Молоко").Id, 1));
+        var cart = _world.Carts.Add(buyer, _world.NewProduct(second, "Молоко").Id, 1);
 
-        Assert.Equal("cart_other_farmer", error.Code);
+        Assert.Null(cart.FarmerId);
+        Assert.Equal(["Перша", "Друга"], cart.Lines.Select(line => line.FarmerName.Uk));
     }
 
     [Theory]

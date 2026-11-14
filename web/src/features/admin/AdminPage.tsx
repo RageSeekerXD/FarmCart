@@ -1,9 +1,12 @@
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import HistoryIcon from '@mui/icons-material/History';
+import RateReviewOutlinedIcon from '@mui/icons-material/RateReviewOutlined';
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
 import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
-import { Alert, Box, Button, Chip, CircularProgress, Link, Paper, Stack, Tab, Tabs, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, IconButton, Link, Paper, Stack, Tab, Tabs, TextField, Tooltip, Typography } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,14 +16,17 @@ import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatDateTime, formatSlot, localIso } from '../../shared/dates';
 import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
+import { RejectFarmerDialog, SlotDeleteDialog, SlotEditDialog } from './AdminDialogs';
+import { ReviewModeration } from './ReviewModeration';
 import { useToast } from '../../shared/Toast';
 
-const SECTIONS = ['verification', 'slots', 'promo', 'audit'] as const;
+const SECTIONS = ['verification', 'slots', 'promo', 'reviews', 'audit'] as const;
 type Section = (typeof SECTIONS)[number];
 const SECTION_ICON: Record<Section, ReactElement> = {
   verification: <VerifiedUserOutlinedIcon fontSize="small" />,
   slots: <EventAvailableOutlinedIcon fontSize="small" />,
   promo: <LocalOfferOutlinedIcon fontSize="small" />,
+  reviews: <RateReviewOutlinedIcon fontSize="small" />,
   audit: <HistoryIcon fontSize="small" />,
 };
 
@@ -38,6 +44,7 @@ function Verification() {
   const { t } = useTranslation();
   const { lang, pick } = useLang();
   const toast = useToast();
+  const [rejecting, setRejecting] = useState<FarmerProfile | null>(null);
   const queryClient = useQueryClient();
   const pending = useQuery({ queryKey: ['admin', 'pending'], queryFn: () => api<FarmerProfile[]>('/admin/farmers/pending'), refetchInterval: 15_000 });
   const verify = useMutation({
@@ -84,17 +91,23 @@ function Verification() {
                 </Box>
               )}
             </Box>
-            <Button
-              variant="contained"
-              loading={verify.isPending && verify.variables?.id === farmer.id}
-              onClick={() => verify.mutate(farmer)}
-              aria-label={t('admin.verifyNamed', { name: pick(farmer.name) })}
-            >
-              {t('admin.verify')}
-            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button color="error" onClick={() => setRejecting(farmer)} aria-label={t('admin.rejectNamed', { name: pick(farmer.name) })}>
+                {t('admin.reject')}
+              </Button>
+              <Button
+                variant="contained"
+                loading={verify.isPending && verify.variables?.id === farmer.id}
+                onClick={() => verify.mutate(farmer)}
+                aria-label={t('admin.verifyNamed', { name: pick(farmer.name) })}
+              >
+                {t('admin.verify')}
+              </Button>
+            </Stack>
           </Paper>
         ))}
       </Stack>
+      {rejecting && <RejectFarmerDialog key={rejecting.id} farmer={rejecting} onClose={() => setRejecting(null)} />}
     </Loading>
   );
 }
@@ -109,6 +122,8 @@ function Slots() {
   const { t } = useTranslation();
   const { lang } = useLang();
   const toast = useToast();
+  const [editing, setEditing] = useState<Slot | null>(null);
+  const [deleting, setDeleting] = useState<Slot | null>(null);
   const queryClient = useQueryClient();
   const slots = useQuery({ queryKey: ['slots'], queryFn: () => api<Slot[]>('/slots'), staleTime: 0 });
   const [date, setDate] = useState(tomorrow);
@@ -173,15 +188,35 @@ function Slots() {
           sx={{ listStyle: 'none', p: 0, m: 0, display: 'grid', gap: 1, gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))' }}
         >
           {slots.data?.map((slot, index) => (
-            <Paper component="li" key={slot.id} variant="outlined" sx={{ px: 2, py: 1.5, ...enter(index, 35) }}>
-              <Typography sx={{ fontWeight: 600 }}>{formatSlot(slot.start, slot.end, lang)}</Typography>
-              <Typography variant="body2" sx={{ color: slot.remaining === 0 ? 'error.main' : slot.remaining === 1 ? 'warning.dark' : 'text.secondary' }}>
-                {slot.remaining > 0 ? t('checkout.slotLeft', { count: slot.remaining }) : t('checkout.slotFull')}
-              </Typography>
+            <Paper component="li" key={slot.id} variant="outlined" sx={{ pl: 2, pr: 1, py: 1.5, display: 'flex', alignItems: 'flex-start', gap: 1, ...enter(index, 35) }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography sx={{ fontWeight: 600 }}>{formatSlot(slot.start, slot.end, lang)}</Typography>
+                <Typography variant="body2" sx={{ color: slot.remaining === 0 ? 'error.main' : slot.remaining === 1 ? 'warning.dark' : 'text.secondary' }}>
+                  {slot.remaining > 0 ? t('checkout.slotLeft', { count: slot.remaining }) : t('checkout.slotFull')}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {t('admin.bookedOf', { booked: slot.capacity - slot.remaining, capacity: slot.capacity })}
+                </Typography>
+              </Box>
+              <Tooltip title={t('admin.editSlot')}>
+                <IconButton size="small" aria-label={t('admin.editSlotNamed', { slot: formatSlot(slot.start, slot.end, lang) })} onClick={() => setEditing(slot)}>
+                  <EditOutlinedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              {/* Слот із замовленнями видалити не можна - кнопки для нього немає. */}
+              {slot.remaining === slot.capacity && (
+                <Tooltip title={t('admin.deleteSlot')}>
+                  <IconButton size="small" color="error" aria-label={t('admin.deleteSlotNamed', { slot: formatSlot(slot.start, slot.end, lang) })} onClick={() => setDeleting(slot)}>
+                    <DeleteOutlineIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Paper>
           ))}
         </Box>
       </Loading>
+      {editing && <SlotEditDialog key={editing.id} slot={editing} onClose={() => setEditing(null)} />}
+      {deleting && <SlotDeleteDialog key={deleting.id} slot={deleting} onClose={() => setDeleting(null)} />}
     </Stack>
   );
 }
@@ -191,6 +226,17 @@ function Promo() {
   const { t } = useTranslation();
   const { lang } = useLang();
   const toast = useToast();
+  // Вимкнення й увімкнення промокоду (п. 6 покращень): вимкнений не приймається при оформленні.
+  const toggle = useMutation({
+    mutationFn: ({ code, active }: { code: string; active: boolean }) =>
+      api<PromoCode>(`/admin/promocodes/${encodeURIComponent(code)}/${active ? 'activate' : 'deactivate'}`, { method: 'POST', body: {} }),
+    onSuccess: (promo) => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'promocodes'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'audit'] });
+      toast.show(t(promo.active ? 'admin.promoOnToast' : 'admin.promoOffToast', { code: promo.code }), promo.active ? 'success' : 'info');
+    },
+    onError: (error) => toast.show(errorMessage(error), 'error'),
+  });
   const queryClient = useQueryClient();
   const [code, setCode] = useState('');
   const [percent, setPercent] = useState('10');
@@ -268,9 +314,19 @@ function Promo() {
               >
                 {promo.code}
               </Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ flex: 1, minWidth: 180 }}>
                 {t('admin.promoSummary', { percent: promo.percent, min: formatMoney(promo.minTotal, lang), until: formatDateTime(promo.validUntil, lang) })}
               </Typography>
+              <Chip size="small" color={promo.active ? 'success' : 'default'} variant={promo.active ? 'outlined' : 'filled'} label={t(promo.active ? 'admin.promoActive' : 'admin.promoOff')} />
+              <Button
+                size="small"
+                color={promo.active ? 'error' : 'primary'}
+                loading={toggle.isPending && toggle.variables?.code === promo.code}
+                onClick={() => toggle.mutate({ code: promo.code, active: !promo.active })}
+                aria-label={t(promo.active ? 'admin.deactivateNamed' : 'admin.activateNamed', { code: promo.code })}
+              >
+                {t(promo.active ? 'admin.deactivate' : 'admin.activate')}
+              </Button>
             </Paper>
           ))}
         </Stack>
@@ -335,6 +391,7 @@ export function AdminPage() {
         {section === 'verification' && <Verification />}
         {section === 'slots' && <Slots />}
         {section === 'promo' && <Promo />}
+        {section === 'reviews' && <ReviewModeration />}
         {section === 'audit' && <Audit />}
       </Box>
     </Box>

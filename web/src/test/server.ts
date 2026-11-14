@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import type { AppNotification, AuditEntry, Cart, PromoCode, Review, CatalogItem, CheckoutRequest, Courier, DeliveryTask, FarmOnMap, FarmRegistration, FarmerProfile, Order, OrderStatus, Product, ProductDraft, ReferenceData, Role, Shortage, Slot, User } from '../api/types';
+import type { AdminReview, AppNotification, AuditEntry, Cart, PromoCode, Review, CatalogItem, CheckoutRequest, Courier, DeliveryTask, FarmOnMap, FarmRegistration, FarmerProfile, Order, OrderStatus, Product, ProductDraft, ReferenceData, Role, Shortage, Slot, User } from '../api/types';
 
 // MSW-моки у формі контракту API 2.0 (двомовні поля { uk, en }).
 
@@ -18,13 +18,14 @@ export const reference: ReferenceData = {
   ],
 };
 
-const green = { farmerId: 1, farmerName: { uk: 'Ферма «Зелений Гай»', en: 'Zelenyi Hai Farm' }, certified: true, farmerRating: 4.8, distanceKm: 7.6 };
-const cheese = { farmerId: 2, farmerName: { uk: 'Сироварня «Карпатська бринза»', en: 'Karpatska Bryndza Creamery' }, certified: false, farmerRating: null, distanceKm: 8.3 };
+const green = { farmerId: 1, farmerName: { uk: 'Ферма «Зелений Гай»', en: 'Zelenyi Hai Farm' }, certified: true, farmerRating: 4.8, distanceKm: 7.6, farmerReviewCount: 2 };
+const cheese = { farmerId: 2, farmerName: { uk: 'Сироварня «Карпатська бринза»', en: 'Karpatska Bryndza Creamery' }, certified: false, farmerRating: null, distanceKm: 8.3, farmerReviewCount: 0 };
+const noDetails = { description: null, seasonMonths: [] as number[] };
 
 export const products: CatalogItem[] = [
-  { productId: 1, name: { uk: 'Морква', en: 'Carrots' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 16, stock: 200, photoUrl: null, ...green },
-  { productId: 2, name: { uk: 'Картопля', en: 'Potatoes' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 18, stock: 300, photoUrl: null, ...green },
-  { productId: 3, name: { uk: "Молоко коров'яче", en: "Cow's milk" }, category: 'dairy', unitCode: 'l', unit: { uk: 'л', en: 'l' }, price: 38, stock: 60, photoUrl: '/img/products/milk.jpg', ...cheese },
+  { productId: 1, name: { uk: 'Морква', en: 'Carrots' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 16, stock: 200, photoUrl: null, ...green, description: { uk: 'Солодка морква без гербіцидів', en: 'Sweet carrots grown without herbicides' }, seasonMonths: [7, 8, 9, 10] },
+  { productId: 2, name: { uk: 'Картопля', en: 'Potatoes' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 18, stock: 300, photoUrl: null, ...green, ...noDetails },
+  { productId: 3, name: { uk: "Молоко коров'яче", en: "Cow's milk" }, category: 'dairy', unitCode: 'l', unit: { uk: 'л', en: 'l' }, price: 38, stock: 60, photoUrl: '/img/products/milk.jpg', ...cheese, ...noDetails },
 ];
 
 export const farms: FarmOnMap[] = [
@@ -34,17 +35,17 @@ export const farms: FarmOnMap[] = [
 ];
 
 export const slots: Slot[] = [
-  { id: 1, start: '2026-10-02T10:00:00+03:00', end: '2026-10-02T12:00:00+03:00', remaining: 3 },
-  { id: 2, start: '2026-10-02T12:00:00+03:00', end: '2026-10-02T14:00:00+03:00', remaining: 0 },
+  { id: 1, start: '2026-10-02T10:00:00+03:00', end: '2026-10-02T12:00:00+03:00', remaining: 3, capacity: 3 },
+  { id: 2, start: '2026-10-02T12:00:00+03:00', end: '2026-10-02T14:00:00+03:00', remaining: 0, capacity: 2 },
 ];
 
 export const couriers: Courier[] = [{ id: 2, name: 'Андрій Шевчук' }];
 
-export const farmProfile: FarmerProfile = { id: 1, name: green.farmerName, lat: 49.816, lon: 24.13, certified: true, verified: true, rating: 4.8, reviewCount: 12 };
+export const farmProfile: FarmerProfile = { id: 1, name: green.farmerName, lat: 49.816, lon: 24.13, certified: true, verified: true, rating: 4.8, reviewCount: 12, rejectionReason: null };
 
 export const ownProducts: Product[] = [
-  { id: 1, farmerId: 1, name: { uk: 'Морква', en: 'Carrots' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 16, stock: 200, photoUrl: null, seasonMonths: [] },
-  { id: 4, farmerId: 1, name: { uk: 'Полуниця', en: 'Strawberries' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 95, stock: 0, photoUrl: null, seasonMonths: [5, 6, 7] },
+  { id: 1, farmerId: 1, name: { uk: 'Морква', en: 'Carrots' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 16, stock: 200, photoUrl: null, seasonMonths: [], description: null },
+  { id: 4, farmerId: 1, name: { uk: 'Полуниця', en: 'Strawberries' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 95, stock: 0, photoUrl: null, seasonMonths: [5, 6, 7], description: null },
 ];
 
 export const delivery: DeliveryTask = {
@@ -74,9 +75,12 @@ export const backend = {
   checkouts: [] as { key: string | null; body: CheckoutRequest }[],
   /** Замовлення покупця з кошика-зразка (морква × 10) у вказаному статусі. */
   addOrder(status: OrderStatus, patch: Partial<Order> = {}): Order {
-    const reached = status === 'Rejected' ? ['Placed', 'Rejected'] : PATH.slice(0, PATH.indexOf(status) + 1);
+    const stopped = status === 'Rejected' || status === 'Cancelled';
+    const failed = status === 'DeliveryFailed';
+    const reached = stopped ? ['Placed', status] : failed ? [...PATH.slice(0, 4), status] : PATH.slice(0, PATH.indexOf(status) + 1);
     const order: Order = {
       id: 1001 + this.orders.length,
+      checkoutOrderIds: [1001 + this.orders.length],
       status,
       farmerId: 1,
       lines: [{ productId: 1, name: products[0]!.name, unit: products[0]!.unit, unitPrice: 16, quantity: 10, total: 160 }],
@@ -84,9 +88,9 @@ export const backend = {
       discount: 0,
       total: 160,
       paymentMethod: 'Card',
-      paymentStatus: status === 'Rejected' ? 'Refunded' : 'Paid',
+      paymentStatus: stopped ? 'Refunded' : 'Paid',
       paidAmount: 160,
-      refundedAmount: status === 'Rejected' ? 160 : 0,
+      refundedAmount: stopped ? 160 : 0,
       address: 'Львів, вул. Городоцька, 15',
       slotStart: slots[0]!.start,
       slotEnd: slots[0]!.end,
@@ -94,6 +98,8 @@ export const backend = {
       promoCode: null,
       deliveryCode: '4821',
       rejectionReason: status === 'Rejected' ? 'Морква закінчилася' : null,
+      deliveryProblem: failed ? 'BuyerAbsent' : null,
+      deliveryProblemNote: null,
       history: reached.map((item, index) => ({ status: item as OrderStatus, at: `2026-10-01T${String(9 + index).padStart(2, "0")}:00:00+03:00` })),
       ...patch,
     };
@@ -112,9 +118,34 @@ export const backend = {
   /** Заявки продавців у черзі верифікації. */
   pendingFarmers: [] as FarmerProfile[],
   audit: [] as AuditEntry[],
-  promoCodes: [{ code: 'FARM10', percent: 10, minTotal: 300, validUntil: '2026-10-31T09:00:00+03:00' }] as PromoCode[],
+  promoCodes: [{ code: 'FARM10', percent: 10, minTotal: 300, validUntil: '2026-10-31T09:00:00+03:00', active: true }] as PromoCode[],
+  /** Слоти доставки, які бачать покупець і адміністратор; адміністратор може їх змінювати. */
+  slotList: slots.map((slot) => ({ ...slot })),
   adminRequests: [] as { path: string; body: Record<string, unknown> }[],
   reviews: [] as Review[],
+  /** Відгуки про ферми (усі, зокрема приховані) - для сторінки ферми й модерації адміністратора. */
+  farmReviews: [] as AdminReview[],
+  /** Залишки, що відрізняються від каталогу-зразка (для «Замовити знову»). */
+  stock: {} as Record<number, number>,
+  /** Завантаження фото товарів: товар, тип і розмір файлу. */
+  photoUploads: [] as { id: number; type: string; bytes: number }[],
+  /** Додає відгук про ферму «Зелений Гай» (farmerId 1). */
+  addFarmReview(rating: number, comment: string | null, author = 'Оксана Д.', hidden = false): AdminReview {
+    const review: AdminReview = {
+      id: 500 + this.farmReviews.length,
+      orderId: 900 + this.farmReviews.length,
+      farmerId: 1,
+      farmName: { uk: 'Ферма «Зелений Гай»', en: 'Zelenyi Hai Farm' },
+      rating,
+      comment,
+      author,
+      at: `2026-09-${String(10 + this.farmReviews.length).padStart(2, '0')}T12:00:00+03:00`,
+      hidden,
+      hiddenReason: hidden ? 'Реклама' : null,
+    };
+    this.farmReviews.unshift(review);
+    return review;
+  },
   record(action: string, target: string, details: string) {
     this.audit = [...this.audit, { id: this.audit.length + 1, at: '2026-10-01T09:30:00+03:00', adminId: 1, action, target, details }];
   },
@@ -148,10 +179,14 @@ export const backend = {
     this.farmProducts = verified ? ownProducts.map((product) => ({ ...product })) : [];
   },
   reset() {
+    this.farmReviews = [];
+    this.photoUploads = [];
+    this.stock = {};
     this.demoAccounts = [];
     this.pendingFarmers = [];
     this.audit = [];
-    this.promoCodes = [{ code: 'FARM10', percent: 10, minTotal: 300, validUntil: '2026-10-31T09:00:00+03:00' }];
+    this.promoCodes = [{ code: 'FARM10', percent: 10, minTotal: 300, validUntil: '2026-10-31T09:00:00+03:00', active: true }];
+    this.slotList = slots.map((slot) => ({ ...slot }));
     this.adminRequests = [];
     this.reviews = [];
     this.notifications = [];
@@ -174,10 +209,16 @@ export const backend = {
     const lines = this.cart.lines.filter((line) => line.productId !== productId);
     const existing = this.cart.lines.find((line) => line.productId === productId);
     const total = (existing?.quantity ?? 0) + quantity;
-    lines.push({ productId, name: product.name, unit: product.unit, photoUrl: product.photoUrl, price: product.price, quantity: total, total: product.price * total });
-    this.cart = { farmerId: product.farmerId, lines, total: lines.reduce((sum, line) => sum + line.total, 0) };
+    lines.push({ productId, name: product.name, unit: product.unit, photoUrl: product.photoUrl, price: product.price, quantity: total, total: product.price * total, farmerId: product.farmerId, farmerName: product.farmerName });
+    this.cart = cartOf(lines);
   },
 };
+
+/** Кошик із рядків: farmerId - ферма, якщо всі товари від однієї, інакше null (як на сервері). */
+function cartOf(lines: Cart['lines']): Cart {
+  const farms = [...new Set(lines.map((line) => line.farmerId))];
+  return { farmerId: farms.length === 1 ? farms[0]! : null, lines, total: lines.reduce((sum, line) => sum + line.total, 0) };
+}
 
 const error = (status: number, code: string, message = 'Повідомлення сервера українською') =>
   HttpResponse.json({ error: code, message }, { status });
@@ -191,7 +232,7 @@ export const handlers = [
     HttpResponse.json(new URL(request.url).searchParams.has('lat') ? farms : farms.map((farm) => ({ ...farm, distanceKm: null }))),
   ),
 
-  http.get('*/api/slots', () => HttpResponse.json(slots)),
+  http.get('*/api/slots', () => HttpResponse.json(backend.slotList)),
 
   http.get('*/api/admin/farmers/pending', () => (backend.user.roles.includes('Admin') ? HttpResponse.json(backend.pendingFarmers) : error(403, 'role_required'))),
 
@@ -204,6 +245,97 @@ export const handlers = [
     backend.pendingFarmers = backend.pendingFarmers.filter((item) => item !== farmer);
     backend.record('farmer.verify', `farmer#${farmer.id}`, `Верифіковано продавця «${farmer.name.uk}»`);
     return HttpResponse.json({ ...farmer, verified: true });
+  }),
+
+  http.post('*/api/admin/farmers/:id/reject', async ({ params, request }) => {
+    const { reason } = (await request.json()) as { reason: string };
+    const farmer = backend.pendingFarmers.find((item) => item.id === Number(params.id));
+    if (!farmer) {
+      return error(404, 'farmer_not_found');
+    }
+
+    if (!reason.trim()) {
+      return error(400, 'reason_required');
+    }
+
+    backend.pendingFarmers = backend.pendingFarmers.filter((item) => item !== farmer);
+    backend.record('farmer.reject', `farmer#${farmer.id}`, reason);
+    return HttpResponse.json({ ...farmer, rejectionReason: reason });
+  }),
+
+  http.patch('*/api/admin/slots/:id', async ({ params, request }) => {
+    const body = (await request.json()) as { start: string; end: string; capacity: number };
+    const slot = backend.slotList.find((item) => item.id === Number(params.id));
+    if (!slot) {
+      return error(404, 'slot_not_found');
+    }
+
+    const booked = slot.capacity - slot.remaining;
+    if (body.capacity < booked) {
+      return error(409, 'slot_capacity_below_booked');
+    }
+
+    if (booked > 0 && (body.start !== slot.start || body.end !== slot.end)) {
+      return error(409, 'slot_in_use');
+    }
+
+    Object.assign(slot, { start: body.start, end: body.end, capacity: body.capacity, remaining: body.capacity - booked });
+    backend.record('slot.update', `slot#${slot.id}`, `ємність ${body.capacity}`);
+    return HttpResponse.json({ id: slot.id, start: slot.start, end: slot.end, capacity: slot.capacity });
+  }),
+
+  http.delete('*/api/admin/slots/:id', ({ params }) => {
+    const slot = backend.slotList.find((item) => item.id === Number(params.id));
+    if (!slot) {
+      return error(404, 'slot_not_found');
+    }
+
+    if (slot.remaining < slot.capacity) {
+      return error(409, 'slot_in_use');
+    }
+
+    backend.slotList = backend.slotList.filter((item) => item !== slot);
+    backend.record('slot.delete', `slot#${slot.id}`, '');
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.post('*/api/admin/promocodes/:code/:action', ({ params }) => {
+    const active = params.action === 'activate';
+    const promo = backend.promoCodes.find((item) => item.code === params.code);
+    if (!promo) {
+      return error(404, 'promo_unknown');
+    }
+
+    backend.promoCodes = backend.promoCodes.map((item) => (item === promo ? { ...item, active } : item));
+    backend.record(active ? 'promo.activate' : 'promo.deactivate', `promo#${promo.code}`, '');
+    return HttpResponse.json({ ...promo, active });
+  }),
+
+  http.put('*/api/farmer/products/:id/photo', async ({ params, request }) => {
+    const type = request.headers.get('Content-Type') ?? '';
+    const bytes = (await request.arrayBuffer()).byteLength;
+    backend.photoUploads.push({ id: Number(params.id), type, bytes });
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(type)) {
+      return error(400, 'photo_type_invalid');
+    }
+
+    const url = `/img/products/${String(params.id)}?v=${backend.photoUploads.length}`;
+    backend.farmProducts = backend.farmProducts.map((product) => (product.id === Number(params.id) ? { ...product, photoUrl: url } : product));
+    return HttpResponse.json(backend.farmProducts.find((product) => product.id === Number(params.id)));
+  }),
+
+  http.delete('*/api/farmer/products/:id/photo', ({ params }) => {
+    backend.farmProducts = backend.farmProducts.map((product) => (product.id === Number(params.id) ? { ...product, photoUrl: null } : product));
+    return HttpResponse.json(backend.farmProducts.find((product) => product.id === Number(params.id)));
+  }),
+
+  http.post('*/api/farmer/reapply', () => {
+    if (!backend.farm?.rejectionReason) {
+      return error(409, 'not_rejected');
+    }
+
+    backend.farm = { ...backend.farm, rejectionReason: null };
+    return HttpResponse.json(backend.farm);
   }),
 
   http.post('*/api/admin/slots', async ({ request }) => {
@@ -226,12 +358,35 @@ export const handlers = [
       return error(409, 'promo_exists');
     }
 
-    backend.promoCodes = [body, ...backend.promoCodes];
+    backend.promoCodes = [{ ...body, active: true }, ...backend.promoCodes];
     backend.record('promo.create', `promo#${body.code}`, `${body.percent} %`);
     return HttpResponse.json(body, { status: 201 });
   }),
 
   http.get('*/api/admin/audit', () => HttpResponse.json(backend.audit)),
+
+  http.get('*/api/farmers/:id/reviews', ({ params }) =>
+    HttpResponse.json(
+      backend.farmReviews
+        .filter((review) => review.farmerId === Number(params.id) && !review.hidden)
+        .map(({ id, orderId, rating, comment, author, at }) => ({ id, orderId, rating, comment, author, at })),
+    ),
+  ),
+  http.get('*/api/admin/reviews', () => HttpResponse.json(backend.farmReviews)),
+  http.post('*/api/admin/reviews/:id/:action', async ({ params, request }) => {
+    const id = Number(params.id);
+    const hide = params.action === 'hide';
+    const body = hide ? ((await request.json()) as { reason: string }) : null;
+    if (hide && !body?.reason.trim()) {
+      return error(400, 'reason_required');
+    }
+
+    backend.farmReviews = backend.farmReviews.map((review) =>
+      review.id === id ? { ...review, hidden: hide, hiddenReason: hide ? body!.reason.trim() : null } : review,
+    );
+    backend.audit.push({ id: backend.audit.length + 1, adminId: 1, action: hide ? 'review.hide' : 'review.restore', target: `review#${id}`, details: body?.reason ?? '', at: '2026-10-01T16:30:00+03:00' });
+    return HttpResponse.json(backend.farmReviews.find((review) => review.id === id));
+  }),
 
   http.get('*/api/orders/:id/review', ({ params }) =>
     HttpResponse.json({ review: backend.reviews.find((review) => review.orderId === Number(params.id)) ?? null }),
@@ -244,7 +399,7 @@ export const handlers = [
       return error(409, 'already_reviewed');
     }
 
-    const review: Review = { id: backend.reviews.length + 1, orderId, rating: body.rating, comment: body.comment, at: '2026-10-01T16:00:00+03:00' };
+    const review: Review = { id: backend.reviews.length + 1, orderId, rating: body.rating, comment: body.comment, author: 'Оксана Д.', at: '2026-10-01T16:00:00+03:00' };
     backend.reviews.push(review);
     return HttpResponse.json(review, { status: 201 });
   }),
@@ -260,7 +415,7 @@ export const handlers = [
       return error(409, 'already_farmer');
     }
 
-    backend.farm = { id: 13, name: body.farmName, lat: body.lat, lon: body.lon, certified: body.certified, verified: false, rating: null, reviewCount: 0 };
+    backend.farm = { id: 13, name: body.farmName, lat: body.lat, lon: body.lon, certified: body.certified, verified: false, rating: null, reviewCount: 0, rejectionReason: null };
     backend.user = { ...backend.user, roles: ['Buyer', 'Farmer'] };
     return HttpResponse.json(backend.farm, { status: 201 });
   }),
@@ -292,6 +447,7 @@ export const handlers = [
       stock: body.stock,
       photoUrl: null,
       seasonMonths: body.seasonMonths,
+      description: body.description ?? null,
     };
     backend.farmProducts.push(product);
     return HttpResponse.json(product, { status: 201 });
@@ -353,6 +509,39 @@ export const handlers = [
 
   http.get('*/api/courier/deliveries', () => HttpResponse.json(backend.deliveries)),
 
+  http.post('*/api/courier/deliveries/:id/fail', async ({ params, request }) => {
+    const body = (await request.json()) as { problem: 'BuyerAbsent' | 'AddressNotFound' | 'Other'; note: string | null };
+    backend.actions.push({ orderId: Number(params.id), kind: 'fail', body });
+    if (body.problem === 'Other' && !body.note?.trim()) {
+      return error(400, 'note_required');
+    }
+
+    backend.deliveries = backend.deliveries.filter((task) => task.orderId !== Number(params.id));
+    return HttpResponse.json({ id: Number(params.id), status: 'DeliveryFailed', deliveryProblem: body.problem });
+  }),
+
+  http.post('*/api/orders/:id/reschedule', async ({ params, request }) => {
+    const { slotId } = (await request.json()) as { slotId: number };
+    const orderId = Number(params.id);
+    const order = backend.orders.find((item) => item.id === orderId);
+    if (!order) {
+      return error(404, 'order_not_found');
+    }
+
+    if (order.status !== 'DeliveryFailed') {
+      return error(409, 'invalid_status');
+    }
+
+    const slot = backend.slotList.find((item) => item.id === slotId);
+    if (!slot || slot.remaining <= 0) {
+      return error(409, 'slot_full');
+    }
+
+    backend.moveOrder(orderId, 'InTransit');
+    backend.orders = backend.orders.map((item) => (item.id === orderId ? { ...item, slotStart: slot.start, slotEnd: slot.end } : item));
+    return HttpResponse.json(backend.orders.find((item) => item.id === orderId)!);
+  }),
+
   http.post('*/api/courier/deliveries/:id/confirm', async ({ params, request }) => {
     const { code } = (await request.json()) as { code: string };
     if (code !== '4821') {
@@ -365,6 +554,28 @@ export const handlers = [
 
 
   http.get('*/api/orders', () => HttpResponse.json(backend.orders)),
+
+  // Скасування покупцем: лише до прийняття фермером; повтор повертає вже скасоване замовлення.
+  http.post('*/api/orders/:id/cancel', ({ params }) => {
+    const orderId = Number(params.id);
+    const order = backend.orders.find((item) => item.id === orderId);
+    if (!order) {
+      return error(404, 'order_not_found');
+    }
+
+    if (order.status !== 'Placed' && order.status !== 'Cancelled') {
+      return error(409, 'cancel_unavailable');
+    }
+
+    if (order.status === 'Placed') {
+      backend.moveOrder(orderId, 'Cancelled');
+      backend.orders = backend.orders.map((item) =>
+        item.id === orderId && item.paidAmount > 0 ? { ...item, paymentStatus: 'Refunded', refundedAmount: item.paidAmount } : item,
+      );
+    }
+
+    return HttpResponse.json(backend.orders.find((item) => item.id === orderId)!);
+  }),
 
   http.get('*/api/orders/:id', ({ params }) => {
     const order = backend.orders.find((item) => item.id === Number(params.id));
@@ -383,22 +594,30 @@ export const handlers = [
       return error(400, 'promo_unknown');
     }
 
-    const subtotal = backend.cart.total;
-    const discount = body.promoCode ? subtotal / 10 : 0;
-    const order = backend.addOrder('Placed', {
-      lines: backend.cart.lines.map((line) => ({ productId: line.productId, name: line.name, unit: line.unit, unitPrice: line.price, quantity: line.quantity, total: line.total })),
-      subtotal,
-      discount,
-      total: subtotal - discount,
-      paymentMethod: body.paymentMethod,
-      paymentStatus: body.paymentMethod === 'Cash' ? 'PayOnDelivery' : 'Paid',
-      paidAmount: body.paymentMethod === 'Cash' ? 0 : subtotal - discount,
-      address: body.address,
-      comment: body.comment,
-      promoCode: body.promoCode,
+    // Як на сервері: по замовленню на кожну ферму кошика; усі знають номери одне одного.
+    const farms = [...new Set(backend.cart.lines.map((line) => line.farmerId))];
+    const placed = farms.map((farmerId) => {
+      const lines = backend.cart.lines.filter((line) => line.farmerId === farmerId);
+      const subtotal = lines.reduce((sum, line) => sum + line.total, 0);
+      const discount = body.promoCode ? subtotal / 10 : 0;
+      return backend.addOrder('Placed', {
+        farmerId,
+        lines: lines.map((line) => ({ productId: line.productId, name: line.name, unit: line.unit, unitPrice: line.price, quantity: line.quantity, total: line.total })),
+        subtotal,
+        discount,
+        total: subtotal - discount,
+        paymentMethod: body.paymentMethod,
+        paymentStatus: body.paymentMethod === 'Cash' ? 'PayOnDelivery' : 'Paid',
+        paidAmount: body.paymentMethod === 'Cash' ? 0 : subtotal - discount,
+        address: body.address,
+        comment: body.comment,
+        promoCode: body.promoCode,
+      });
     });
+    const ids = placed.map((order) => order.id);
+    backend.orders = backend.orders.map((order) => (ids.includes(order.id) ? { ...order, checkoutOrderIds: ids } : order));
     backend.cart = { farmerId: null, lines: [], total: 0 };
-    return HttpResponse.json(order, { status: 201 });
+    return HttpResponse.json(backend.orders.find((order) => order.id === ids[0]), { status: 201 });
   }),
 
 
@@ -451,19 +670,35 @@ export const handlers = [
     }
 
     const { productId, quantity } = (await request.json()) as { productId: number; quantity: number };
-    const product = products.find((item) => item.productId === productId)!;
-    if (backend.cart.farmerId !== null && backend.cart.farmerId !== product.farmerId) {
-      return error(409, 'cart_other_farmer');
-    }
-
     backend.putInCart(productId, quantity);
     return HttpResponse.json(backend.cart);
   }),
 
   http.delete('*/api/cart/items/:id', ({ params }) => {
-    const lines = backend.cart.lines.filter((line) => line.productId !== Number(params.id));
-    backend.cart = { farmerId: lines.length > 0 ? backend.cart.farmerId : null, lines, total: lines.reduce((sum, line) => sum + line.total, 0) };
+    backend.cart = cartOf(backend.cart.lines.filter((line) => line.productId !== Number(params.id)));
     return HttpResponse.json(backend.cart);
+  }),
+
+  http.post('*/api/orders/:id/reorder', ({ params }) => {
+    const order = backend.orders.find((item) => item.id === Number(params.id));
+    if (!order) {
+      return error(404, 'order_not_found');
+    }
+
+    const shortfalls: { name: Order['lines'][number]['name']; requested: number; added: number }[] = [];
+    for (const line of order.lines) {
+      const stock = backend.stock[line.productId] ?? products.find((item) => item.productId === line.productId)?.stock ?? 0;
+      const added = Math.min(line.quantity, stock);
+      if (added > 0) {
+        backend.putInCart(line.productId, added);
+      }
+
+      if (added < line.quantity) {
+        shortfalls.push({ name: line.name, requested: line.quantity, added });
+      }
+    }
+
+    return HttpResponse.json({ cart: backend.cart, shortfalls });
   }),
 ];
 

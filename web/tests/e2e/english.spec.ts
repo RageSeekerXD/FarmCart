@@ -23,10 +23,10 @@ test('англійською на сторінках каталогу, коши�
   await expect(page.getByText('Kefir', { exact: true })).toBeVisible();
   expect(await visibleText(page)).not.toMatch(CYRILLIC);
 
-  // Мої замовлення: шість замовлень демо-покупця, по одному в кожному статусі.
+  // Мої замовлення: вісім замовлень демо-покупця, по одному в кожному статусі.
   await page.getByRole('tab', { name: 'My orders' }).click();
-  await expect(page.getByRole('listitem', { name: /Order No\./ })).toHaveCount(6);
-  for (const status of ['Placed', 'Accepted by farmer', 'Being packed', 'On the way', 'Delivered', 'Rejected']) {
+  await expect(page.getByRole('listitem', { name: /Order No\./ })).toHaveCount(8);
+  for (const status of ['Placed', 'Accepted by farmer', 'Being packed', 'On the way', 'Delivered', 'Rejected', 'Cancelled', 'Not delivered']) {
     await expect(page.getByText(status, { exact: true })).toBeVisible();
   }
 

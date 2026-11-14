@@ -1,5 +1,5 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CYRILLIC, renderApp } from '../../test/render';
 import { backend, TOKEN, user as userWith } from '../../test/server';
 import { hub } from '../../test/signalr';
@@ -138,6 +138,31 @@ describe('UI-12 Сповіщення в реальному часі', () => {
     expect(screen.getByRole('button', { name: /Сповіщення, нових/ })).toHaveAttribute('data-live', 'true');
   });
 
+  it('фермер дізнається про скасування тостом; «Відкрити» веде до вхідних замовлень', async () => {
+    backend.asFarmer();
+    backend.addOrder('Cancelled');
+    const { user } = await renderApp('/farmer/products', { signedIn: true });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 0' });
+
+    push('order.cancelled', 1001);
+
+    const toast = await screen.findByRole('alert');
+    expect(toast).toHaveTextContent('Покупець скасував замовлення №1001');
+    await user.click(within(toast).getByRole('button', { name: 'Відкрити' }));
+    expect(await screen.findByRole('heading', { name: 'Вхідні замовлення' })).toBeInTheDocument();
+    expect(within(await screen.findByRole('listitem', { name: 'Замовлення №1001' })).getByText('Скасовано')).toBeInTheDocument();
+  });
+
+  it('власне скасування не дублюється тостом сповіщення', async () => {
+    await renderApp('/', { signedIn: true });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 0' });
+
+    push('order.status', 1001, { status: 'Cancelled' });
+
+    expect(await screen.findByRole('button', { name: 'Сповіщення, нових: 1' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('фермер бачить нове замовлення одразу; сповіщення веде в кабінет продавця', async () => {
     backend.asFarmer();
     const { user } = await renderApp('/', { signedIn: true });
@@ -184,5 +209,61 @@ describe('UI-12 Сповіщення в реальному часі', () => {
 
     await waitFor(() => expect(connection.stopped).toBe(true));
     expect(screen.queryByRole('button', { name: /Сповіщення/ })).not.toBeInTheDocument();
+  });
+});
+
+describe('сповіщення браузера, коли вкладка у фоні', () => {
+  class FakeNotification {
+    static permission: NotificationPermission = 'default';
+    static created: { title: string; body?: string }[] = [];
+    static requestPermission = vi.fn(async () => {
+      FakeNotification.permission = 'granted';
+      return 'granted' as NotificationPermission;
+    });
+    onclick: (() => void) | null = null;
+    constructor(title: string, options?: NotificationOptions) {
+      FakeNotification.created.push({ title, body: options?.body });
+    }
+    close() {}
+  }
+
+  beforeEach(() => {
+    FakeNotification.permission = 'default';
+    FakeNotification.created = [];
+    vi.stubGlobal('Notification', FakeNotification);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+  });
+
+  it('дозвіл просять з меню дзвіночка; у фоні подія стає системним сповіщенням', async () => {
+    backend.addOrder('Placed');
+    const { user } = await renderApp('/', { signedIn: true });
+    await user.click(await screen.findByRole('button', { name: 'Сповіщення, нових: 0' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Сповіщати, коли вкладка у фоні' }));
+
+    expect(FakeNotification.requestPermission).toHaveBeenCalled();
+    expect(await screen.findByText('Сповіщення браузера увімкнено')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+    backend.moveOrder(1001, 'Accepted');
+    push('order.status', 1001, { status: 'Accepted' });
+
+    await waitFor(() => expect(FakeNotification.created).toEqual([{ title: 'Нове сповіщення', body: 'Замовлення №1001: Прийнято фермером' }]));
+  });
+
+  it('на видимій вкладці досить тосту - системного сповіщення немає', async () => {
+    FakeNotification.permission = 'granted';
+    backend.addOrder('Placed');
+    await renderApp('/', { signedIn: true });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 0' });
+
+    push('order.status', 1001, { status: 'Accepted' });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Замовлення №1001: Прийнято фермером');
+    expect(FakeNotification.created).toEqual([]);
   });
 });

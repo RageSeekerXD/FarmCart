@@ -32,7 +32,7 @@ describe('UI-07 Відгук після вручення', () => {
 
   it('уже залишений відгук показується замість форми', async () => {
     backend.addOrder('Delivered');
-    backend.reviews = [{ id: 1, orderId: 1001, rating: 4, comment: null, at: '2026-10-01T16:00:00+03:00' }];
+    backend.reviews = [{ id: 1, orderId: 1001, rating: 4, comment: null, author: 'Оксана Д.', at: '2026-10-01T16:00:00+03:00' }];
     await renderApp('/orders/1001', { signedIn: true, lang: 'en' });
 
     const mine = await screen.findByRole('region', { name: 'Your review' });

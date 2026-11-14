@@ -8,9 +8,12 @@ import { formatDateTime, formatSlot } from '../../shared/dates';
 import { EASE_SPRING, enter, glow, popIn, shine } from '../../shared/motion';
 import { useFarms } from '../map/MapPage';
 import { StatusChip } from './OrdersPage';
+import { CancelOrderButton } from './CancelOrder';
 import { PlacedBanner } from './PlacedBanner';
+import { ReorderButton } from './Reorder';
+import { RescheduleDelivery } from './Reschedule';
 import { ReviewSection } from './ReviewSection';
-import { isFinal, timeline, useOrder } from './orders';
+import { isFinal, isStopped, timeline, useOrder } from './orders';
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -65,10 +68,23 @@ export function OrderPage() {
         <Box key={data.status} role="status" aria-label={t('orders.status')} sx={{ animation: `${popIn} 420ms ${EASE_SPRING} backwards` }}>
           <StatusChip status={data.status} />
         </Box>
+        <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+          <CancelOrderButton order={data} />
+          {isFinal(data.status) && <ReorderButton orderId={data.id} />}
+        </Box>
       </Box>
 
       <Stack spacing={2}>
         {justPlaced && !isFinal(data.status) && <PlacedBanner />}
+
+        {data.status === 'Cancelled' && (
+          <Alert severity="info">
+            {t('orders.cancelledNote')}
+            {data.refundedAmount > 0 ? ` ${t('orders.refunded')}: ${formatMoney(data.refundedAmount, lang)}.` : ''}
+          </Alert>
+        )}
+
+        {data.status === 'DeliveryFailed' && <RescheduleDelivery order={data} />}
 
         {data.status === 'Rejected' && (
           <Alert severity="error">
@@ -88,6 +104,8 @@ export function OrderPage() {
               position: 'relative',
               overflow: 'hidden',
               background: 'linear-gradient(135deg, #ffe082 0%, #ffca28 55%, #ffb300 100%)',
+              // Картка коду завжди бурштинова - текст на ній темний і в темній темі.
+              color: '#1d2a1e',
               ...enter(0),
               // Відблиск, що час від часу пробігає карткою коду: код помітний, але не кричить.
               '&::after': {
@@ -143,7 +161,7 @@ export function OrderPage() {
                 sx={enter(index + 2, 70)}
               >
                 <StepLabel
-                  error={step.status === 'Rejected'}
+                  error={isStopped(step.status)}
                   optional={step.at ? <Typography variant="caption">{formatDateTime(step.at, lang)}</Typography> : undefined}
                   aria-current={step.state === 'current' ? 'step' : undefined}
                 >

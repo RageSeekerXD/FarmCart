@@ -4,12 +4,12 @@ import CheckIcon from '@mui/icons-material/Check';
 import PlaceIcon from '@mui/icons-material/Place';
 import StarIcon from '@mui/icons-material/Star';
 import VerifiedIcon from '@mui/icons-material/Verified';
-import { Box, Button, Card, CardActions, CardContent, Chip, Stack, Typography } from '@mui/material';
+import { Box, Button, Card, CardActions, CardContent, Chip, Link, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import type { CatalogItem } from '../../api/types';
 import { formatMoney, formatNumber, useLang } from '../../i18n';
 import { EASE_SPRING, popIn } from '../../shared/motion';
-import { categoryLook, LOW_STOCK } from './categoryLook';
+import { artBackground, categoryLook, LOW_STOCK } from './categoryLook';
 
 
 interface Props {
@@ -20,9 +20,11 @@ interface Props {
   /** Скільки одиниць цього товару вже в кошику покупця (0 - немає). */
   inCart?: number;
   onAdd: (item: CatalogItem) => void;
+  /** Відкрити картку товару з описом і відгуками (п. 10 покращень). */
+  onOpen?: (item: CatalogItem) => void;
 }
 
-export function ProductCard({ item, adding, justAdded = false, inCart = 0, onAdd }: Props) {
+export function ProductCard({ item, adding, justAdded = false, inCart = 0, onAdd, onOpen }: Props) {
   const { t } = useTranslation();
   const { lang, pick } = useLang();
   const name = pick(item.name);
@@ -46,12 +48,20 @@ export function ProductCard({ item, adding, justAdded = false, inCart = 0, onAdd
       }}
     >
       {item.photoUrl ? (
-        <Box component="img" src={item.photoUrl} alt="" loading="lazy" sx={{ width: '100%', height: 150, objectFit: 'cover' }} />
+        <Box
+          component="img"
+          src={item.photoUrl}
+          alt=""
+          loading="lazy"
+          onClick={() => onOpen?.(item)}
+          sx={{ width: '100%', height: 150, objectFit: 'cover', cursor: onOpen ? 'pointer' : undefined }}
+        />
       ) : (
         <Box
           aria-hidden
           className="product-art"
-          sx={{ height: 150, display: 'grid', placeItems: 'center', fontSize: 64, background: look.tint, '& span': { transition: `transform 500ms ${EASE_SPRING}` } }}
+          onClick={() => onOpen?.(item)}
+          sx={{ cursor: onOpen ? 'pointer' : undefined, height: 150, display: 'grid', placeItems: 'center', fontSize: 64, background: (theme) => artBackground(look.tint, theme.palette.mode), '& span': { transition: `transform 500ms ${EASE_SPRING}` } }}
         >
           <span>{look.icon}</span>
         </Box>
@@ -84,7 +94,22 @@ export function ProductCard({ item, adding, justAdded = false, inCart = 0, onAdd
       )}
       <CardContent sx={{ flex: 1, pb: 1, display: 'flex', flexDirection: 'column' }}>
         <Typography component="h2" variant="subtitle1" sx={{ fontWeight: 650, lineHeight: 1.25 }}>
-          {name}
+          {onOpen ? (
+            // Назва - кнопка картки товару: з клавіатури картка відкривається так само, як натисканням на фото.
+            <Link
+              component="button"
+              type="button"
+              color="inherit"
+              underline="hover"
+              onClick={() => onOpen(item)}
+              aria-label={t('catalog.details', { name })}
+              sx={{ font: 'inherit', textAlign: 'left', verticalAlign: 'baseline' }}
+            >
+              {name}
+            </Link>
+          ) : (
+            name
+          )}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           {pick(item.farmerName)}

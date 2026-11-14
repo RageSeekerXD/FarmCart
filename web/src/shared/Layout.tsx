@@ -1,3 +1,5 @@
+import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
+import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import {
@@ -28,6 +30,7 @@ import { DemoAccountSwitcher } from '../features/auth/DemoAccounts';
 import { cartCount, useCart } from '../features/cart/useCart';
 import { NotificationBell } from '../features/notifications/NotificationBell';
 import { LANGS, useLang } from '../i18n';
+import { useColorMode } from './colorMode';
 import { bump, EASE_OUT, EASE_SPRING, fadeUp, popIn } from './motion';
 
 interface NavItem {
@@ -71,6 +74,7 @@ export function Layout() {
   const inCart = cartCount(cart.data);
   const theme = useTheme();
   const brand = theme.brand;
+  const { mode, toggle: toggleMode } = useColorMode();
 
   return (
     <Box
@@ -103,6 +107,8 @@ export function Layout() {
         sx={{
           // Градієнт ролі з ледь помітною «крапковою» фактурою.
           background: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.10) 1px, transparent 0) 0 0 / 18px 18px, ${brand.gradient}`,
+          // Текст шапки білий в обох темах: у темній основний колір світлий, і MUI обрав би темний текст.
+          color: '#fff',
           boxShadow: `0 6px 20px ${alpha(brand.dark, 0.25)}`,
         }}
       >
@@ -259,7 +265,7 @@ export function Layout() {
               variant="body2"
               sx={{
                 display: { xs: 'none', sm: 'block' },
-                mr: 3,
+                mr: 1,
                 px: 1.5,
                 py: 0.25,
                 borderRadius: 5,
@@ -273,6 +279,19 @@ export function Layout() {
               {brand.emoji} {t(`roles.${role}`)}
             </Typography>
           )}
+          {/* Світла/темна тема: перемикач у рядку вкладок, щоб верхній рядок шапки на 360 px не переносився. */}
+          <Tooltip title={t(mode === 'dark' ? 'header.lightMode' : 'header.darkMode')}>
+            <IconButton
+              color="inherit"
+              size="small"
+              aria-label={t('header.darkMode')}
+              aria-pressed={mode === 'dark'}
+              onClick={toggleMode}
+              sx={{ mr: { xs: 1, sm: 2.5 }, '& svg': { transition: `transform 500ms ${EASE_SPRING}` }, '&:hover svg': { transform: 'rotate(-30deg)' } }}
+            >
+              {mode === 'dark' ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
+            </IconButton>
+          </Tooltip>
         </Box>
       </AppBar>
       <Container component="main" id="main" maxWidth="lg" sx={{ flex: 1, py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>

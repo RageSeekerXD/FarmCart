@@ -83,7 +83,13 @@ react-i18next (українська й англійська). Потрібен N
 | `POST /api/auth/code`, `POST /api/auth/verify` | US-01 | усі |
 | `POST /api/farmers`, `GET/POST /api/farmer/products`, `PATCH /api/farmer/products/{id}` | US-02, US-03 | фермер |
 | `GET /api/catalog?category=&certified=&lat=&lon=&maxKm=&minPrice=&maxPrice=&sort=` | US-04 | покупець |
-| `GET /api/cart`, `POST /api/cart/items`, `GET /api/slots`, `POST /api/orders` (`Idempotency-Key`) | US-05, US-06 | покупець |
+| `GET /api/cart`, `POST /api/cart/items`, `GET /api/slots`, `POST /api/orders` (`Idempotency-Key`) - кошик будь-яких ферм, по замовленню на ферму | US-05, US-06 | покупець |
+| `POST /api/orders/{id}/cancel` - скасування, доки фермер не прийняв замовлення | CANCEL | покупець |
+| `POST /api/orders/{id}/reorder` - «Замовити знову», `POST /api/orders/{id}/reschedule` - новий час після невдалої доставки | REORDER, DLV | покупець |
+| `PUT/DELETE /api/farmer/products/{id}/photo` (тіло - файл JPEG/PNG/WebP до 2 МБ), `POST /api/farmer/reapply`; фото - `GET /img/products/{id}` | PHOTO, ADM | фермер |
+| `POST /api/courier/deliveries/{id}/fail` - не вдалося вручити (причина й коментар) | DLV | кур'єр |
+| `GET /api/admin/reviews`, `POST /api/admin/reviews/{id}/hide`, `.../restore` | REV | адміністратор |
+| `POST /api/admin/farmers/{id}/reject`, `PATCH/DELETE /api/admin/slots/{id}`, `POST /api/admin/promocodes/{code}/activate`, `.../deactivate` | ADM | адміністратор |
 | `GET /api/farmer/orders`, `POST /api/farmer/orders/{id}/accept`, `.../reject` | US-07 | фермер |
 | `.../assemble`, `.../handover`, `GET /api/me/notifications` | US-08 | фермер, покупець |
 | `GET /api/courier/deliveries`, `POST /api/courier/deliveries/{id}/confirm` | US-09 | кур'єр |

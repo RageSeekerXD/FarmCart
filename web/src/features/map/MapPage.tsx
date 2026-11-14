@@ -12,6 +12,7 @@ import type { FarmOnMap } from '../../api/types';
 import { errorMessage, formatNumber, useLang } from '../../i18n';
 import { DISTANCES_KM, type GeoPoint } from '../catalog/filters';
 import { useBuyerLocation } from '../catalog/useBuyerLocation';
+import { FarmReviewsDialog } from '../reviews/FarmReviews';
 import { farmsWithin } from './geo';
 
 // Leaflet завантажується лише на сторінці мапи: каталогу його ~150 КБ не потрібні.
@@ -34,6 +35,7 @@ export function MapPage() {
   const farms = useFarms(location.point);
   const [radiusKm, setRadiusKm] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [reviewsOf, setReviewsOf] = useState<{ id: number; name: string } | null>(null);
   const cards = useRef(new Map<number, HTMLElement>());
 
   const visible = farmsWithin(farms.data ?? [], radiusKm);
@@ -166,6 +168,9 @@ export function MapPage() {
                       <Button size="small" component={RouterLink} to={`/?farmerId=${farm.id}`} disabled={farm.productCount === 0} aria-label={t('map.productsOfNamed', { name })}>
                         {t('map.toProducts')}
                       </Button>
+                      <Button size="small" onClick={() => setReviewsOf({ id: farm.id, name })} aria-label={t('reviews.farmTitle', { name })}>
+                        {t('reviews.open', { count: farm.reviewCount })}
+                      </Button>
                     </Stack>
                   </Paper>
                 );
@@ -176,6 +181,7 @@ export function MapPage() {
       )}
 
       {farms.isPending && <CircularProgress aria-label={t('common.loading')} />}
+      {reviewsOf && <FarmReviewsDialog farmerId={reviewsOf.id} farmName={reviewsOf.name} onClose={() => setReviewsOf(null)} />}
     </Box>
   );
 }

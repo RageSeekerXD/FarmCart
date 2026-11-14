@@ -79,3 +79,64 @@ public sealed class ReviewTests
         Assert.Single((await fan.GetJson($"/api/farmers/{farmerId}/reviews")).EnumerateArray());
     }
 }
+
+/// <summary>Відгуки ферми для покупців і модерація адміністратором через API.</summary>
+public sealed class ReviewModerationTests
+{
+    [Fact(DisplayName = "REV-1 Покупці бачать відгуки ферми з підписом автора; адміністратор бачить усі, приховує й повертає")]
+    public async Task BuyersSeeReviewsAndAdminModerates()
+    {
+        using var app = new FarmCartApp();
+        var (farmer, apples, slot) = await Journeys.FarmWithApplesAsync(app);
+        var (courier, courierId) = await Journeys.CourierAsync(app);
+        var buyer = await app.LoginAsync("+380971111111");
+        lock (app.Store.Sync)
+        {
+            app.Store.Users.Values.Single(u => u.Phone == "+380971111111").Name = "Оксана Демченко";
+        }
+
+        var orderId = await Journeys.OrderAsync(buyer, apples, 1, slot);
+        await Journeys.SendAsync(farmer, orderId, courierId);
+        await Journeys.DeliverAsync(buyer, courier, orderId);
+        var review = await buyer.PostJson($"/api/orders/{orderId}/review", new { rating = 2, comment = "Купуйте в іншому магазині!" });
+        var farmerId = (await buyer.GetJson("/api/catalog"))[0].GetProperty("farmerId").GetInt32();
+        var admin = await app.AdminAsync();
+
+        var publicReviews = await buyer.GetJson($"/api/farmers/{farmerId}/reviews");
+        await admin.PostJson($"/api/admin/reviews/{review.Id()}/hide", new { reason = "Реклама конкурента" });
+        var queue = await admin.GetJson("/api/admin/reviews");
+        var forbidden = await buyer.GetAsync("/api/admin/reviews");
+        var hiddenForBuyers = await buyer.GetJson($"/api/farmers/{farmerId}/reviews");
+        await admin.PostJson($"/api/admin/reviews/{review.Id()}/restore", new { });
+
+        Assert.Equal("Оксана Д.", publicReviews[0].Str("author"));
+        Assert.Equal((true, "Реклама конкурента"), (queue[0].GetProperty("hidden").GetBoolean(), queue[0].Str("hiddenReason")));
+        Assert.Equal("Ферма «Зелений Гай»", queue[0].GetProperty("farmName").Str("uk"));
+        Assert.Equal(System.Net.HttpStatusCode.Forbidden, forbidden.StatusCode);
+        Assert.Empty(hiddenForBuyers.EnumerateArray());
+        Assert.Single((await buyer.GetJson($"/api/farmers/{farmerId}/reviews")).EnumerateArray());
+    }
+
+    [Fact(DisplayName = "PROD-1 Опис товару фермера двома мовами видно в каталозі разом із сезоном")]
+    public async Task ProductDescriptionReachesCatalog()
+    {
+        using var app = new FarmCartApp();
+        var farmer = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»");
+        var created = await farmer.PostJson("/api/farmer/products", new
+        {
+            name = HttpJson.Bilingual("Яблука"),
+            category = "fruits",
+            unit = "kg",
+            price = 32m,
+            stock = 10,
+            description = new { uk = "Хрусткі осінні яблука", en = "Crunchy autumn apples" },
+        });
+        var halfDescribed = await farmer.PatchAsJsonAsync($"/api/farmer/products/{created.Id()}", new { description = new { uk = "Лише українською", en = "" } });
+
+        var item = (await farmer.GetJson("/api/catalog"))[0];
+
+        Assert.Equal("Crunchy autumn apples", item.GetProperty("description").Str("en"));
+        Assert.Equal(System.Text.Json.JsonValueKind.Array, item.GetProperty("seasonMonths").ValueKind);
+        Assert.Equal("description_incomplete", await halfDescribed.ErrorCode());
+    }
+}

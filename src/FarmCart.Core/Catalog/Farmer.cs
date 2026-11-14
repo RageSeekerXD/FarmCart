@@ -19,6 +19,9 @@ public sealed class Farmer
 
     public bool Verified { get; set; }
 
+    /// <summary>Причина, з якою адміністратор відхилив заявку; null - заявка чекає перевірки або вже верифікована.</summary>
+    public string? RejectionReason { get; set; }
+
     public double? Rating { get; set; }
 
     public int ReviewCount { get; set; }

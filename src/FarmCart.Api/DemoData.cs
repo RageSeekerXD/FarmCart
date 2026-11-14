@@ -119,6 +119,18 @@ public static class DemoData
         Slot(tomorrow.AddHours(18), capacity: 2);
         store.PromoCodes.Add("FARM10", new PromoCode("FARM10", 10, 300m, now.AddDays(30)));
 
+        // Описи кількох товарів - для картки товару в каталозі (решта товарів опису не має, як і буває на ринку).
+        Describe("Морква", "Солодка морква з піщаного ґрунту, вирощена без гербіцидів. Добра для соків і запікання.",
+            "Sweet carrots from sandy soil, grown without herbicides. Great for juicing and roasting.");
+        Describe("Хліб житній", "Житній хліб на заквасці, випечений зранку в печі на дровах. Зберігається до п'яти днів.",
+            "Sourdough rye bread baked every morning in a wood-fired oven. Keeps for up to five days.");
+        Describe("Бринза овеча", "Овеча бринза з полонин Карпат, витримана в розсолі три тижні.",
+            "Sheep bryndza from Carpathian mountain pastures, aged in brine for three weeks.");
+        Describe("Мед акацієвий", "Світлий акацієвий мед урожаю цього року. Довго не кристалізується.",
+            "Light acacia honey from this year's harvest. Stays liquid for a long time.");
+        Describe("Кефір", "Кефір із козячого молока на живій заквасці, без цукру й загусників.",
+            "Goat milk kefir made with live cultures, no sugar or thickeners.");
+
         // Історія (BE-8): у демо-покупця по одному замовленню в кожному статусі, у кількох ферм є відгуки.
         // Слоти історії - післязавтра, тож сценарій demo.cmd і далі бере найближчий слот (завтра, 10:00).
         // «Зелений Гай» історії не має: сценарій перевіряє, що його рейтинг після першого відгуку дорівнює 5.
@@ -144,6 +156,12 @@ public static class DemoData
         fulfillment.HandOver(smokehouse, inTransit.Id, courier.Id);
         Review(demoBuyer, cheese, "Бринза овеча", morning, 5, "Бринза свіжа, доставили вчасно");
         fulfillment.Reject(honey, Buy(demoBuyer, "Мед гречаний", 1, morning).Id, "Партія закінчилася, нова буде за тиждень");
+        fulfillment.Cancel(demoBuyer, Buy(demoBuyer, "Варення малинове", 1, morning).Id);
+        var notDelivered = Buy(demoBuyer, "Масло вершкове", 1, morning);
+        fulfillment.Accept(cheese, notDelivered.Id);
+        fulfillment.StartAssembling(cheese, notDelivered.Id);
+        fulfillment.HandOver(cheese, notDelivered.Id, courier.Id);
+        deliveries.ReportFailure(courier, notDelivered.Id, DeliveryProblem.BuyerAbsent, note: null);
 
         Review(regular, bakery, "Хліб житній", afternoon, 5, "Найкращий житній хліб у Львові");
         Review(neighbour, bakery, "Паляниця", afternoon, 4, "Смачно, але хотілося б більшого вибору");
@@ -176,6 +194,9 @@ public static class DemoData
 
         void Product(User farmer, string nameUk, string nameEn, string category, string unit, decimal price, int stock, params int[] season) =>
             farmers.AddProduct(farmer, new ProductDraft(new LocalizedText(nameUk, nameEn), category, unit, price, stock, season));
+
+        void Describe(string nameUk, string uk, string en) =>
+            store.Products.Values.Single(p => p.Name.Uk == nameUk).Description = new LocalizedText(uk, en);
 
         DeliverySlot Slot(DateTimeOffset start, int capacity)
         {

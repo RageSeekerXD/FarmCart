@@ -36,6 +36,7 @@ public sealed partial class AdminService(InMemoryStore store, AuditLog audit, IC
             var farmer = store.Farmers.GetValueOrDefault(farmerId)
                 ?? throw Fail.NotFound("farmer_not_found", $"Продавця #{farmerId} не знайдено");
             farmer.Verified = true;
+            farmer.RejectionReason = null;
             audit.Record(admin, "farmer.verify", $"farmer#{farmer.Id}", $"Верифіковано продавця «{farmer.Name}»");
             return farmer;
         }
@@ -47,7 +48,31 @@ public sealed partial class AdminService(InMemoryStore store, AuditLog audit, IC
         admin.Require(Role.Admin);
         lock (store.Sync)
         {
-            return [.. store.Farmers.Values.Where(f => !f.Verified).OrderBy(f => f.Id)];
+            return [.. store.Farmers.Values.Where(f => !f.Verified && f.RejectionReason is null).OrderBy(f => f.Id)];
+        }
+    }
+
+    /// <summary>Заявку відхилено з причиною: продавець бачить її у своєму кабінеті й може подати заявку повторно.</summary>
+    public Farmer RejectFarmer(User admin, int farmerId, string reason)
+    {
+        admin.Require(Role.Admin);
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw Fail.Validation("reason_required", "Вкажіть причину відхилення заявки");
+        }
+
+        lock (store.Sync)
+        {
+            var farmer = store.Farmers.GetValueOrDefault(farmerId)
+                ?? throw Fail.NotFound("farmer_not_found", $"Продавця #{farmerId} не знайдено");
+            if (farmer.Verified)
+            {
+                throw Fail.Conflict("farmer_already_verified", $"Продавця «{farmer.Name}» уже верифіковано");
+            }
+
+            farmer.RejectionReason = reason.Trim();
+            audit.Record(admin, "farmer.reject", $"farmer#{farmer.Id}", $"«{farmer.Name}»: {farmer.RejectionReason}");
+            return farmer;
         }
     }
 
@@ -67,6 +92,79 @@ public sealed partial class AdminService(InMemoryStore store, AuditLog audit, IC
             return slot;
         }
     }
+
+    /// <summary>
+    /// Зміна слоту. Ємність не може стати меншою за вже заброньоване; час можна змінити, лише поки в слоті немає
+    /// активних замовлень: покупці вже знають свій час доставки.
+    /// </summary>
+    public DeliverySlot UpdateDeliverySlot(User admin, int slotId, DateTimeOffset start, DateTimeOffset end, int capacity)
+    {
+        admin.Require(Role.Admin);
+        if (end <= start || capacity <= 0)
+        {
+            throw Fail.Validation("slot_invalid", "Слот має закінчуватися пізніше, ніж починається, і мати додатну ємність");
+        }
+
+        lock (store.Sync)
+        {
+            var slot = Slot(slotId);
+            var booked = store.Booked(slot.Id);
+            if (capacity < booked)
+            {
+                throw Fail.Conflict("slot_capacity_below_booked", $"У слоті вже {booked} замовлень: ємність не може бути меншою");
+            }
+
+            if (booked > 0 && (start != slot.Start || end != slot.End))
+            {
+                throw Fail.Conflict("slot_in_use", "У слоті вже є замовлення: його час змінити не можна");
+            }
+
+            var updated = slot with { Start = start, End = end, Capacity = capacity };
+            store.Slots[slot.Id] = updated;
+            audit.Record(admin, "slot.update", $"slot#{slot.Id}", $"{start:dd.MM HH:mm}-{end:HH:mm}, ємність {capacity}");
+            return updated;
+        }
+    }
+
+    /// <summary>Порожній слот можна прибрати; слот із замовленнями - ні.</summary>
+    public void DeleteDeliverySlot(User admin, int slotId)
+    {
+        admin.Require(Role.Admin);
+        lock (store.Sync)
+        {
+            var slot = Slot(slotId);
+            if (store.Booked(slot.Id) > 0)
+            {
+                throw Fail.Conflict("slot_in_use", "У слоті вже є замовлення: видалити його не можна");
+            }
+
+            store.Slots.Remove(slot.Id);
+            audit.Record(admin, "slot.delete", $"slot#{slot.Id}", $"{slot.Start:dd.MM HH:mm}-{slot.End:HH:mm}");
+        }
+    }
+
+    /// <summary>Вимкнений промокод більше не приймається; його можна знову ввімкнути.</summary>
+    public PromoCode SetPromoActive(User admin, string code, bool active)
+    {
+        admin.Require(Role.Admin);
+        lock (store.Sync)
+        {
+            var promo = store.PromoCodes.GetValueOrDefault((code ?? "").Trim())
+                ?? throw Fail.NotFound("promo_unknown", $"Промокоду «{code}» не існує");
+            if (promo.Active == active)
+            {
+                return promo;
+            }
+
+            var changed = promo with { Active = active };
+            store.PromoCodes[promo.Code] = changed;
+            audit.Record(admin, active ? "promo.activate" : "promo.deactivate", $"promo#{promo.Code}", active ? "Промокод знову діє" : "Промокод вимкнено");
+            return changed;
+        }
+    }
+
+    private DeliverySlot Slot(int slotId) =>
+        store.Slots.GetValueOrDefault(slotId) ?? throw Fail.NotFound("slot_not_found", $"Слот доставки #{slotId} не знайдено");
 
     /// <summary>UI-11: усі промокоди для кабінету адміністратора - спершу ті, що діють довше.</summary>
     public IReadOnlyList<PromoCode> PromoCodes(User admin)

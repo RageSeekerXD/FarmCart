@@ -6,6 +6,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormHelperText,
   FormLabel,
   MenuItem,
   Stack,
@@ -45,6 +46,8 @@ export function ProductDialog({ product, reference, onClose, onSaved }: Props) {
   const [price, setPrice] = useState(product ? String(product.price) : '');
   const [stock, setStock] = useState(product ? String(product.stock) : '');
   const [season, setSeason] = useState<number[]>(product?.seasonMonths ?? []);
+  const [descriptionUk, setDescriptionUk] = useState(product?.description?.uk ?? '');
+  const [descriptionEn, setDescriptionEn] = useState(product?.description?.en ?? '');
   const [touched, setTouched] = useState(false);
 
   const priceValue = Number(price.replace(',', '.'));
@@ -56,6 +59,8 @@ export function ProductDialog({ product, reference, onClose, onSaved }: Props) {
     unit: unit === '',
     price: price.trim() === '' || !Number.isFinite(priceValue) || priceValue <= 0,
     stock: stock.trim() === '' || !Number.isInteger(stockValue) || stockValue < 0,
+    // Опис необов'язковий, але якщо є - обома мовами (як і на сервері, description_incomplete).
+    description: (descriptionUk.trim() === '') !== (descriptionEn.trim() === ''),
   };
 
   const submit = (event: FormEvent) => {
@@ -72,6 +77,7 @@ export function ProductDialog({ product, reference, onClose, onSaved }: Props) {
       price: priceValue,
       stock: stockValue,
       seasonMonths: [...season].sort((a, b) => a - b),
+      description: { uk: descriptionUk.trim(), en: descriptionEn.trim() },
     };
     save.mutate({ id: product?.id ?? null, draft }, { onSuccess: onSaved });
   };
@@ -162,6 +168,33 @@ export function ProductDialog({ product, reference, onClose, onSaved }: Props) {
                 slotProps={{ htmlInput: { inputMode: 'numeric' } }}
               />
             </Stack>
+            <div>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField
+                  fullWidth
+                  multiline
+                  minRows={2}
+                  label={t('farm.descriptionUk')}
+                  value={descriptionUk}
+                  onChange={(event) => setDescriptionUk(event.target.value)}
+                  error={touched && invalid.description && descriptionUk.trim() === ''}
+                  slotProps={{ htmlInput: { maxLength: 600 } }}
+                />
+                <TextField
+                  fullWidth
+                  multiline
+                  minRows={2}
+                  label={t('farm.descriptionEn')}
+                  value={descriptionEn}
+                  onChange={(event) => setDescriptionEn(event.target.value)}
+                  error={touched && invalid.description && descriptionEn.trim() === ''}
+                  slotProps={{ htmlInput: { maxLength: 600, lang: 'en' } }}
+                />
+              </Stack>
+              <FormHelperText error={touched && invalid.description} sx={{ mx: 1.75 }}>
+                {touched && invalid.description ? t('errors.description_incomplete') : t('farm.descriptionHint')}
+              </FormHelperText>
+            </div>
             <div>
               <FormLabel id="product-season">{t('farm.season')}</FormLabel>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
