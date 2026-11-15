@@ -103,7 +103,8 @@ export function createAppTheme(key: BrandKey, mode: ColorMode = 'light'): Theme 
       primary: dark ? { main } : { main, dark: brand.dark, light: brand.light },
       secondary: { main: '#ffb300' },
       background: dark ? { default: brand.night.background, paper: brand.night.paper } : { default: brand.background, paper: '#ffffff' },
-      text: dark ? { primary: '#e6ebe4', secondary: '#a6b0a8' } : { primary: '#1d2a1e', secondary: '#55605a' },
+      // Другорядний текст (підписи полів, примітки, залишки) - темно-сірий #525866: контраст 7:1 на білому.
+      text: dark ? { primary: '#e6ebe4', secondary: '#b3bcb5' } : { primary: '#1d2a1e', secondary: '#525866' },
       divider: border,
     },
     shape: { borderRadius: 12 },
@@ -115,6 +116,8 @@ export function createAppTheme(key: BrandKey, mode: ColorMode = 'light'): Theme 
       h6: { fontWeight: 650, fontSize: '1.1rem' },
       subtitle1: { fontWeight: 600 },
       button: { textTransform: 'none', fontWeight: 600 },
+      // Дрібний текст не менший за 13 px: 12 px сірим на картках і в примітках читався погано.
+      caption: { fontSize: '0.8125rem' },
     },
     components: {
       MuiCssBaseline: {
@@ -185,7 +188,19 @@ export function createAppTheme(key: BrandKey, mode: ColorMode = 'light'): Theme 
             transition: 'box-shadow 200ms ease',
             '&.Mui-focused': { boxShadow: `0 0 0 4px ${alpha(main, 0.16)}` },
           },
+          // Проріз у рамці під піднятий підпис - під його новий розмір (13 px замість 12 px).
+          notchedOutline: { '& legend': { fontSize: '0.8125em' } },
         },
+      },
+      MuiInputLabel: {
+        styleOverrides: {
+          root: { fontWeight: 500 },
+          // Піднятий над полем підпис («Пошук товару», «Ціна від») - 13 px замість типових 12 px.
+          shrink: { '&.MuiInputLabel-outlined': { transform: 'translate(14px, -9px) scale(0.8125)', maxWidth: 'calc(123% - 32px)' } },
+        },
+      },
+      MuiFormHelperText: {
+        styleOverrides: { root: { fontSize: '0.8125rem', lineHeight: 1.45 } },
       },
       MuiAlert: {
         styleOverrides: { root: { animation: `${fadeUp} 320ms ${EASE_OUT} backwards` } },

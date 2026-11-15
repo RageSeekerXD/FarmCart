@@ -8,16 +8,17 @@ test('англійською на сторінках каталогу, коши�
   // Каталог: назви товарів, ферм, одиниць і категорій - англійські.
   await expect(page.getByRole('heading', { level: 1, name: 'Catalogue' })).toBeVisible();
   await expect(page.getByRole('article', { name: 'Carrots' })).toBeVisible();
-  await page.getByRole('combobox', { name: 'Category' }).click();
-  await expect(page.getByRole('option', { name: 'Dairy' })).toBeVisible();
+  const categories = page.getByRole('group', { name: 'Category' });
+  await expect(categories.getByRole('button', { name: 'Dairy' })).toBeVisible();
   expect(await visibleText(page)).not.toMatch(CYRILLIC);
-  await page.getByRole('option', { name: 'Dairy' }).click();
+  await categories.getByRole('button', { name: 'Dairy' }).click();
   await expect(page.getByRole('article', { name: 'Carrots' })).toBeHidden();
   await expect(page.getByRole('article', { name: 'Kefir' })).toBeVisible();
   expect(await visibleText(page)).not.toMatch(CYRILLIC);
 
   // Кошик.
-  await page.getByRole('button', { name: 'Add to cart: Kefir' }).click();
+  // Демо-покупця використовує й тест ширини 360 px: якщо кефір уже в кошику, на картці - лічильник «− N +».
+  await page.getByRole('button', { name: /^(Add to cart|Increase quantity): Kefir$/ }).click();
   await page.getByRole('link', { name: /Items in cart: [1-9]/ }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Cart' })).toBeVisible();
   await expect(page.getByText('Kefir', { exact: true })).toBeVisible();

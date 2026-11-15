@@ -124,6 +124,26 @@ public sealed class CatalogServiceTests
     }
 
     [Fact]
+    public void Search_SortsByPopularity_CountsOrdersButNotCancelledOnes()
+    {
+        var (farm, _) = _world.NewFarmer();
+        var apples = _world.NewProduct(farm, "Яблука", stock: 50);
+        var honey = _world.NewProduct(farm, "Мед", stock: 50);
+        var carrots = _world.NewProduct(farm, "Морква", stock: 50);
+        _world.NewProduct(farm, "Груші", stock: 50);
+        var first = _world.NewUser();
+        var second = _world.NewUser();
+        _world.Buy(first, carrots, 1);
+        _world.Buy(second, carrots, 1);
+        _world.Buy(first, apples, 1);
+        // Велике замовлення меду скасоване: попитом воно не вважається.
+        _world.Fulfillment.Cancel(second, _world.Buy(second, honey, 20).Id);
+
+        // Морква - два замовлення, яблука - одне; мед і груші без замовлень ідуть за назвою.
+        Assert.Equal(["Морква", "Яблука", "Груші", "Мед"], Names(new CatalogQuery(Sort: CatalogSort.Popular)));
+    }
+
+    [Fact]
     [Trait("Category", "Performance")]
     public void Search_Over10000Products_P95IsUnderOneSecond()
     {

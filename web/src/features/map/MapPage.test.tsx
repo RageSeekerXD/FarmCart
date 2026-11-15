@@ -69,7 +69,7 @@ describe('UI-03 Мапа ферм', () => {
     expect(within(cards[0]!).getByText('7,6 км')).toBeInTheDocument();
     expect(within(cards[0]!).getByText('Органічний сертифікат')).toBeInTheDocument();
     expect(within(cards[0]!).getByText('4,8 з 5 · відгуків: 12')).toBeInTheDocument();
-    expect(within(cards[1]!).getByText('Ще без оцінок')).toBeInTheDocument();
+    expect(within(cards[1]!).getByText('Ще без відгуків')).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Ферм: 3');
     expect(await screen.findByText('Центр Львова')).toBeInTheDocument();
   });
@@ -105,15 +105,21 @@ describe('UI-03 Мапа ферм', () => {
     expect(within(current[0]!).getByRole('heading')).toHaveTextContent('Ферма «Зелений Гай»');
   });
 
-  it('з картки ферми можна перейти до її товарів у каталозі й зняти цей фільтр', async () => {
+  it('з картки ферми можна перейти на сторінку ферми з її товарами', async () => {
     const { user } = await renderApp('/map');
 
-    await user.click(await screen.findByRole('link', { name: 'Товари ферми: Сироварня «Карпатська бринза»' }));
+    await user.click(await screen.findByRole('link', { name: 'Сторінка ферми: Сироварня «Карпатська бринза»' }));
 
+    expect(await screen.findByRole('heading', { level: 1, name: 'Сироварня «Карпатська бринза»' })).toBeInTheDocument();
     expect(await screen.findByRole('article', { name: /Молоко/ })).toBeInTheDocument();
     expect(screen.queryByRole('article', { name: 'Морква' })).not.toBeInTheDocument();
     expect(backend.catalogRequests.at(-1)!.searchParams.get('farmerId')).toBe('2');
+  });
 
+  it('старе посилання «товари ферми» в каталозі працює, і фільтр ферми можна зняти', async () => {
+    const { user } = await renderApp('/?farmerId=2');
+
+    expect(await screen.findByText('Товари ферми: Сироварня «Карпатська бринза»')).toBeInTheDocument();
     await user.click(screen.getByLabelText('Показати товари всіх ферм'));
 
     expect(await screen.findByRole('article', { name: 'Морква' })).toBeInTheDocument();

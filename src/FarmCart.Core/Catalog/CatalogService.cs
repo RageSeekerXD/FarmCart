@@ -9,6 +9,9 @@ public enum CatalogSort
     PriceDesc,
     Distance,
     Rating,
+
+    /// <summary>Спершу товари, які частіше замовляють (скасовані покупцем замовлення не враховуються).</summary>
+    Popular,
 }
 
 /// <param name="Text">Текст пошуку: шукається в назві товару обома мовами.</param>
@@ -93,7 +96,8 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
                 .Where(x => Matches(x.Product, x.Farmer, query))
                 .Select(x => ToItem(x.Product, x.Farmer, query.From))
                 .Where(item => query.MaxDistanceKm is null || item.DistanceKm <= query.MaxDistanceKm);
-            return [.. Sort(items, query.Sort, query.Lang)];
+            var popularity = query.Sort == CatalogSort.Popular ? OrderCounts() : [];
+            return [.. Sort(items, query.Sort, query.Lang, popularity)];
         }
     }
 
@@ -124,6 +128,14 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
         }
     }
 
+    /// <summary>Попит на товари: у скількох замовленнях (крім скасованих покупцем) є кожен товар.</summary>
+    private Dictionary<int, int> OrderCounts() =>
+        store.Orders.Values
+            .Where(order => order.Status != OrderStatus.Cancelled)
+            .SelectMany(order => order.Lines.Select(line => line.ProductId).Distinct())
+            .CountBy(productId => productId)
+            .ToDictionary();
+
     private static bool Matches(Product product, Farmer farmer, CatalogQuery query) =>
         (query.Text is null || product.Name.Contains(query.Text))
         && (query.Category is null || string.Equals(product.Category, query.Category, StringComparison.OrdinalIgnoreCase))
@@ -153,7 +165,7 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
     private static double? Distance(GeoPoint? from, Farmer farmer) =>
         from is { } point ? Math.Round(point.DistanceKmTo(farmer.Location), 1) : null;
 
-    private static IEnumerable<CatalogItem> Sort(IEnumerable<CatalogItem> items, CatalogSort sort, string lang)
+    private static IEnumerable<CatalogItem> Sort(IEnumerable<CatalogItem> items, CatalogSort sort, string lang, Dictionary<int, int> popularity)
     {
         var order = lang == LocalizedText.English ? EnglishOrder : UkrainianOrder;
         string Name(CatalogItem item) => item.Name.In(lang);
@@ -163,6 +175,7 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
             CatalogSort.PriceDesc => items.OrderByDescending(i => i.Price).ThenBy(Name, order),
             CatalogSort.Distance => items.OrderBy(i => i.DistanceKm).ThenBy(Name, order),
             CatalogSort.Rating => items.OrderByDescending(i => i.FarmerRating ?? 0).ThenBy(Name, order),
+            CatalogSort.Popular => items.OrderByDescending(i => popularity.GetValueOrDefault(i.ProductId)).ThenBy(Name, order),
             _ => items.OrderBy(Name, order),
         };
     }

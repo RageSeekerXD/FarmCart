@@ -11,6 +11,7 @@ import { CatalogPage } from './features/catalog/CatalogPage';
 import { CourierPage } from './features/courier/CourierPage';
 import { FarmerOrdersPage } from './features/farmer/FarmerOrdersPage';
 import { FarmerProductsPage } from './features/farmer/FarmerProductsPage';
+import { FarmPage } from './features/farms/FarmPage';
 import { RegisterFarmPage } from './features/farmer/RegisterFarmPage';
 import { MapPage } from './features/map/MapPage';
 import { CheckoutPage } from './features/orders/CheckoutPage';
@@ -75,6 +76,7 @@ export function AppRoutes() {
         <Route index element={<CatalogPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="map" element={<MapPage />} />
+        <Route path="farms/:id" element={<FarmPage />} />
         <Route
           path="cart"
           element={

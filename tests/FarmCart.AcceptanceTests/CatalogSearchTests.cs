@@ -35,6 +35,23 @@ public sealed class CatalogSearchTests
         Assert.Equal(["Морква", "Картопля", "Буряк"], byDistance.Names());
     }
 
+    [Fact(DisplayName = "US-04.4 Сортування «Спершу популярні»: першими товари, які частіше замовляють")]
+    public async Task PopularProductsComeFirst()
+    {
+        using var app = new FarmCartApp();
+        var farmer = await app.VerifiedFarmerAsync("+380671110001", "Ферма «Зелений Гай»", Places.Vynnyky);
+        var carrots = await farmer.PublishAsync("Морква", "vegetables", 16m);
+        await farmer.PublishAsync("Буряк", "vegetables", 15m);
+        var buyer = await app.LoginAsync("+380971234567");
+        var byName = await buyer.GetJson("/api/catalog");
+
+        await Journeys.OrderAsync(buyer, carrots, 2, await app.SlotAsync());
+        var popular = await buyer.GetJson("/api/catalog?sort=Popular");
+
+        Assert.Equal(["Буряк", "Морква"], byName.Names());
+        Assert.Equal(["Морква", "Буряк"], popular.Names());
+    }
+
     [Fact(DisplayName = "US-04.3 Пошук за відстанню без координат покупця відхиляється з поясненням")]
     public async Task DistanceFilterNeedsBuyerLocation()
     {

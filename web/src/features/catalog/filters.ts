@@ -9,8 +9,10 @@ export interface CatalogFilters {
   maxPrice: string;
   sort: CatalogSort;
   maxKm: number | null;
-  /** Товари однієї ферми: перехід із мапи ферм. */
+  /** Товари однієї ферми: старі посилання з мапи ферм (тепер вона веде на сторінку ферми). */
   farmerId: number | null;
+  /** Лише обрані товари покупця; фільтрується в браузері, бо обране зберігається там же. */
+  favorites: boolean;
 }
 
 export interface GeoPoint {
@@ -19,7 +21,9 @@ export interface GeoPoint {
 }
 
 export const LVIV_CENTER: GeoPoint = { lat: 49.8419, lon: 24.0315 };
-export const SORTS: readonly CatalogSort[] = ['Name', 'PriceAsc', 'PriceDesc', 'Distance', 'Rating'];
+/** Типово - популярні товари: алфавітний порядок покупцеві нічого не підказує. */
+export const DEFAULT_SORT: CatalogSort = 'Popular';
+export const SORTS: readonly CatalogSort[] = ['Popular', 'Distance', 'Rating', 'PriceAsc', 'PriceDesc', 'Name'];
 export const DISTANCES_KM: readonly number[] = [5, 10, 20, 50];
 
 export const DEFAULT_FILTERS: CatalogFilters = {
@@ -28,9 +32,10 @@ export const DEFAULT_FILTERS: CatalogFilters = {
   certified: false,
   minPrice: '',
   maxPrice: '',
-  sort: 'Name',
+  sort: DEFAULT_SORT,
   maxKm: null,
   farmerId: null,
+  favorites: false,
 };
 
 function price(value: string | null): string {
@@ -48,9 +53,10 @@ export function parseFilters(params: URLSearchParams): CatalogFilters {
     certified: params.get('certified') === 'true',
     minPrice: price(params.get('minPrice')),
     maxPrice: price(params.get('maxPrice')),
-    sort: sort && SORTS.includes(sort) ? sort : 'Name',
+    sort: sort && SORTS.includes(sort) ? sort : DEFAULT_SORT,
     maxKm: DISTANCES_KM.includes(maxKm) ? maxKm : null,
     farmerId: Number.isInteger(farmerId) && farmerId > 0 ? farmerId : null,
+    favorites: params.get('favorites') === 'true',
   };
 }
 
@@ -62,21 +68,32 @@ export function toSearchParams(filters: CatalogFilters): URLSearchParams {
   if (filters.certified) params.set('certified', 'true');
   if (price(filters.minPrice)) params.set('minPrice', price(filters.minPrice));
   if (price(filters.maxPrice)) params.set('maxPrice', price(filters.maxPrice));
-  if (filters.sort !== 'Name') params.set('sort', filters.sort);
+  if (filters.sort !== DEFAULT_SORT) params.set('sort', filters.sort);
   if (filters.maxKm !== null) params.set('maxKm', String(filters.maxKm));
   if (filters.farmerId !== null) params.set('farmerId', String(filters.farmerId));
+  if (filters.favorites) params.set('favorites', 'true');
   return params;
 }
 
-/** Запит до GET /api/catalog: точка покупця передається завжди, щоб картка показувала відстань до ферми. */
+/**
+ * Запит до GET /api/catalog: точка покупця передається завжди, щоб картка показувала відстань до ферми;
+ * сортування - теж завжди (типове сортування сервера інше). Обране фільтрується в браузері.
+ */
 export function toApiQuery(filters: CatalogFilters, from: GeoPoint, lang: Lang): string {
-  const params = toSearchParams({ ...filters, q: filters.q.trim() });
+  const params = toSearchParams({ ...filters, q: filters.q.trim(), favorites: false });
+  params.set('sort', filters.sort);
   params.set('lat', String(from.lat));
   params.set('lon', String(from.lon));
   params.set('lang', lang);
   return params.toString();
 }
 
+/** Скільки фільтрів обрано (сортування - не фільтр). */
 export function activeFilterCount(filters: CatalogFilters): number {
-  return [...toSearchParams({ ...filters, sort: 'Name' }).keys()].length;
+  return [...toSearchParams({ ...filters, sort: DEFAULT_SORT }).keys()].length;
+}
+
+/** Фільтри скинуто, а обране сортування лишається. */
+export function withoutFilters(filters: CatalogFilters): CatalogFilters {
+  return { ...DEFAULT_FILTERS, sort: filters.sort };
 }

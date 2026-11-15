@@ -29,7 +29,7 @@ import { ROLE_HOME, useAuth } from '../features/auth/AuthContext';
 import { DemoAccountSwitcher } from '../features/auth/DemoAccounts';
 import { cartCount, useCart } from '../features/cart/useCart';
 import { NotificationBell } from '../features/notifications/NotificationBell';
-import { LANGS, useLang } from '../i18n';
+import { formatMoney, LANGS, useLang } from '../i18n';
 import { useColorMode } from './colorMode';
 import { bump, EASE_OUT, EASE_SPRING, fadeUp, popIn } from './motion';
 
@@ -72,6 +72,7 @@ export function Layout() {
   const items = !user ? GUEST_NAV : role === 'Buyer' && !roles.includes('Farmer') ? [...NAV.Buyer, BECOME_SELLER] : NAV[role];
   const current = items.find((item) => item.to === location.pathname)?.to ?? false;
   const inCart = cartCount(cart.data);
+  const cartTotal = cart.data?.total ?? 0;
   const theme = useTheme();
   const brand = theme.brand;
   const { mode, toggle: toggleMode } = useColorMode();
@@ -112,7 +113,9 @@ export function Layout() {
           boxShadow: `0 6px 20px ${alpha(brand.dark, 0.25)}`,
         }}
       >
-        <Toolbar sx={{ gap: { xs: 0.25, sm: 1 }, flexWrap: 'wrap', py: 0.5, px: { xs: 1, sm: 3 } }}>
+        {/* Вміст шапки вирівняно з сіткою сторінки: та сама максимальна ширина (1200 px), що й у каталогу. */}
+        <Container maxWidth="lg" disableGutters sx={{ px: { xs: 1, sm: 3 } }}>
+        <Toolbar disableGutters sx={{ gap: { xs: 0.25, sm: 1 }, flexWrap: 'wrap', py: 0.5 }}>
           <Typography
             component={RouterLink}
             to="/"
@@ -183,19 +186,47 @@ export function Layout() {
             ))}
           </ToggleButtonGroup>
 
-          {user && role === 'Buyer' && (
+          {/* Кошик видно й гостю: так зрозуміло, куди потрапляють товари; без входу він веде на сторінку входу. */}
+          {(!user || role === 'Buyer') && (
             <Tooltip title={t('nav.cart')}>
-              <IconButton component={RouterLink} to="/cart" color="inherit" aria-label={t('header.cartItems', { count: inCart })}>
+              <Button
+                component={RouterLink}
+                to="/cart"
+                color="inherit"
+                aria-label={t('header.cartItems', { count: inCart })}
+                sx={{
+                  minWidth: 0,
+                  height: 40,
+                  px: { xs: 1, sm: 1.5 },
+                  gap: 1.25,
+                  borderRadius: 5,
+                  bgcolor: inCart > 0 ? 'rgba(255,255,255,0.16)' : 'transparent',
+                  border: '1px solid',
+                  borderColor: inCart > 0 ? 'rgba(255,255,255,0.45)' : 'transparent',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' },
+                }}
+              >
                 {/* key={inCart}: товар додано чи прибрано - бейдж кошика «підстрибує». */}
                 <Badge
                   key={inCart}
                   badgeContent={inCart}
                   color="secondary"
-                  sx={{ '& .MuiBadge-badge:not(.MuiBadge-invisible)': { animation: `${bump} 480ms ${EASE_SPRING}`, fontWeight: 700 } }}
+                  max={99}
+                  sx={{ '& .MuiBadge-badge:not(.MuiBadge-invisible)': { animation: `${bump} 480ms ${EASE_SPRING}`, fontWeight: 700, color: '#3d2a00' } }}
                 >
                   <ShoppingBasketIcon />
                 </Badge>
-              </IconButton>
+                {inCart > 0 && (
+                  <Box
+                    component="span"
+                    key={cartTotal}
+                    aria-hidden
+                    sx={{ display: { xs: 'none', sm: 'inline' }, fontWeight: 700, whiteSpace: 'nowrap', animation: `${popIn} 320ms ${EASE_SPRING}` }}
+                  >
+                    {formatMoney(cartTotal, lang)}
+                  </Box>
+                )}
+              </Button>
             </Tooltip>
           )}
 
@@ -235,7 +266,7 @@ export function Layout() {
               flex: 1,
               minWidth: 0,
               minHeight: 44,
-              px: { xs: 0, sm: 2 },
+              ml: { xs: 0, sm: -2 },
               '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0', transition: `all 360ms ${EASE_OUT}` },
             }}
           >
@@ -287,12 +318,13 @@ export function Layout() {
               aria-label={t('header.darkMode')}
               aria-pressed={mode === 'dark'}
               onClick={toggleMode}
-              sx={{ mr: { xs: 1, sm: 2.5 }, '& svg': { transition: `transform 500ms ${EASE_SPRING}` }, '&:hover svg': { transform: 'rotate(-30deg)' } }}
+              sx={{ mr: { xs: 0, sm: -1 }, '& svg': { transition: `transform 500ms ${EASE_SPRING}` }, '&:hover svg': { transform: 'rotate(-30deg)' } }}
             >
               {mode === 'dark' ? <LightModeOutlinedIcon fontSize="small" /> : <DarkModeOutlinedIcon fontSize="small" />}
             </IconButton>
           </Tooltip>
         </Box>
+        </Container>
       </AppBar>
       <Container component="main" id="main" maxWidth="lg" sx={{ flex: 1, py: { xs: 2, sm: 4 }, px: { xs: 1.5, sm: 3 } }}>
         {/* Перехід між сторінками: нова сторінка плавно з'являється знизу. */}

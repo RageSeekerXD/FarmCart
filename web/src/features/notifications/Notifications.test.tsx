@@ -141,8 +141,11 @@ describe('UI-12 Сповіщення в реальному часі', () => {
   it('фермер дізнається про скасування тостом; «Відкрити» веде до вхідних замовлень', async () => {
     backend.asFarmer();
     backend.addOrder('Cancelled');
+    // Давнє сповіщення робить помітним, що стрічку завантажено: «нових: 0» дзвіночок показує й до завантаження,
+    // а подія, що прийшла раніше за стрічку, вважається вже відомою, і тосту не буде.
+    backend.notify('order.new', 1000, { total: '160' });
     const { user } = await renderApp('/farmer/products', { signedIn: true });
-    await screen.findByRole('button', { name: 'Сповіщення, нових: 0' });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 1' });
 
     push('order.cancelled', 1001);
 

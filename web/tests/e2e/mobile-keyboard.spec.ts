@@ -21,7 +21,8 @@ test.describe('ширина 360 px', () => {
     await expectFits(page, 'мапа ферм');
 
     await page.goto('/?q=Кефір');
-    await page.getByRole('button', { name: 'Додати в кошик: Кефір' }).click();
+    // Демо-покупця використовує й тест англійської версії: якщо кефір уже в кошику, на картці - лічильник «− N +».
+    await page.getByRole('button', { name: /^(Додати в кошик|Збільшити кількість): Кефір$/ }).click();
     await page.goto('/cart');
     await expect(page.getByTestId('cart-total')).toBeVisible();
     await expectFits(page, 'кошик');

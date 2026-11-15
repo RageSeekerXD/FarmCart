@@ -10,28 +10,27 @@ import VerifiedIcon from '@mui/icons-material/Verified';
 import { Box, Button, Chip, Dialog, DialogContent, Divider, IconButton, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link as RouterLink } from 'react-router-dom';
 import type { CatalogItem } from '../../api/types';
 import { formatMoney, formatNumber, useLang } from '../../i18n';
 import { monthName } from '../farmer/ProductDialog';
 import { FarmReviews } from '../reviews/FarmReviews';
-import { artBackground, categoryLook } from './categoryLook';
+import { LOW_STOCK } from './categoryLook';
+import { LOW_STOCK_COLOR, ProductMedia } from './ProductCard';
 
 interface Props {
   item: CatalogItem;
   adding: boolean;
   onClose: () => void;
   onAdd: (item: CatalogItem, quantity: number) => void;
-  /** Показати в каталозі лише товари цієї ферми. */
-  onShowFarm: (farmerId: number) => void;
 }
 
 /** Картка товару (п. 10 покращень): опис, сезон, ферма з відгуками й додавання в кошик потрібної кількості. */
-export function ProductDetails({ item, adding, onClose, onAdd, onShowFarm }: Props) {
+export function ProductDetails({ item, adding, onClose, onAdd }: Props) {
   const { t } = useTranslation();
   const { lang, pick } = useLang();
   const [quantity, setQuantity] = useState(1);
   const name = pick(item.name);
-  const look = categoryLook(item.category);
   const maxQuantity = Math.max(1, item.stock);
   const season =
     item.seasonMonths.length === 0 ? t('farm.allYear') : item.seasonMonths.map((month) => monthName(month, lang)).join(', ');
@@ -42,26 +41,21 @@ export function ProductDetails({ item, adding, onClose, onAdd, onShowFarm }: Pro
         <CloseIcon />
       </IconButton>
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '5fr 7fr' } }}>
-        {item.photoUrl ? (
-          <Box component="img" src={item.photoUrl} alt="" sx={{ width: '100%', height: { xs: 200, md: '100%' }, minHeight: { md: 360 }, objectFit: 'cover' }} />
-        ) : (
-          <Box
-            aria-hidden
-            sx={{ minHeight: { xs: 180, md: 360 }, display: 'grid', placeItems: 'center', fontSize: { xs: 80, md: 120 }, background: (theme) => artBackground(look.tint, theme.palette.mode) }}
-          >
-            {look.icon}
-          </Box>
-        )}
+        {/* Блок тягнеться на всю висоту рядка діалогу; зображення заповнює його. */}
+        <Box sx={{ position: 'relative', minHeight: { xs: 220, md: 400 } }}>
+          <ProductMedia item={item} />
+        </Box>
         <DialogContent sx={{ p: { xs: 2.5, sm: 3 } }}>
           <Typography id="product-details-title" component="h2" variant="h5" sx={{ pr: 5 }}>
             {name}
           </Typography>
           <Button
             size="small"
+            component={RouterLink}
+            to={`/farms/${item.farmerId}`}
             startIcon={<StorefrontOutlinedIcon />}
-            onClick={() => onShowFarm(item.farmerId)}
             sx={{ ml: -1, mb: 1 }}
-            aria-label={t('catalog.farmProductsNamed', { name: pick(item.farmerName) })}
+            aria-label={t('catalog.farmPageNamed', { name: pick(item.farmerName) })}
           >
             {pick(item.farmerName)}
           </Button>
@@ -93,8 +87,11 @@ export function ProductDetails({ item, adding, onClose, onAdd, onShowFarm }: Pro
               {t('catalog.perUnit', { unit: pick(item.unit) })}
             </Typography>
           </Typography>
-          <Typography variant="body2" color={item.stock === 0 ? 'error' : 'text.secondary'} sx={{ mb: 2 }}>
-            {item.stock === 0 ? t('farm.outOfStock') : t('catalog.inStock', { count: item.stock })}
+          <Typography
+            variant="body2"
+            sx={{ mb: 2, fontWeight: item.stock <= LOW_STOCK ? 700 : 400, color: (theme) => (item.stock === 0 ? 'error.main' : item.stock <= LOW_STOCK ? LOW_STOCK_COLOR[theme.palette.mode] : 'text.secondary') }}
+          >
+            {item.stock === 0 ? t('farm.outOfStock') : item.stock <= LOW_STOCK ? t('catalog.lowStock', { count: item.stock }) : t('catalog.inStock', { count: item.stock })}
           </Typography>
 
           <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mb: 3 }}>

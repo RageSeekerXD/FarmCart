@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import type { Product } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
 import { useToast } from '../../shared/Toast';
+import { artFor } from '../catalog/art/artFor';
+import { ProductArt } from '../catalog/art/ProductArt';
 import { artBackground, type CategoryLook } from '../catalog/categoryLook';
 import { PHOTO_MAX_BYTES, PHOTO_TYPES, useProductPhoto } from './api';
 
@@ -50,9 +52,9 @@ export function ProductPhoto({ product, look }: { product: Product; look: Catego
       ) : (
         <Box
           aria-hidden
-          sx={{ width: 64, height: 64, borderRadius: 2, display: 'grid', placeItems: 'center', fontSize: 32, background: (theme) => artBackground(look.tint, theme.palette.mode) }}
+          sx={{ width: 64, height: 64, p: 0.75, borderRadius: 2, display: 'grid', placeItems: 'center', background: (theme) => artBackground(look.tint, theme.palette.mode) }}
         >
-          {look.icon}
+          <ProductArt art={artFor(product.name, product.category)} />
         </Box>
       )}
       {photo.isPending && (

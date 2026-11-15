@@ -2054,7 +2054,7 @@ export interface components {
             farmerReviewCount: number | string;
         };
         /** @enum {unknown} */
-        CatalogSort: "Name" | "PriceAsc" | "PriceDesc" | "Distance" | "Rating" | null;
+        CatalogSort: "Name" | "PriceAsc" | "PriceDesc" | "Distance" | "Rating" | "Popular" | null;
         CheckoutRequest: {
             address: string;
             /** Format: int32 */

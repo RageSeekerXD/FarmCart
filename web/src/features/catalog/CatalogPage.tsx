@@ -1,5 +1,6 @@
 import CancelIcon from '@mui/icons-material/Cancel';
-import MyLocationIcon from '@mui/icons-material/MyLocation';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -8,7 +9,6 @@ import {
   Badge,
   Box,
   Button,
-  Card,
   Checkbox,
   Chip,
   Collapse,
@@ -17,39 +17,29 @@ import {
   LinearProgress,
   MenuItem,
   Paper,
-  Skeleton,
   TextField,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { CatalogItem, CatalogSort, ReferenceData } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
-import { enter } from '../../shared/motion';
-import { useToast } from '../../shared/Toast';
-import { useAuth } from '../auth/AuthContext';
+import { EASE_SPRING, popIn } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
-import { useAddToCart, useCart } from '../cart/useCart';
-import {
-  DEFAULT_FILTERS,
-  DISTANCES_KM,
-  SORTS,
-  activeFilterCount,
-  parseFilters,
-  toApiQuery,
-  toSearchParams,
-  type CatalogFilters,
-} from './filters';
-import { ProductCard } from './ProductCard';
-import { ProductDetails } from './ProductDetails';
+import { CategoryPills } from './CategoryPills';
+import { useFavorites } from './favorites';
+import { DISTANCES_KM, SORTS, activeFilterCount, parseFilters, toApiQuery, toSearchParams, withoutFilters, type CatalogFilters } from './filters';
+import { LocationControl } from './LocationLabel';
+import { ProductGrid, ProductGridSkeleton } from './ProductGrid';
 import { useBuyerLocation } from './useBuyerLocation';
 
 const SORT_LABEL: Record<CatalogSort, string> = {
+  Popular: 'catalog.sortPopular',
   Name: 'catalog.sortName',
   PriceAsc: 'catalog.sortPriceAsc',
   PriceDesc: 'catalog.sortPriceDesc',
@@ -57,57 +47,23 @@ const SORT_LABEL: Record<CatalogSort, string> = {
   Rating: 'catalog.sortRating',
 };
 
-const GRID = {
-  listStyle: 'none',
-  p: 0,
-  m: 0,
-  display: 'grid',
-  gap: 2,
-  gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 230px), 1fr))',
-} as const;
-
-/** Заглушка картки, поки каталог вантажиться вперше: сітка не «стрибає», коли приходять товари. */
-function ProductSkeleton() {
-  return (
-    <Card elevation={1} aria-hidden sx={{ height: '100%' }}>
-      <Skeleton variant="rectangular" height={150} animation="wave" />
-      <Box sx={{ p: 2 }}>
-        <Skeleton width="70%" height={26} />
-        <Skeleton width="50%" />
-        <Skeleton width="40%" height={32} sx={{ mt: 1 }} />
-        <Skeleton variant="rounded" height={36} sx={{ mt: 1.5 }} />
-      </Box>
-    </Card>
-  );
-}
-
-/** UI-02: каталог із фільтрами за категорією, сертифікатом, ціною, відстанню та сортуванням. */
-export function CatalogPage() {
-  const { t } = useTranslation();
-  const { lang, pick } = useLang();
-  const { user } = useAuth();
-  const toast = useToast();
-  const navigate = useNavigate();
-  const [params, setParams] = useSearchParams();
-  const filters = parseFilters(params);
-  const location = useBuyerLocation();
-  const [addingId, setAddingId] = useState<number | null>(null);
-  // Щойно доданий товар: кнопка на мить стає зеленою «Додано ✓», потім повертається.
-  const [addedId, setAddedId] = useState<number | null>(null);
-  useEffect(() => {
-    if (addedId === null) {
-      return;
-    }
-
-    const timer = setTimeout(() => setAddedId(null), 1600);
-    return () => clearTimeout(timer);
-  }, [addedId]);
-
-  const reference = useQuery({
+export function useReference() {
+  return useQuery({
     queryKey: ['reference'],
     queryFn: () => api<ReferenceData>('/reference'),
     staleTime: Infinity,
   });
+}
+
+/** UI-02: каталог - категорії «пігулками», пошук, фільтри, сортування й товари з кошиком на картці. */
+export function CatalogPage() {
+  const { t } = useTranslation();
+  const { lang, pick } = useLang();
+  const [params, setParams] = useSearchParams();
+  const filters = parseFilters(params);
+  const location = useBuyerLocation();
+  const favorites = useFavorites();
+  const reference = useReference();
 
   const query = toApiQuery(filters, location.point, lang);
   const catalog = useQuery({
@@ -116,68 +72,39 @@ export function CatalogPage() {
     placeholderData: keepPreviousData,
   });
 
-  const items = catalog.data ?? [];
-  const addToCart = useAddToCart();
-  const cart = useCart();
-  const inCart = new Map((cart.data?.lines ?? []).map((line) => [line.productId, line.quantity]));
+  const found = catalog.data ?? [];
+  const items = filters.favorites ? found.filter((item) => favorites.ids.has(item.productId)) : found;
 
   // На телефоні рідше вживані фільтри (ціна, відстань, сертифікат) згорнуто: товари видно одразу, без прокручування форми.
   const theme = useTheme();
   const compact = useMediaQuery(theme.breakpoints.down('sm'));
   const [moreOpen, setMoreOpen] = useState(false);
   const secondaryCount = [filters.minPrice, filters.maxPrice, filters.maxKm, filters.certified || null].filter((value) => value !== '' && value !== null).length;
-  const filtersChanged = activeFilterCount(filters) > 0 || filters.sort !== 'Name';
+  const filterCount = activeFilterCount(filters);
 
   const change = (patch: Partial<CatalogFilters>) => {
     setParams(toSearchParams({ ...filters, ...patch }), { replace: true });
   };
-
-  // Відкрита картка товару; береться з поточного списку, тож після зміни фільтрів закривається сама.
-  const [detailId, setDetailId] = useState<number | null>(null);
-  const detail = items.find((item) => item.productId === detailId) ?? null;
-
-  const add = (item: CatalogItem, quantity = 1, done?: () => void) => {
-    if (!user) {
-      toast.show(t('catalog.loginToBuy'), 'info');
-      void navigate('/login', { state: { from: '/' } });
-      return;
-    }
-
-    setAddingId(item.productId);
-    addToCart.mutate(
-      { productId: item.productId, quantity },
-      {
-        onSuccess: () => {
-          done?.();
-          setAddedId(item.productId);
-          toast.show(t('catalog.added', { name: pick(item.name) }), 'success', {
-            action: { label: t('catalog.goToCart'), onClick: () => void navigate('/cart') },
-          });
-        },
-        onError: (error) => toast.show(errorMessage(error), 'error'),
-        onSettled: () => setAddingId(null),
-      },
-    );
-  };
+  const reset = () => setParams(toSearchParams(withoutFilters(filters)), { replace: true });
 
   return (
     <Box>
       <Typography component="h1" variant="h4" sx={{ fontSize: { xs: '1.6rem', sm: '2.1rem' } }}>
         {t('catalog.title')}
       </Typography>
-      <Typography color="text.secondary" sx={{ mb: 2 }}>
+      <Typography color="text.secondary" sx={{ mb: 1.5 }}>
         {t('catalog.subtitle')}
       </Typography>
 
+      <CategoryPills
+        categories={reference.data?.categories ?? []}
+        value={filters.category}
+        onChange={(category) => change({ category })}
+        favorites={{ active: filters.favorites, count: favorites.ids.size, onToggle: () => change({ favorites: !filters.favorites }) }}
+      />
+
       <Paper component="section" elevation={1} aria-label={t('catalog.filters')} sx={{ p: 2, mb: 2 }}>
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-            alignItems: 'start',
-          }}
-        >
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr', md: '3fr 1fr' }, alignItems: 'start' }}>
           <TextField
             label={t('catalog.search')}
             type="search"
@@ -193,30 +120,8 @@ export function CatalogPage() {
                 ),
               },
             }}
-            sx={{ gridColumn: { md: 'span 2' } }}
           />
-          <TextField
-            select
-            label={t('catalog.category')}
-            size="small"
-            value={filters.category}
-            onChange={(event) => change({ category: event.target.value })}
-            slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-          >
-            <MenuItem value="">{t('catalog.allCategories')}</MenuItem>
-            {(reference.data?.categories ?? []).map((category) => (
-              <MenuItem key={category.code} value={category.code}>
-                {pick(category.title)}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            select
-            label={t('catalog.sort')}
-            size="small"
-            value={filters.sort}
-            onChange={(event) => change({ sort: event.target.value as CatalogSort })}
-          >
+          <TextField select label={t('catalog.sort')} size="small" value={filters.sort} onChange={(event) => change({ sort: event.target.value as CatalogSort })}>
             {SORTS.map((sort) => (
               <MenuItem key={sort} value={sort}>
                 {t(SORT_LABEL[sort])}
@@ -247,7 +152,7 @@ export function CatalogPage() {
               gap: 2,
               pt: 2,
               gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-              alignItems: 'start',
+              alignItems: 'center',
             }}
           >
             <TextField
@@ -271,7 +176,6 @@ export function CatalogPage() {
               value={filters.maxKm ?? ''}
               onChange={(event) => change({ maxKm: event.target.value === '' ? null : Number(event.target.value) })}
               slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-              helperText={t(location.isMine ? 'catalog.locationMine' : 'catalog.locationLviv')}
             >
               <MenuItem value="">{t('catalog.anyDistance')}</MenuItem>
               {DISTANCES_KM.map((km) => (
@@ -280,28 +184,38 @@ export function CatalogPage() {
                 </MenuItem>
               ))}
             </TextField>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              <FormControlLabel
-                control={<Checkbox checked={filters.certified} onChange={(event) => change({ certified: event.target.checked })} />}
-                label={t('catalog.certified')}
-              />
-            </Box>
+            <FormControlLabel
+              control={<Checkbox checked={filters.certified} onChange={(event) => change({ certified: event.target.checked })} />}
+              label={t('catalog.certified')}
+              sx={{ mr: 0 }}
+            />
           </Box>
         </Collapse>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mt: 1.5 }}>
-          <Button size="small" startIcon={<MyLocationIcon />} onClick={location.locate}>
-            {t('catalog.useMyLocation')}
-          </Button>
-          <Button size="small" disabled={!filtersChanged} onClick={() => setParams(toSearchParams(DEFAULT_FILTERS), { replace: true })}>
-            {t('catalog.reset')}
-          </Button>
+          <LocationControl location={location} />
           {filters.farmerId !== null && (
             <Chip
               color="primary"
-              label={t('catalog.oneFarm', { name: items[0] ? pick(items[0].farmerName) : `#${filters.farmerId}` })}
+              label={t('catalog.oneFarm', { name: found[0] ? pick(found[0].farmerName) : `#${filters.farmerId}` })}
               onDelete={() => change({ farmerId: null })}
               deleteIcon={<CancelIcon aria-label={t('catalog.allFarms')} />}
             />
+          )}
+          {/* «Скинути фільтри» з'являється, лише коли є що скидати, і виділена акцентним кольором. */}
+          {filterCount > 0 && (
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              startIcon={<RestartAltIcon />}
+              onClick={reset}
+              sx={{ ml: 'auto', color: '#3d2a00', animation: `${popIn} 280ms ${EASE_SPRING} backwards` }}
+            >
+              {t('catalog.reset')}
+              <Box component="span" aria-hidden sx={{ ml: 1, px: 0.75, minWidth: 20, borderRadius: 5, bgcolor: 'rgba(0,0,0,0.12)', fontSize: '0.75rem', lineHeight: '20px' }}>
+                {filterCount}
+              </Box>
+            </Button>
           )}
         </Box>
         {location.denied && (
@@ -333,58 +247,36 @@ export function CatalogPage() {
           )}
           {catalog.isSuccess && items.length === 0 && (
             <Box role="status">
-              <EmptyState
-                icon={<SearchOffIcon />}
-                title={t('catalog.empty')}
-                hint={t('catalog.emptyHint')}
-                action={
-                  filtersChanged && (
-                    <Button variant="outlined" onClick={() => setParams(toSearchParams(DEFAULT_FILTERS), { replace: true })}>
-                      {t('catalog.reset')}
+              {filters.favorites && favorites.ids.size === 0 ? (
+                <EmptyState
+                  icon={<FavoriteBorderIcon />}
+                  title={t('catalog.noFavorites')}
+                  hint={t('catalog.noFavoritesHint')}
+                  action={
+                    <Button variant="outlined" onClick={() => change({ favorites: false })}>
+                      {t('catalog.showAll')}
                     </Button>
-                  )
-                }
-              />
-            </Box>
-          )}
-          {catalog.isPending && (
-            <Box component="ul" sx={GRID}>
-              {Array.from({ length: 8 }, (_, index) => (
-                <Box component="li" key={index} sx={enter(index)}>
-                  <ProductSkeleton />
-                </Box>
-              ))}
-            </Box>
-          )}
-          <Box component="ul" sx={GRID}>
-            {items.map((item, index) => (
-              <Box component="li" key={item.productId} sx={enter(index)}>
-                <ProductCard
-                  item={item}
-                  adding={addingId === item.productId}
-                  justAdded={addedId === item.productId}
-                  inCart={inCart.get(item.productId) ?? 0}
-                  onAdd={add}
-                  onOpen={(item) => setDetailId(item.productId)}
+                  }
                 />
-              </Box>
-            ))}
-          </Box>
+              ) : (
+                <EmptyState
+                  icon={<SearchOffIcon />}
+                  title={t('catalog.empty')}
+                  hint={t('catalog.emptyHint')}
+                  action={
+                    filterCount > 0 && (
+                      <Button variant="outlined" onClick={reset}>
+                        {t('catalog.reset')}
+                      </Button>
+                    )
+                  }
+                />
+              )}
+            </Box>
+          )}
+          {catalog.isPending && <ProductGridSkeleton />}
+          <ProductGrid items={items} />
         </>
-      )}
-
-      {detail && (
-        <ProductDetails
-          key={detail.productId}
-          item={detail}
-          adding={addingId === detail.productId}
-          onClose={() => setDetailId(null)}
-          onAdd={(item, quantity) => add(item, quantity, () => setDetailId(null))}
-          onShowFarm={(farmerId) => {
-            setDetailId(null);
-            change({ farmerId });
-          }}
-        />
       )}
     </Box>
   );

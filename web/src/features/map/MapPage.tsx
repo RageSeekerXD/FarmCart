@@ -1,4 +1,3 @@
-import MyLocationIcon from '@mui/icons-material/MyLocation';
 import PlaceIcon from '@mui/icons-material/Place';
 import StarIcon from '@mui/icons-material/Star';
 import VerifiedIcon from '@mui/icons-material/Verified';
@@ -11,6 +10,7 @@ import { api } from '../../api/client';
 import type { FarmOnMap } from '../../api/types';
 import { errorMessage, formatNumber, useLang } from '../../i18n';
 import { DISTANCES_KM, type GeoPoint } from '../catalog/filters';
+import { LocationControl } from '../catalog/LocationLabel';
 import { useBuyerLocation } from '../catalog/useBuyerLocation';
 import { FarmReviewsDialog } from '../reviews/FarmReviews';
 import { farmsWithin } from './geo';
@@ -53,7 +53,7 @@ export function MapPage() {
         {t('map.title')}
       </Typography>
 
-      <Paper sx={{ p: 2, mb: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
+      <Paper sx={{ p: 2, mb: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
         <TextField
           select
           label={t('map.radius')}
@@ -61,7 +61,6 @@ export function MapPage() {
           value={radiusKm ?? ''}
           onChange={(event) => setRadiusKm(event.target.value === '' ? null : Number(event.target.value))}
           slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
-          helperText={t(location.isMine ? 'catalog.locationMine' : 'catalog.locationLviv')}
           sx={{ minWidth: 220 }}
         >
           <MenuItem value="">{t('map.allFarms')}</MenuItem>
@@ -71,9 +70,7 @@ export function MapPage() {
             </MenuItem>
           ))}
         </TextField>
-        <Button startIcon={<MyLocationIcon />} onClick={location.locate}>
-          {t('catalog.useMyLocation')}
-        </Button>
+        <LocationControl location={location} />
         {location.denied && <Alert severity="warning">{t('catalog.locationDenied')}</Alert>}
       </Paper>
 
@@ -165,7 +162,7 @@ export function MapPage() {
                       <Button size="small" variant={active ? 'contained' : 'outlined'} onClick={() => setSelectedId(farm.id)} aria-label={t('map.showNamed', { name })}>
                         {t('map.show')}
                       </Button>
-                      <Button size="small" component={RouterLink} to={`/?farmerId=${farm.id}`} disabled={farm.productCount === 0} aria-label={t('map.productsOfNamed', { name })}>
+                      <Button size="small" component={RouterLink} to={`/farms/${farm.id}`} aria-label={t('map.productsOfNamed', { name })}>
                         {t('map.toProducts')}
                       </Button>
                       <Button size="small" onClick={() => setReviewsOf({ id: farm.id, name })} aria-label={t('reviews.farmTitle', { name })}>
