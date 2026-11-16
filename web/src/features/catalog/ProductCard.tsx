@@ -26,29 +26,17 @@ export const LOW_STOCK_COLOR = { light: '#b45309', dark: '#ffb74d' } as const;
 /** Висота зображення товару на картці. */
 const MEDIA_HEIGHT = 168;
 
-interface Props {
-  item: CatalogItem;
-  /** Скільки одиниць цього товару вже в кошику покупця (0 - немає): тоді замість «У кошик» - лічильник «− N +». */
-  quantity: number;
-  /** Кошик зберігає зміну цього товару. */
-  busy: boolean;
-  favorite: boolean;
-  onAdd: (item: CatalogItem) => void;
-  onQuantity: (item: CatalogItem, quantity: number) => void;
-  onToggleFavorite: (item: CatalogItem) => void;
-  /** Відкрити картку товару з описом і відгуками. */
-  onOpen?: (item: CatalogItem) => void;
-  /** Назва ферми з посиланням на її сторінку; на сторінці самої ферми не потрібна. */
-  showFarm?: boolean;
-}
+export const productPath = (productId: number) => `/products/${productId}`;
 
 /**
  * Зображення товару: фото фермера або ілюстрація саме цього виду товару на тлі кольору категорії.
- * Заповнює батьківський блок (position: relative із заданою висотою) - так однаково в картці й у діалозі.
+ * Заповнює батьківський блок (position: relative із заданою висотою) - так однаково в картці й на сторінці товару.
+ * Товар, якого немає в наявності, - знебарвлений.
  */
-export function ProductMedia({ item }: { item: Pick<CatalogItem, 'photoUrl' | 'name' | 'category'> }) {
+export function ProductMedia({ item }: { item: Pick<CatalogItem, 'photoUrl' | 'name' | 'category' | 'stock'> }) {
+  const soldOut = { filter: item.stock === 0 ? 'grayscale(0.85)' : undefined, opacity: item.stock === 0 ? 0.75 : 1 };
   if (item.photoUrl) {
-    return <Box component="img" src={item.photoUrl} alt="" loading="lazy" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />;
+    return <Box component="img" src={item.photoUrl} alt="" loading="lazy" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', ...soldOut }} />;
   }
 
   return (
@@ -59,7 +47,7 @@ export function ProductMedia({ item }: { item: Pick<CatalogItem, 'photoUrl' | 'n
         position: 'absolute',
         inset: 0,
         background: (theme) => artBackground(categoryLook(item.category).tint, theme.palette.mode),
-        '& svg': { position: 'absolute', top: '9%', left: '9%', width: '82%', height: '82%', transition: `transform 500ms ${EASE_SPRING}` },
+        '& svg': { position: 'absolute', top: '9%', left: '9%', width: '82%', height: '82%', transition: `transform 500ms ${EASE_SPRING}`, ...soldOut },
       }}
     >
       <ProductArt art={artFor(item.name, item.category)} />
@@ -67,11 +55,45 @@ export function ProductMedia({ item }: { item: Pick<CatalogItem, 'photoUrl' | 'n
   );
 }
 
-/** «− N +» на картці: кількість товару в кошику змінюється, не виходячи з каталогу. */
-function QuantityStepper({ item, quantity, busy, onQuantity }: Pick<Props, 'item' | 'quantity' | 'busy' | 'onQuantity'>) {
+interface CartControlProps {
+  item: CatalogItem;
+  /** Скільки одиниць цього товару вже в кошику (0 - немає): тоді замість «У кошик» - лічильник «− N +». */
+  quantity: number;
+  /** Кошик зберігає зміну цього товару. */
+  busy: boolean;
+  onAdd: (item: CatalogItem) => void;
+  onQuantity: (item: CatalogItem, quantity: number) => void;
+  size?: 'medium' | 'large';
+}
+
+/**
+ * «У кошик», а після додавання - лічильник «− N + · сума»: кількість змінюється тут же, з одиниці товар прибирається.
+ * Товар, якого немає в наявності, додати не можна - кнопка так і каже.
+ */
+export function CartControl({ item, quantity, busy, onAdd, onQuantity, size = 'medium' }: CartControlProps) {
   const { t } = useTranslation();
   const { lang, pick } = useLang();
   const name = pick(item.name);
+  const height = size === 'large' ? 48 : 38;
+
+  if (quantity <= 0) {
+    return (
+      <Button
+        fullWidth
+        variant="contained"
+        size={size}
+        startIcon={item.stock > 0 ? <AddShoppingCartIcon /> : undefined}
+        loading={busy}
+        disabled={item.stock <= 0}
+        onClick={() => onAdd(item)}
+        aria-label={item.stock > 0 ? t('catalog.addNamedToCart', { name }) : t('catalog.soldOutNamed', { name })}
+        sx={{ minHeight: height }}
+      >
+        {item.stock > 0 ? t('catalog.addToCart') : t('catalog.soldOut')}
+      </Button>
+    );
+  }
+
   const last = quantity === 1;
   return (
     <Box
@@ -81,7 +103,7 @@ function QuantityStepper({ item, quantity, busy, onQuantity }: Pick<Props, 'item
         display: 'flex',
         alignItems: 'center',
         width: '100%',
-        minHeight: 38,
+        minHeight: height,
         borderRadius: '10px',
         border: 2,
         borderColor: 'primary.main',
@@ -90,16 +112,11 @@ function QuantityStepper({ item, quantity, busy, onQuantity }: Pick<Props, 'item
         '& .MuiIconButton-root': { color: 'primary.main', borderRadius: '8px' },
       }}
     >
-      <IconButton size="small" aria-label={t(last ? 'cart.remove' : 'cart.decrease', { name })} disabled={busy} onClick={() => onQuantity(item, quantity - 1)}>
+      <IconButton size={size === 'large' ? 'medium' : 'small'} aria-label={t(last ? 'cart.remove' : 'cart.decrease', { name })} disabled={busy} onClick={() => onQuantity(item, quantity - 1)}>
         {last ? <DeleteOutlineIcon fontSize="small" /> : <RemoveIcon fontSize="small" />}
       </IconButton>
       <Box sx={{ flex: 1, textAlign: 'center', lineHeight: 1.1, opacity: busy ? 0.6 : 1, transition: 'opacity 160ms ease' }}>
-        <Typography
-          key={quantity}
-          component="span"
-          aria-hidden
-          sx={{ display: 'inline-block', fontWeight: 800, fontSize: '1.05rem', animation: `${popIn} 260ms ${EASE_SPRING}` }}
-        >
+        <Typography key={quantity} component="span" aria-hidden sx={{ display: 'inline-block', fontWeight: 800, fontSize: size === 'large' ? '1.2rem' : '1.05rem', animation: `${popIn} 260ms ${EASE_SPRING}` }}>
           {quantity}
         </Typography>
         <Typography component="span" aria-hidden variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>
@@ -107,18 +124,87 @@ function QuantityStepper({ item, quantity, busy, onQuantity }: Pick<Props, 'item
           {formatMoney(item.price * quantity, lang)}
         </Typography>
       </Box>
-      <IconButton size="small" aria-label={t('cart.increase', { name })} disabled={busy || quantity >= item.stock} onClick={() => onQuantity(item, quantity + 1)}>
+      <IconButton
+        size={size === 'large' ? 'medium' : 'small'}
+        aria-label={t('cart.increase', { name })}
+        disabled={busy || quantity >= item.stock}
+        onClick={() => onQuantity(item, quantity + 1)}
+      >
         <AddIcon fontSize="small" />
       </IconButton>
     </Box>
   );
 }
 
-export function ProductCard({ item, quantity, busy, favorite, onAdd, onQuantity, onToggleFavorite, onOpen, showFarm = true }: Props) {
+/**
+ * Рядок залишку під ціною. Товару мало - помаранчеве «Лишилося лише N»; товар уже в кошику - скільки ще є
+ * (лічильник не дасть узяти більше); інакше рядок порожній, але місце під нього лишається, щоб картки в рядку були рівні.
+ */
+export function StockLine({ stock, quantity }: { stock: number; quantity: number }) {
+  const { t } = useTranslation();
+  const low = stock > 0 && stock <= LOW_STOCK;
+  return (
+    <Typography
+      variant="body2"
+      sx={{
+        minHeight: '1.5em',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 0.25,
+        fontWeight: low ? 700 : 500,
+        fontSize: '0.8125rem',
+        color: (theme) => (low ? LOW_STOCK_COLOR[theme.palette.mode] : 'text.secondary'),
+      }}
+    >
+      {low && (
+        <>
+          <WhatshotOutlinedIcon sx={{ fontSize: 16 }} />
+          {t('catalog.lowStock', { count: stock })}
+        </>
+      )}
+      {!low && quantity > 0 && t('catalog.inStock', { count: stock })}
+    </Typography>
+  );
+}
+
+/** «Сердечко»: зберегти товар в обраному. */
+export function FavoriteButton({ item, favorite, onToggle, sx }: { item: CatalogItem; favorite: boolean; onToggle: (item: CatalogItem) => void; sx?: object }) {
+  const { t } = useTranslation();
+  const { pick } = useLang();
+  const name = pick(item.name);
+  return (
+    <Tooltip title={t(favorite ? 'catalog.inFavorites' : 'catalog.toFavorites')}>
+      <IconButton
+        size="small"
+        aria-pressed={favorite}
+        aria-label={t(favorite ? 'catalog.favoriteRemove' : 'catalog.favoriteAdd', { name })}
+        onClick={() => onToggle(item)}
+        sx={{
+          bgcolor: 'background.paper',
+          boxShadow: 1,
+          color: favorite ? '#e53935' : 'text.secondary',
+          '&:hover': { bgcolor: 'background.paper', color: '#e53935' },
+          ...sx,
+        }}
+      >
+        {favorite ? <FavoriteIcon key="on" fontSize="small" sx={{ animation: `${popIn} 360ms ${EASE_SPRING}` }} /> : <FavoriteBorderIcon key="off" fontSize="small" />}
+      </IconButton>
+    </Tooltip>
+  );
+}
+
+interface Props extends Omit<CartControlProps, 'size'> {
+  favorite: boolean;
+  onToggleFavorite: (item: CatalogItem) => void;
+  /** Назва ферми з посиланням на її сторінку; на сторінці самої ферми не потрібна. */
+  showFarm?: boolean;
+}
+
+export function ProductCard({ item, quantity, busy, favorite, onAdd, onQuantity, onToggleFavorite, showFarm = true }: Props) {
   const { t } = useTranslation();
   const { lang, pick } = useLang();
   const name = pick(item.name);
-  const lowStock = item.stock > 0 && item.stock <= LOW_STOCK;
+  const page = productPath(item.productId);
 
   return (
     <Card
@@ -137,7 +223,8 @@ export function ProductCard({ item, quantity, busy, favorite, onAdd, onQuantity,
     >
       {/* Значки лежать усередині зображення з відступом 12 px і не виходять за край картки. */}
       <Box sx={{ position: 'relative', height: MEDIA_HEIGHT, overflow: 'hidden', flexShrink: 0 }}>
-        <Box onClick={() => onOpen?.(item)} sx={{ position: 'absolute', inset: 0, cursor: onOpen ? 'pointer' : undefined }}>
+        {/* Зображення веде на сторінку товару мишею; з клавіатури туди веде назва (зображення не дублює її в порядку Tab). */}
+        <Box component={RouterLink} to={page} tabIndex={-1} aria-hidden sx={{ position: 'absolute', inset: 0 }}>
           <ProductMedia item={item} />
         </Box>
         {item.certified && (
@@ -149,29 +236,10 @@ export function ProductCard({ item, quantity, busy, favorite, onAdd, onQuantity,
             sx={{ position: 'absolute', top: 12, left: 12, maxWidth: 'calc(100% - 72px)', boxShadow: 1, fontWeight: 600 }}
           />
         )}
-        <Tooltip title={t(favorite ? 'catalog.inFavorites' : 'catalog.toFavorites')}>
-          <IconButton
-            size="small"
-            aria-pressed={favorite}
-            aria-label={t(favorite ? 'catalog.favoriteRemove' : 'catalog.favoriteAdd', { name })}
-            onClick={() => onToggleFavorite(item)}
-            sx={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              bgcolor: 'background.paper',
-              boxShadow: 1,
-              color: favorite ? '#e53935' : 'text.secondary',
-              '&:hover': { bgcolor: 'background.paper', color: '#e53935' },
-            }}
-          >
-            {favorite ? (
-              <FavoriteIcon key="on" fontSize="small" sx={{ animation: `${popIn} 360ms ${EASE_SPRING}` }} />
-            ) : (
-              <FavoriteBorderIcon key="off" fontSize="small" />
-            )}
-          </IconButton>
-        </Tooltip>
+        {item.stock === 0 && (
+          <Chip size="small" label={t('catalog.soldOut')} sx={{ position: 'absolute', bottom: 12, left: 12, bgcolor: 'background.paper', boxShadow: 1, fontWeight: 600 }} />
+        )}
+        <FavoriteButton item={item} favorite={favorite} onToggle={onToggleFavorite} sx={{ position: 'absolute', top: 8, right: 8 }} />
       </Box>
 
       <CardContent sx={{ flex: 1, pb: 1, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
@@ -189,22 +257,9 @@ export function ProductCard({ item, quantity, busy, favorite, onAdd, onQuantity,
             overflow: 'hidden',
           }}
         >
-          {onOpen ? (
-            // Назва - кнопка картки товару: з клавіатури картка відкривається так само, як натисканням на фото.
-            <Link
-              component="button"
-              type="button"
-              color="inherit"
-              underline="hover"
-              onClick={() => onOpen(item)}
-              aria-label={t('catalog.details', { name })}
-              sx={{ font: 'inherit', textAlign: 'left', verticalAlign: 'baseline' }}
-            >
-              {name}
-            </Link>
-          ) : (
-            name
-          )}
+          <Link component={RouterLink} to={page} color="inherit" underline="hover" aria-label={t('catalog.details', { name })}>
+            {name}
+          </Link>
         </Typography>
         {showFarm && (
           <Link
@@ -244,45 +299,11 @@ export function ProductCard({ item, quantity, busy, favorite, onAdd, onQuantity,
               {t('catalog.perUnit', { unit: pick(item.unit) })}
             </Typography>
           </Typography>
-          {/* Залишок показується, лише коли товару мало; рядок резервується, щоб кнопки в рядку стояли рівно. */}
-          <Typography
-            variant="body2"
-            sx={{
-              minHeight: '1.5em',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 0.25,
-              fontWeight: 700,
-              fontSize: '0.8125rem',
-              color: (theme) => LOW_STOCK_COLOR[theme.palette.mode],
-            }}
-          >
-            {lowStock && (
-              <>
-                <WhatshotOutlinedIcon sx={{ fontSize: 16 }} />
-                {t('catalog.lowStock', { count: item.stock })}
-              </>
-            )}
-          </Typography>
+          <StockLine stock={item.stock} quantity={quantity} />
         </Box>
       </CardContent>
       <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
-        {quantity > 0 ? (
-          <QuantityStepper item={item} quantity={quantity} busy={busy} onQuantity={onQuantity} />
-        ) : (
-          <Button
-            fullWidth
-            variant="contained"
-            startIcon={<AddShoppingCartIcon />}
-            loading={busy}
-            disabled={item.stock <= 0}
-            onClick={() => onAdd(item)}
-            aria-label={t('catalog.addNamedToCart', { name })}
-            sx={{ minHeight: 38 }}
-          >
-            {t('catalog.addToCart')}
-          </Button>
-        )}
+        <CartControl item={item} quantity={quantity} busy={busy} onAdd={onAdd} onQuantity={onQuantity} />
       </CardActions>
     </Card>
   );

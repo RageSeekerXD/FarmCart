@@ -31,6 +31,7 @@ import { cartCount, useCart } from '../features/cart/useCart';
 import { NotificationBell } from '../features/notifications/NotificationBell';
 import { formatMoney, LANGS, useLang } from '../i18n';
 import { useColorMode } from './colorMode';
+import { Footer } from './Footer';
 import { bump, EASE_OUT, EASE_SPRING, fadeUp, popIn } from './motion';
 
 interface NavItem {
@@ -48,6 +49,8 @@ const NAV: Record<Role, readonly NavItem[]> = {
   Farmer: [
     { to: '/farmer/orders', label: 'nav.farmerOrders' },
     { to: '/farmer/products', label: 'nav.farmerProducts' },
+    { to: '/farmer/picking', label: 'nav.farmerPicking' },
+    { to: '/farmer/stats', label: 'nav.farmerStats' },
   ],
   Courier: [{ to: '/courier', label: 'nav.deliveries' }],
   Admin: [{ to: '/admin', label: 'nav.admin' }],
@@ -281,7 +284,8 @@ export function Layout() {
                   minHeight: 44,
                   textTransform: 'none',
                   fontSize: '0.95rem',
-                  opacity: 0.85,
+                  // Неактивні вкладки - майже повна яскравість: білий на зеленому лишається читабельним і вдень на телефоні.
+                  opacity: 0.92,
                   borderRadius: '8px 8px 0 0',
                   '&:hover': { opacity: 1, bgcolor: 'rgba(255,255,255,0.08)' },
                   '&.Mui-selected': { opacity: 1 },
@@ -289,8 +293,8 @@ export function Layout() {
               />
             ))}
           </Tabs>
-          {/* Знак ролі, у якій користувач працює: колір шапки й емодзі змінюються разом із роллю. */}
-          {user && (
+          {/* Знак ролі - лише коли роль одна: з кількома ролями її вже показує перемикач ролей угорі, і дубль зайвий. */}
+          {user && roles.length === 1 && (
             <Typography
               key={role}
               variant="body2"
@@ -332,11 +336,7 @@ export function Layout() {
           <Outlet />
         </Box>
       </Container>
-      <Box component="footer" sx={{ py: 3, mt: 2, textAlign: 'center', color: 'text.secondary', borderTop: 1, borderColor: 'divider' }}>
-        <Typography variant="body2">
-          {brand.emoji} <strong>{t('app.name')}</strong> · {t('app.tagline')}
-        </Typography>
-      </Box>
+      <Footer />
     </Box>
   );
 }

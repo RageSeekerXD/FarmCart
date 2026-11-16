@@ -8,15 +8,19 @@ import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { LoginPage } from './features/auth/LoginPage';
 import { CartPage } from './features/cart/CartPage';
 import { CatalogPage } from './features/catalog/CatalogPage';
+import { ProductPage } from './features/catalog/ProductPage';
 import { CourierPage } from './features/courier/CourierPage';
 import { FarmerOrdersPage } from './features/farmer/FarmerOrdersPage';
 import { FarmerProductsPage } from './features/farmer/FarmerProductsPage';
+import { FarmerStatsPage } from './features/farmer/FarmerStatsPage';
+import { PickingListPage } from './features/farmer/PickingListPage';
 import { FarmPage } from './features/farms/FarmPage';
 import { RegisterFarmPage } from './features/farmer/RegisterFarmPage';
 import { MapPage } from './features/map/MapPage';
 import { CheckoutPage } from './features/orders/CheckoutPage';
 import { OrderPage } from './features/orders/OrderPage';
 import { OrdersPage } from './features/orders/OrdersPage';
+import { InfoPage } from './shared/InfoPage';
 import { Layout } from './shared/Layout';
 import { NotFoundPage, RequireRole } from './shared/pages';
 import { ColorModeProvider, useColorMode, type ColorMode } from './shared/colorMode';
@@ -77,6 +81,8 @@ export function AppRoutes() {
         <Route path="login" element={<LoginPage />} />
         <Route path="map" element={<MapPage />} />
         <Route path="farms/:id" element={<FarmPage />} />
+        <Route path="products/:id" element={<ProductPage />} />
+        <Route path="info" element={<InfoPage />} />
         <Route
           path="cart"
           element={
@@ -130,6 +136,22 @@ export function AppRoutes() {
           element={
             <RequireRole role="Farmer">
               <FarmerProductsPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="farmer/picking"
+          element={
+            <RequireRole role="Farmer">
+              <PickingListPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="farmer/stats"
+          element={
+            <RequireRole role="Farmer">
+              <FarmerStatsPage />
             </RequireRole>
           }
         />

@@ -26,6 +26,8 @@ public static class DemoData
     ];
 
     private const string HistoryAddress = "Львів, вул. Личаківська, 24, кв. 5";
+    private static readonly AddressDetails HistoryDetails = new("2", "3", "5К");
+    private static readonly GeoPoint HistoryPoint = new(49.8378, 24.0468);
 
     public static void Seed(IServiceProvider services)
     {
@@ -39,14 +41,14 @@ public static class DemoData
         var green = Farm("+380671110001", "Олена Коваль", "Ферма «Зелений Гай»", "Zelenyi Hai Farm", new GeoPoint(49.8160, 24.1300), certified: true);
         var cheese = Farm("+380671110002", "Іван Гуцуляк", "Сироварня «Карпатська бринза»", "Karpatska Bryndza Creamery", new GeoPoint(49.9000, 23.9600), certified: false);
         var honey = Farm("+380671110003", "Марія Бойко", "Пасіка «Медовий шлях»", "Medovyi Shliakh Apiary", new GeoPoint(49.7170, 23.9100), certified: true);
-        Farm("+380671110004", "Тарас Мельник", "Еко-ферма «Сокільники»", "Sokilnyky Eco Farm", new GeoPoint(49.8000, 23.9800), certified: true, verified: false);
+        var sokilnyky = Farm("+380671110004", "Тарас Мельник", "Еко-ферма «Сокільники»", "Sokilnyky Eco Farm", new GeoPoint(49.8000, 23.9800), certified: true, verified: false);
         var fields = Farm("+380671110005", "Петро Савчук", "Господарство «Щедрий лан»", "Shchedryi Lan Farmstead", new GeoPoint(49.8220, 23.9000), certified: false);
         var orchard = Farm("+380671110006", "Наталія Яворська", "Сад «Яворівські ягоди»", "Yavoriv Berry Orchard", new GeoPoint(49.9400, 23.3900), certified: true);
         var poultry = Farm("+380671110007", "Степан Гнатів", "Ферма «Курячий двір»", "Kuriachyi Dvir Poultry Farm", new GeoPoint(49.7850, 23.6450), certified: false);
         var smokehouse = Farm("+380671110008", "Василь Бойчук", "Господарство «Бойківська комора»", "Boikivska Komora Farmstead", new GeoPoint(49.2600, 23.8500), certified: true);
         var bakery = Farm("+380671110009", "Ірина Дмитрів", "Пекарня «Житній колос»", "Zhytnii Kolos Bakery", new GeoPoint(49.7900, 24.0600), certified: false);
         var goats = Farm("+380671110010", "Оксана Лесів", "Козина ферма «Біла кізка»", "Bila Kizka Goat Farm", new GeoPoint(50.0600, 23.9700), certified: true);
-        Farm("+380671110011", "Роман Кушнір", "Пасіка «Золотий вулик»", "Zolotyi Vulyk Apiary", new GeoPoint(49.5200, 23.9800), certified: false, verified: false);
+        var goldenHive = Farm("+380671110011", "Роман Кушнір", "Пасіка «Золотий вулик»", "Zolotyi Vulyk Apiary", new GeoPoint(49.5200, 23.9800), certified: false, verified: false);
         var organic = Farm("+380671110012", "Галина Процик", "Органічна ферма «Добра земля»", "Dobra Zemlia Organic Farm", new GeoPoint(49.8070, 24.9000), certified: true);
 
         // Сценарій замовлення (demo.cmd) купує лише цілорічні товари, тож проходить у будь-який день року (DEF-03).
@@ -113,6 +115,59 @@ public static class DemoData
         Product(organic, "Квасоля", "Beans", "vegetables", "kg-0.5", 48m, 65);
         Product(organic, "Капуста квашена", "Sauerkraut", "vegetables", "jar-0.5l", 52m, 38);
 
+        // Історія ферм і дні, коли вони возять замовлення (сторінка ферми, фільтр каталогу «День доставки»).
+        Profile(green, "Сімейна органічна ферма у Винниках з 2009 року. Вирощуємо овочі й ягоди без хімічних добрив: сівозміна й власний компост.",
+            "A family organic farm in Vynnyky since 2009. We grow vegetables and berries without chemical fertilisers, using crop rotation and our own compost.",
+            DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Saturday);
+        Profile(cheese, "Рецепти бринзи в родині Гуцуляків передаються з 1950-х. Влітку вівці пасуться на полонинах Карпат, узимку - у долині під Брюховичами.",
+            "The Hutsuliak family has passed down its bryndza recipes since the 1950s. In summer the sheep graze on Carpathian pastures, in winter in the valley near Briukhovychi.",
+            DayOfWeek.Wednesday, DayOfWeek.Saturday);
+        Profile(honey, "Кочова пасіка на 120 вуликів: навесні - акація, влітку - липа й гречка. Мед не нагріваємо й не фільтруємо під тиском.",
+            "A migratory apiary with 120 hives: acacia in spring, linden and buckwheat in summer. We never heat our honey or pressure-filter it.",
+            DayOfWeek.Friday, DayOfWeek.Saturday);
+        Profile(fields, "Овочеве господарство під Львовом: 12 гектарів відкритого ґрунту й теплиці. Збираємо врожай у день доставки.",
+            "A vegetable farm outside Lviv: 12 hectares of open fields and greenhouses. We harvest on the day of delivery.",
+            DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday);
+        Profile(orchard, "Сад біля Яворова: малина, лохина й старі сорти яблук. Ягоди морозимо в день збору, варення варимо невеликими партіями.",
+            "An orchard near Yavoriv: raspberries, blueberries and heritage apples. Berries are frozen on the day they are picked; jam is made in small batches.",
+            DayOfWeek.Tuesday, DayOfWeek.Friday);
+        Profile(poultry, "Кури й перепілки на вільному вигулі; годуємо власним зерном без антибіотиків. Яйця збираємо щоранку.",
+            "Free-range hens and quails fed on our own grain without antibiotics. Eggs are collected every morning.");
+        Profile(smokehouse, "Ковбаси й сало за бойківськими рецептами: коптимо на вільховій трісці у власній коптильні в горах.",
+            "Sausages and salo made to Boiko recipes, smoked over alder chips in our own smokehouse in the mountains.",
+            DayOfWeek.Thursday, DayOfWeek.Saturday);
+        Profile(bakery, "Пекарня на дров'яній печі: тісто на живій заквасці доходить 18 годин, печемо щоранку о п'ятій.",
+            "A wood-fired bakery: our sourdough rises for 18 hours, and we bake every morning at five.");
+        Profile(goats, "Тридцять кіз карпатської породи. Доїмо вручну, а кефір і сир робимо того ж дня.",
+            "Thirty Carpathian goats, milked by hand; kefir and cheese are made the same day.",
+            DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Saturday);
+        Profile(organic, "Сертифікована органічна ферма під Золочевом: понад 20 видів зелені й овочів, полив з власної свердловини.",
+            "A certified organic farm near Zolochiv: more than 20 kinds of greens and vegetables, watered from our own well.",
+            DayOfWeek.Wednesday, DayOfWeek.Saturday);
+
+        // Склад, термін придатності й умови зберігання - для сторінки товару.
+        Details("Бринза овеча", ("Овече молоко, сіль, сичужний фермент", "Sheep milk, salt, rennet"), ("30 діб", "30 days"), ("У розсолі при +2…+6 °C", "In brine at +2…+6 °C"));
+        Details("Сир «Гірський»", ("Коров'яче молоко, закваска, сіль, сичужний фермент", "Cow's milk, starter culture, salt, rennet"), ("60 діб", "60 days"), ("При +4…+8 °C, загорнутим у пергамент", "At +4…+8 °C, wrapped in parchment"));
+        Details("Масло вершкове", ("Вершки коров'ячі, жирність 82 %", "Cow's cream, 82% fat"), ("20 діб", "20 days"), ("При +2…+6 °C", "At +2…+6 °C"));
+        Details("Кефір", ("Козине молоко, кефірна закваска", "Goat's milk, kefir culture"), ("7 діб", "7 days"), ("При +2…+6 °C", "At +2…+6 °C"));
+        Details("Молоко козине", ("Козине молоко, пастеризоване", "Goat's milk, pasteurised"), ("5 діб", "5 days"), ("При +2…+6 °C", "At +2…+6 °C"));
+        Details("Хліб житній", ("Житнє борошно, вода, закваска, сіль, кмин", "Rye flour, water, sourdough starter, salt, caraway"), ("5 діб", "5 days"), ("У лляному мішечку при кімнатній температурі", "In a linen bag at room temperature"));
+        Details("Хліб пшеничний на заквасці", ("Пшеничне борошно, вода, закваска, сіль", "Wheat flour, water, sourdough starter, salt"), ("4 доби", "4 days"), ("У лляному мішечку при кімнатній температурі", "In a linen bag at room temperature"));
+        Details("Паляниця", ("Пшеничне борошно, вода, дріжджі, сіль, цукор", "Wheat flour, water, yeast, salt, sugar"), ("3 доби", "3 days"), ("У хлібниці при кімнатній температурі", "In a bread bin at room temperature"));
+        Details("Мед акацієвий", ("Натуральний акацієвий мед, 100 %", "Pure acacia honey, 100%"), ("24 місяці", "24 months"), ("У темному місці при +5…+20 °C, щільно закритим", "In a dark place at +5…+20 °C, tightly closed"));
+        Details("Мед липовий", ("Натуральний липовий мед, 100 %", "Pure linden honey, 100%"), ("24 місяці", "24 months"), ("У темному місці при +5…+20 °C, щільно закритим", "In a dark place at +5…+20 °C, tightly closed"));
+        Details("Мед гречаний", ("Натуральний гречаний мед, 100 %", "Pure buckwheat honey, 100%"), ("24 місяці", "24 months"), ("У темному місці при +5…+20 °C, щільно закритим", "In a dark place at +5…+20 °C, tightly closed"));
+        Details("Ковбаса домашня", ("Свинина, яловичина, сіль, часник, чорний перець, натуральна оболонка", "Pork, beef, salt, garlic, black pepper, natural casing"), ("20 діб", "20 days"), ("При 0…+6 °C", "At 0…+6 °C"));
+        Details("Сало копчене", ("Свиняче сало, сіль, часник, спеції", "Pork fatback, salt, garlic, spices"), ("30 діб", "30 days"), ("При 0…+4 °C, загорнутим у пергамент", "At 0…+4 °C, wrapped in parchment"));
+        Details("Варення малинове", ("Малина, цукор", "Raspberries, sugar"), ("12 місяців", "12 months"), ("Після відкриття - у холодильнику до 30 діб", "Once opened, keep refrigerated for up to 30 days"));
+        Details("Капуста квашена", ("Капуста білокачанна, морква, сіль", "White cabbage, carrots, salt"), ("60 діб", "60 days"), ("При +1…+4 °C", "At +1…+4 °C"));
+        Details("Яйця курячі", ("Яйця курячі столові, категорія С0", "Table eggs, grade C0"), ("25 діб", "25 days"), ("У холодильнику, гострим кінцем донизу", "Refrigerated, pointed end down"));
+
+        // Скани документів двох господарств, що чекають на верифікацію: адміністратор переглядає їх перед рішенням.
+        Document(sokilnyky, "Органічний сертифікат", "Сертифікат органічного виробництва", "UA-BIO-129-2026");
+        Document(sokilnyky, "Витяг з ЄДР", "Витяг з Єдиного державного реєстру", "1000 2026 0045 7731");
+        Document(goldenHive, "Витяг з ЄДР", "Витяг з Єдиного державного реєстру", "1000 2026 0091 2210");
+
         var tomorrow = new DateTimeOffset(now.Date.AddDays(1), now.Offset);
         Slot(tomorrow.AddHours(10), capacity: 3);
         Slot(tomorrow.AddHours(12), capacity: 3);
@@ -140,17 +195,17 @@ public static class DemoData
         var deliveries = services.GetRequiredService<DeliveryService>();
         var reviews = services.GetRequiredService<ReviewService>();
         var morning = Slot(tomorrow.AddDays(1).AddHours(10), capacity: 6);
-        var afternoon = Slot(tomorrow.AddDays(1).AddHours(14), capacity: 6);
+        var afternoon = Slot(tomorrow.AddDays(1).AddHours(14), capacity: 8);
         var demoBuyer = store.AddUser(DemoBuyerPhone, "Оксана Демченко");
         var regular = store.AddUser("+380931112234", "Ігор Петренко");
         var neighbour = store.AddUser("+380931112235", "Світлана Гнатюк");
 
-        Buy(demoBuyer, "Хліб житній", 2, morning);
+        Buy(demoBuyer, "Хліб житній", 2, morning, comment: "Наріжте, будь ласка, один хліб скибками");
         fulfillment.Accept(poultry, Buy(demoBuyer, "Яйця курячі", 2, morning).Id);
         var assembling = Buy(demoBuyer, "Кефір", 2, morning);
         fulfillment.Accept(goats, assembling.Id);
         fulfillment.StartAssembling(goats, assembling.Id);
-        var inTransit = Buy(demoBuyer, "Ковбаса домашня", 1, morning, PaymentMethod.Cash);
+        var inTransit = Buy(demoBuyer, "Ковбаса домашня", 1, morning, PaymentMethod.Cash, "Подзвоніть за 10 хвилин до приїзду");
         fulfillment.Accept(smokehouse, inTransit.Id);
         fulfillment.StartAssembling(smokehouse, inTransit.Id);
         fulfillment.HandOver(smokehouse, inTransit.Id, courier.Id);
@@ -163,16 +218,52 @@ public static class DemoData
         fulfillment.HandOver(cheese, notDelivered.Id, courier.Id);
         deliveries.ReportFailure(courier, notDelivered.Id, DeliveryProblem.BuyerAbsent, note: null);
 
+        // Ще дві доставки того самого кур'єра: його мапа показує маршрут «забрати → віддати» з кількох точок.
+        OnTheWay(regular, bakery, "Паляниця", afternoon, "Львів, вул. Наукова, 7а, кв. 12", new AddressDetails("1", "4", "12"), new GeoPoint(49.8135, 24.0257), PaymentMethod.Cash);
+        OnTheWay(neighbour, poultry, "Яйця курячі", afternoon, "Львів, просп. Червоної Калини, 60, кв. 41", new AddressDetails("3", "7", "41"), new GeoPoint(49.7963, 24.0574), PaymentMethod.Card, "Залиште, будь ласка, біля дверей");
+
         Review(regular, bakery, "Хліб житній", afternoon, 5, "Найкращий житній хліб у Львові");
         Review(neighbour, bakery, "Паляниця", afternoon, 4, "Смачно, але хотілося б більшого вибору");
         Review(regular, poultry, "Яйця курячі", afternoon, 5, comment: null);
         Review(neighbour, goats, "Молоко козине", afternoon, 4, "Свіже молоко, акуратна упаковка");
         Review(regular, honey, "Мед акацієвий", afternoon, 5, "Ароматний мед");
 
-        Order Buy(User buyer, string product, int quantity, DeliverySlot slot, PaymentMethod method = PaymentMethod.Card)
+        Order Buy(User buyer, string product, int quantity, DeliverySlot slot, PaymentMethod method = PaymentMethod.Card, string? comment = null) =>
+            BuyAt(buyer, product, quantity, slot, HistoryAddress, HistoryDetails, HistoryPoint, method, comment);
+
+        Order BuyAt(User buyer, string product, int quantity, DeliverySlot slot, string address, AddressDetails details, GeoPoint point, PaymentMethod method, string? comment)
         {
             carts.Add(buyer, store.Products.Values.Single(p => p.Name.Uk == product).Id, quantity);
-            return orders.PlaceOrder(buyer, new CheckoutRequest(HistoryAddress, slot.Id, method, method == PaymentMethod.Cash ? null : "tok_visa"));
+            var token = method == PaymentMethod.Cash ? null : "tok_visa";
+            return orders.PlaceOrder(buyer, new CheckoutRequest(address, slot.Id, method, token, Comment: comment, Details: details, Lat: point.Lat, Lon: point.Lon));
+        }
+
+        void OnTheWay(User buyer, User farmer, string product, DeliverySlot slot, string address, AddressDetails details, GeoPoint point, PaymentMethod method, string? comment = null)
+        {
+            var order = BuyAt(buyer, product, 1, slot, address, details, point, method, comment);
+            fulfillment.Accept(farmer, order.Id);
+            fulfillment.StartAssembling(farmer, order.Id);
+            fulfillment.HandOver(farmer, order.Id, courier.Id);
+        }
+
+        void Profile(User farmer, string uk, string en, params DayOfWeek[] days) =>
+            farmers.UpdateProfile(farmer, new FarmProfileChanges(new LocalizedText(uk, en), days));
+
+        void Details(string nameUk, (string Uk, string En) composition, (string Uk, string En) shelfLife, (string Uk, string En) storage)
+        {
+            var product = store.Products.Values.Single(p => p.Name.Uk == nameUk);
+            product.Composition = new LocalizedText(composition.Uk, composition.En);
+            product.ShelfLife = new LocalizedText(shelfLife.Uk, shelfLife.En);
+            product.Storage = new LocalizedText(storage.Uk, storage.En);
+        }
+
+        // Зразок скану - SVG: завантаження фермерами приймає лише PDF, JPEG і PNG, а демо-скани кладуться в сховище напряму.
+        void Document(User farmer, string name, string title, string number)
+        {
+            var farm = store.FarmerOf(farmer);
+            var svg = SampleScan(title, farm.Name.Uk, number, now);
+            var id = store.NextId<FarmDocument>();
+            store.FarmDocuments.Add(id, new FarmDocument(id, farm.Id, name, "image/svg+xml", System.Text.Encoding.UTF8.GetBytes(svg), now));
         }
 
         void Review(User buyer, User farmer, string product, DeliverySlot slot, int rating, string? comment)
@@ -204,5 +295,37 @@ public static class DemoData
             store.Slots.Add(slot.Id, slot);
             return slot;
         }
+    }
+
+    /// <summary>
+    /// Зразок скану документа для демонстрації верифікації: аркуш із назвою, господарством, номером і печаткою.
+    /// Позначено «ЗРАЗОК», щоб його не сприйняли за справжній документ.
+    /// </summary>
+    private static string SampleScan(string title, string farm, string number, DateTimeOffset issued)
+    {
+        static string Escape(string text) => System.Security.SecurityElement.Escape(text);
+        var date = issued.AddMonths(-3).ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture);
+        return $"""
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595 842" width="595" height="842" font-family="Georgia, 'Times New Roman', serif">
+              <rect width="595" height="842" fill="#fbf8f1"/>
+              <rect x="28" y="28" width="539" height="786" fill="none" stroke="#3a6b35" stroke-width="3"/>
+              <rect x="38" y="38" width="519" height="766" fill="none" stroke="#3a6b35" stroke-width="1"/>
+              <text x="297" y="120" text-anchor="middle" font-size="16" fill="#555">УКРАЇНА</text>
+              <text x="297" y="175" text-anchor="middle" font-size="26" font-weight="bold" fill="#1d2a1e">{Escape(title)}</text>
+              <text x="297" y="215" text-anchor="middle" font-size="15" fill="#555">№ {Escape(number)}</text>
+              <text x="80" y="300" font-size="16" fill="#1d2a1e">Видано: {Escape(farm)}</text>
+              <text x="80" y="335" font-size="16" fill="#1d2a1e">Дата видачі: {date}</text>
+              <text x="80" y="370" font-size="16" fill="#1d2a1e">Чинний до: {issued.AddYears(1).ToString("dd.MM.yyyy", System.Globalization.CultureInfo.InvariantCulture)}</text>
+              <line x1="80" y1="430" x2="515" y2="430" stroke="#ccc"/>
+              <line x1="80" y1="470" x2="515" y2="470" stroke="#ccc"/>
+              <line x1="80" y1="510" x2="430" y2="510" stroke="#ccc"/>
+              <circle cx="430" cy="680" r="62" fill="none" stroke="#2e5aa8" stroke-width="3" opacity="0.75"/>
+              <circle cx="430" cy="680" r="50" fill="none" stroke="#2e5aa8" stroke-width="1.5" opacity="0.75"/>
+              <text x="430" y="686" text-anchor="middle" font-size="14" fill="#2e5aa8" opacity="0.8">ПЕЧАТКА</text>
+              <text x="80" y="700" font-size="14" fill="#555">Підпис уповноваженої особи ____________</text>
+              <text x="297" y="520" text-anchor="middle" font-size="90" font-weight="bold" fill="#c62828" opacity="0.12" transform="rotate(-30 297 520)">ЗРАЗОК</text>
+              <text x="297" y="790" text-anchor="middle" font-size="12" fill="#888">Демонстраційний документ FarmCart · Sample document</text>
+            </svg>
+            """;
     }
 }

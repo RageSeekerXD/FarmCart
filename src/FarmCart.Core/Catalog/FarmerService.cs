@@ -8,21 +8,42 @@ public sealed record ProductDraft(
     int Stock,
     IReadOnlyCollection<int>? SeasonMonths = null,
     string? PhotoUrl = null,
-    LocalizedText? Description = null);
+    LocalizedText? Description = null,
+    LocalizedText? Composition = null,
+    LocalizedText? ShelfLife = null,
+    LocalizedText? Storage = null);
 
-/// <summary>Зміни товару; Description з обома порожніми мовами прибирає опис.</summary>
+/// <summary>Зміни товару; текст з обома порожніми мовами (опис, склад, термін, зберігання) прибирає його.</summary>
 public sealed record ProductChanges(
     LocalizedText? Name = null,
     decimal? Price = null,
     int? Stock = null,
     IReadOnlyCollection<int>? SeasonMonths = null,
-    LocalizedText? Description = null);
+    LocalizedText? Description = null,
+    LocalizedText? Composition = null,
+    LocalizedText? ShelfLife = null,
+    LocalizedText? Storage = null);
+
+/// <summary>Зміни профілю ферми: історія (обидві мови порожні - прибрати) і дні доставки (порожньо - щодня); null - не змінювати.</summary>
+public sealed record FarmProfileChanges(LocalizedText? Story = null, IReadOnlyCollection<DayOfWeek>? DeliveryDays = null);
 
 /// <summary>US-02, US-03 (B-FR-07, B-FR-08): реєстрація продавця та керування власним каталогом.</summary>
-public sealed class FarmerService(InMemoryStore store)
+public sealed class FarmerService(InMemoryStore store, IClock clock)
 {
     /// <summary>Найбільша довжина опису товару кожною мовою.</summary>
     public const int DescriptionMaxLength = 600;
+
+    /// <summary>Найбільша довжина складу, терміну й умов зберігання кожною мовою.</summary>
+    public const int DetailsMaxLength = 400;
+
+    /// <summary>Найбільша довжина історії ферми кожною мовою.</summary>
+    public const int StoryMaxLength = 1200;
+
+    /// <summary>Найбільший розмір документа для верифікації: 5 МБ.</summary>
+    public const int DocumentMaxBytes = 5 * 1024 * 1024;
+
+    /// <summary>Скільки документів може завантажити один продавець.</summary>
+    public const int DocumentsLimit = 10;
 
     /// <summary>Найбільший розмір фото товару: 2 МБ.</summary>
     public const int PhotoMaxBytes = 2 * 1024 * 1024;
@@ -152,6 +173,9 @@ public sealed class FarmerService(InMemoryStore store)
         RequireNonNegative(draft.Stock);
         var season = ToSeason(draft.SeasonMonths);
         var description = ToDescription(draft.Description);
+        var composition = ToDetails(draft.Composition);
+        var shelfLife = ToDetails(draft.ShelfLife);
+        var storage = ToDetails(draft.Storage);
         lock (store.Sync)
         {
             var farmer = store.FarmerOf(user);
@@ -173,6 +197,9 @@ public sealed class FarmerService(InMemoryStore store)
                 PhotoUrl = draft.PhotoUrl,
                 SeasonMonths = season,
                 Description = description,
+                Composition = composition,
+                ShelfLife = shelfLife,
+                Storage = storage,
             };
             store.Products.Add(product.Id, product);
             return product;
@@ -212,15 +239,37 @@ public sealed class FarmerService(InMemoryStore store)
                 product.Description = ToDescription(text);
             }
 
+            if (changes.Composition is { } composition)
+            {
+                product.Composition = ToDetails(composition);
+            }
+
+            if (changes.ShelfLife is { } shelfLife)
+            {
+                product.ShelfLife = ToDetails(shelfLife);
+            }
+
+            if (changes.Storage is { } storage)
+            {
+                product.Storage = ToDetails(storage);
+            }
+
             return product;
         }
     }
 
+    private static LocalizedText? ToDescription(LocalizedText? text) =>
+        OptionalText(text, DescriptionMaxLength, "description", "Опис товару");
+
+    /// <summary>Склад, термін придатності чи умови зберігання: як і опис - обома мовами або жодною.</summary>
+    private static LocalizedText? ToDetails(LocalizedText? text) =>
+        OptionalText(text, DetailsMaxLength, "product_details", "Склад, термін і умови зберігання");
+
     /// <summary>
-    /// Опис необов'язковий: обидві мови порожні - опису немає; заповнено лише одну - помилка, бо покупець іншою мовою
-    /// побачив би порожнечу (BE-9).
+    /// Необов'язковий двомовний текст: обидві мови порожні - тексту немає; заповнено лише одну - помилка
+    /// «{code}_incomplete», бо покупець іншою мовою побачив би порожнечу (BE-9); задовгий - «{code}_too_long».
     /// </summary>
-    private static LocalizedText? ToDescription(LocalizedText? text)
+    private static LocalizedText? OptionalText(LocalizedText? text, int maxLength, string code, string what)
     {
         if (text is null || (string.IsNullOrWhiteSpace(text.Uk) && string.IsNullOrWhiteSpace(text.En)))
         {
@@ -229,14 +278,91 @@ public sealed class FarmerService(InMemoryStore store)
 
         if (!text.IsComplete)
         {
-            throw Fail.Validation("description_incomplete", "Опис товару потрібен обома мовами або жодною");
+            throw Fail.Validation($"{code}_incomplete", $"{what}: потрібно обома мовами або жодною");
         }
 
         var trimmed = text.Trimmed();
-        return trimmed.Uk.Length > DescriptionMaxLength || trimmed.En.Length > DescriptionMaxLength
-            ? throw Fail.Validation("description_too_long", $"Опис товару - не довше {DescriptionMaxLength} символів кожною мовою")
+        return trimmed.Uk.Length > maxLength || trimmed.En.Length > maxLength
+            ? throw Fail.Validation($"{code}_too_long", $"{what}: не довше {maxLength} символів кожною мовою")
             : trimmed;
     }
+
+    /// <summary>Історія ферми й дні, коли вона возить замовлення (сторінка ферми, фільтр каталогу за днем доставки).</summary>
+    public Farmer UpdateProfile(User user, FarmProfileChanges changes)
+    {
+        var story = changes.Story is null ? null : OptionalText(changes.Story, StoryMaxLength, "story", "Історія ферми");
+        lock (store.Sync)
+        {
+            var farmer = store.FarmerOf(user);
+            if (changes.Story is not null)
+            {
+                farmer.Story = story;
+            }
+
+            if (changes.DeliveryDays is { } days)
+            {
+                farmer.DeliveryDays = days.ToHashSet();
+            }
+
+            return farmer;
+        }
+    }
+
+    /// <summary>
+    /// Скан документа для верифікації: PDF, JPEG чи PNG до 5 МБ, тип - за сигнатурою файлу.
+    /// Документи бачать лише сам продавець і адміністратор.
+    /// </summary>
+    public FarmDocument AddDocument(User user, string? name, byte[] data)
+    {
+        if (data.Length > DocumentMaxBytes)
+        {
+            throw Fail.Validation("document_too_large", "Документ має бути не більше 5 МБ");
+        }
+
+        var type = DetectDocumentType(data) ?? throw Fail.Validation("document_type_invalid", "Завантажте документ у форматі PDF, JPEG або PNG");
+        var title = string.IsNullOrWhiteSpace(name) ? "Документ" : name.Trim();
+        lock (store.Sync)
+        {
+            var farmer = store.FarmerOf(user);
+            if (store.FarmDocuments.Values.Count(d => d.FarmerId == farmer.Id) >= DocumentsLimit)
+            {
+                throw Fail.Conflict("documents_limit", $"Можна завантажити не більше {DocumentsLimit} документів");
+            }
+
+            var document = new FarmDocument(store.NextId<FarmDocument>(), farmer.Id, title.Length > 120 ? title[..120] : title, type, data, clock.Now);
+            store.FarmDocuments.Add(document.Id, document);
+            return document;
+        }
+    }
+
+    public IReadOnlyList<FarmDocument> Documents(User user)
+    {
+        lock (store.Sync)
+        {
+            var farmer = store.FarmerOf(user);
+            return [.. store.FarmDocuments.Values.Where(d => d.FarmerId == farmer.Id).OrderBy(d => d.Id)];
+        }
+    }
+
+    public void RemoveDocument(User user, int documentId)
+    {
+        lock (store.Sync)
+        {
+            var farmer = store.FarmerOf(user);
+            if (store.FarmDocuments.GetValueOrDefault(documentId) is not { } document || document.FarmerId != farmer.Id)
+            {
+                throw Fail.NotFound("document_not_found", $"Документ #{documentId} не знайдено");
+            }
+
+            store.FarmDocuments.Remove(document.Id);
+        }
+    }
+
+    /// <summary>PDF (%PDF), JPEG чи PNG за сигнатурою; інакше null.</summary>
+    public static string? DetectDocumentType(ReadOnlySpan<byte> data) =>
+        data.Length >= 4 && data[..4].SequenceEqual("%PDF"u8)
+            ? "application/pdf"
+            : DetectImageType(data) is "image/jpeg" or "image/png" ? DetectImageType(data) : null;
 
     public Product ChangeStock(User user, int productId, int delta)
     {

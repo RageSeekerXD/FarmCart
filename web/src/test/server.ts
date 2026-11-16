@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import type { AdminReview, AppNotification, AuditEntry, Cart, PromoCode, Review, CatalogItem, CheckoutRequest, Courier, DeliveryTask, FarmOnMap, FarmRegistration, FarmerProfile, Order, OrderStatus, Product, ProductDraft, ReferenceData, Role, Shortage, Slot, User } from '../api/types';
+import type { AdminReview, AppNotification, AuditEntry, Cart, PromoCode, Review, CatalogItem, CheckoutRequest, Courier, DeliveryTask, FarmDocument, FarmOnMap, FarmProfileChanges, FarmRegistration, FarmerProfile, Order, OrderStatus, Product, ProductDraft, ReferenceData, Role, Shortage, Slot, User } from '../api/types';
 
 // MSW-моки у формі контракту API 2.0 (двомовні поля { uk, en }).
 
@@ -18,20 +18,25 @@ export const reference: ReferenceData = {
   ],
 };
 
-const green = { farmerId: 1, farmerName: { uk: 'Ферма «Зелений Гай»', en: 'Zelenyi Hai Farm' }, certified: true, farmerRating: 4.8, distanceKm: 7.6, farmerReviewCount: 2 };
-const cheese = { farmerId: 2, farmerName: { uk: 'Сироварня «Карпатська бринза»', en: 'Karpatska Bryndza Creamery' }, certified: false, farmerRating: null, distanceKm: 8.3, farmerReviewCount: 0 };
+const green = { farmerId: 1, farmerName: { uk: 'Ферма «Зелений Гай»', en: 'Zelenyi Hai Farm' }, certified: true, farmerRating: 4.8, distanceKm: 7.6, farmerReviewCount: 2, farmerDeliveryDays: ['Tuesday', 'Saturday'] as CatalogItem['farmerDeliveryDays'] };
+const cheese = { farmerId: 2, farmerName: { uk: 'Сироварня «Карпатська бринза»', en: 'Karpatska Bryndza Creamery' }, certified: false, farmerRating: null, distanceKm: 8.3, farmerReviewCount: 0, farmerDeliveryDays: [] as CatalogItem['farmerDeliveryDays'] };
 const noDetails = { description: null, seasonMonths: [] as number[] };
+/** Склад, термін і зберігання - лише в моркви; решта товарів їх не має. */
+const noFacts = { inSeason: true, composition: null, shelfLife: null, storage: null };
 
 export const products: CatalogItem[] = [
-  { productId: 1, name: { uk: 'Морква', en: 'Carrots' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 16, stock: 200, photoUrl: null, ...green, description: { uk: 'Солодка морква без гербіцидів', en: 'Sweet carrots grown without herbicides' }, seasonMonths: [7, 8, 9, 10] },
-  { productId: 2, name: { uk: 'Картопля', en: 'Potatoes' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 18, stock: 300, photoUrl: null, ...green, ...noDetails },
-  { productId: 3, name: { uk: "Молоко коров'яче", en: "Cow's milk" }, category: 'dairy', unitCode: 'l', unit: { uk: 'л', en: 'l' }, price: 38, stock: 60, photoUrl: '/img/products/milk.jpg', ...cheese, ...noDetails },
+  { productId: 1, name: { uk: 'Морква', en: 'Carrots' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 16, stock: 200, photoUrl: null, ...green, description: { uk: 'Солодка морква без гербіцидів', en: 'Sweet carrots grown without herbicides' }, seasonMonths: [7, 8, 9, 10], ...noFacts, composition: { uk: 'Морква сорту «Нантська»', en: 'Nantes carrots' }, shelfLife: { uk: '3 тижні', en: '3 weeks' }, storage: { uk: 'У прохолодному темному місці', en: 'In a cool dark place' } },
+  { productId: 2, name: { uk: 'Картопля', en: 'Potatoes' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 18, stock: 300, photoUrl: null, ...green, ...noDetails, ...noFacts },
+  { productId: 3, name: { uk: "Молоко коров'яче", en: "Cow's milk" }, category: 'dairy', unitCode: 'l', unit: { uk: 'л', en: 'l' }, price: 38, stock: 60, photoUrl: '/img/products/milk.jpg', ...cheese, ...noDetails, ...noFacts },
 ];
 
+/** Товар, якого зараз немає в наявності: каталог показує його лише з includeSoldOut=true. */
+export const soldOut: CatalogItem = { productId: 4, name: { uk: 'Агрус', en: 'Gooseberries' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 90, stock: 0, photoUrl: null, ...green, ...noDetails, ...noFacts };
+
 export const farms: FarmOnMap[] = [
-  { id: 1, name: green.farmerName, lat: 49.816, lon: 24.13, certified: true, rating: 4.8, reviewCount: 12, productCount: 2, distanceKm: 7.6 },
-  { id: 2, name: cheese.farmerName, lat: 49.9, lon: 23.96, certified: false, rating: null, reviewCount: 0, productCount: 1, distanceKm: 8.3 },
-  { id: 6, name: { uk: 'Сад «Яворівські ягоди»', en: 'Yavoriv Berry Orchard' }, lat: 49.94, lon: 23.39, certified: true, rating: 4.2, reviewCount: 3, productCount: 0, distanceKm: 47.2 },
+  { id: 1, name: green.farmerName, lat: 49.816, lon: 24.13, certified: true, rating: 4.8, reviewCount: 12, productCount: 2, distanceKm: 7.6, story: { uk: 'Сімейна органічна ферма з 2009 року', en: 'A family organic farm since 2009' }, deliveryDays: ['Tuesday', 'Saturday'] },
+  { id: 2, name: cheese.farmerName, lat: 49.9, lon: 23.96, certified: false, rating: null, reviewCount: 0, productCount: 1, distanceKm: 8.3, story: null, deliveryDays: [] },
+  { id: 6, name: { uk: 'Сад «Яворівські ягоди»', en: 'Yavoriv Berry Orchard' }, lat: 49.94, lon: 23.39, certified: true, rating: 4.2, reviewCount: 3, productCount: 0, distanceKm: 47.2, story: null, deliveryDays: ['Friday'] },
 ];
 
 export const slots: Slot[] = [
@@ -41,11 +46,11 @@ export const slots: Slot[] = [
 
 export const couriers: Courier[] = [{ id: 2, name: 'Андрій Шевчук' }];
 
-export const farmProfile: FarmerProfile = { id: 1, name: green.farmerName, lat: 49.816, lon: 24.13, certified: true, verified: true, rating: 4.8, reviewCount: 12, rejectionReason: null };
+export const farmProfile: FarmerProfile = { id: 1, name: green.farmerName, lat: 49.816, lon: 24.13, certified: true, verified: true, rating: 4.8, reviewCount: 12, rejectionReason: null, story: null, deliveryDays: [], documentCount: 0 };
 
 export const ownProducts: Product[] = [
-  { id: 1, farmerId: 1, name: { uk: 'Морква', en: 'Carrots' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 16, stock: 200, photoUrl: null, seasonMonths: [], description: null },
-  { id: 4, farmerId: 1, name: { uk: 'Полуниця', en: 'Strawberries' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 95, stock: 0, photoUrl: null, seasonMonths: [5, 6, 7], description: null },
+  { id: 1, farmerId: 1, name: { uk: 'Морква', en: 'Carrots' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 16, stock: 200, photoUrl: null, seasonMonths: [], description: null, composition: null, shelfLife: null, storage: null },
+  { id: 4, farmerId: 1, name: { uk: 'Полуниця', en: 'Strawberries' }, category: 'vegetables', unitCode: 'kg', unit: { uk: 'кг', en: 'kg' }, price: 95, stock: 0, photoUrl: null, seasonMonths: [5, 6, 7], description: null, composition: null, shelfLife: null, storage: null },
 ];
 
 export const delivery: DeliveryTask = {
@@ -57,6 +62,17 @@ export const delivery: DeliveryTask = {
   items: 10,
   amountToCollect: 0,
   routeUrl: 'https://www.google.com/maps/dir/?api=1&origin=49.816,24.13&destination=Lviv',
+  farmerContact: 'Олена Коваль',
+  farmerPhone: '+380671110001',
+  pickupLat: 49.816,
+  pickupLon: 24.13,
+  buyerName: 'Оксана Демченко',
+  buyerPhone: '+380931112233',
+  addressDetails: { entrance: '2', floor: '3', intercom: '5К' },
+  dropOffLat: 49.8378,
+  dropOffLon: 24.0468,
+  comment: 'Подзвоніть за 10 хвилин',
+  lines: [{ name: { uk: 'Морква', en: 'Carrots' }, unit: { uk: 'кг', en: 'kg' }, quantity: 10 }],
 };
 
 const PATH: OrderStatus[] = ['Placed', 'Accepted', 'Assembling', 'InTransit', 'Delivered'];
@@ -100,6 +116,11 @@ export const backend = {
       rejectionReason: status === 'Rejected' ? 'Морква закінчилася' : null,
       deliveryProblem: failed ? 'BuyerAbsent' : null,
       deliveryProblemNote: null,
+      addressDetails: null,
+      dropOffLat: null,
+      dropOffLon: null,
+      buyerName: 'Оксана Демченко',
+      buyerPhone: '+380931112233',
       history: reached.map((item, index) => ({ status: item as OrderStatus, at: `2026-10-01T${String(9 + index).padStart(2, "0")}:00:00+03:00` })),
       ...patch,
     };
@@ -123,6 +144,14 @@ export const backend = {
   slotList: slots.map((slot) => ({ ...slot })),
   adminRequests: [] as { path: string; body: Record<string, unknown> }[],
   reviews: [] as Review[],
+  /** Відгуки покупців, що купували товар: GET /api/products/:id/reviews. */
+  productReviews: {} as Record<number, Review[]>,
+  /** Документи фермера для верифікації (і того, кого перевіряє адміністратор). */
+  documents: [] as FarmDocument[],
+  /** Запити підказок адрес до геокодера. */
+  geocodeQueries: [] as string[],
+  /** Швидкі зміни залишку з рядка товару: POST /api/farmer/products/:id/stock. */
+  stockChanges: [] as { id: number; delta: number }[],
   /** Відгуки про ферми (усі, зокрема приховані) - для сторінки ферми й модерації адміністратора. */
   farmReviews: [] as AdminReview[],
   /** Залишки, що відрізняються від каталогу-зразка (для «Замовити знову»). */
@@ -179,6 +208,10 @@ export const backend = {
     this.farmProducts = verified ? ownProducts.map((product) => ({ ...product })) : [];
   },
   reset() {
+    this.productReviews = {};
+    this.documents = [];
+    this.geocodeQueries = [];
+    this.stockChanges = [];
     this.farmReviews = [];
     this.photoUploads = [];
     this.stock = {};
@@ -415,7 +448,7 @@ export const handlers = [
       return error(409, 'already_farmer');
     }
 
-    backend.farm = { id: 13, name: body.farmName, lat: body.lat, lon: body.lon, certified: body.certified, verified: false, rating: null, reviewCount: 0, rejectionReason: null };
+    backend.farm = { id: 13, name: body.farmName, lat: body.lat, lon: body.lon, certified: body.certified, verified: false, rating: null, reviewCount: 0, rejectionReason: null, story: null, deliveryDays: [], documentCount: 0 };
     backend.user = { ...backend.user, roles: ['Buyer', 'Farmer'] };
     return HttpResponse.json(backend.farm, { status: 201 });
   }),
@@ -448,6 +481,9 @@ export const handlers = [
       photoUrl: null,
       seasonMonths: body.seasonMonths,
       description: body.description ?? null,
+      composition: body.composition ?? null,
+      shelfLife: body.shelfLife ?? null,
+      storage: body.storage ?? null,
     };
     backend.farmProducts.push(product);
     return HttpResponse.json(product, { status: 201 });
@@ -633,17 +669,97 @@ export const handlers = [
       return error(400, 'price_range_invalid');
     }
 
+    const day = url.searchParams.get('deliveryDay');
+    const all = url.searchParams.get('includeSoldOut') === 'true' ? [...products, soldOut] : products;
     return HttpResponse.json(
-      products.filter(
+      all.filter(
         (item) =>
           (!q || item.name.uk.toLowerCase().includes(q) || item.name.en.toLowerCase().includes(q)) &&
           (!category || item.category === category) &&
           (!farmerId || item.farmerId === farmerId) &&
           (url.searchParams.get('certified') !== 'true' || item.certified) &&
+          (!day || item.farmerDeliveryDays.length === 0 || item.farmerDeliveryDays.includes(day as CatalogItem['farmerDeliveryDays'][number])) &&
           item.price >= min &&
           item.price <= max,
       ),
     );
+  }),
+
+  http.get('*/api/catalog/:id', ({ params }) => {
+    const item = [...products, soldOut].find((product) => product.productId === Number(params.id));
+    return item ? HttpResponse.json(item) : error(404, 'product_not_found');
+  }),
+
+  http.get('*/api/products/:id/reviews', ({ params }) => HttpResponse.json(backend.productReviews[Number(params.id)] ?? [])),
+
+  http.patch('*/api/farmer/profile', async ({ request }) => {
+    const body = (await request.json()) as FarmProfileChanges;
+    if (!backend.farm) {
+      return error(403, 'not_a_farmer');
+    }
+
+    const story = body.story && (body.story.uk.trim() || body.story.en.trim()) ? body.story : null;
+    backend.farm = { ...backend.farm, story: body.story === undefined ? backend.farm.story : story, deliveryDays: body.deliveryDays ?? backend.farm.deliveryDays };
+    return HttpResponse.json(backend.farm);
+  }),
+
+  http.post('*/api/farmer/products/:id/stock', async ({ params, request }) => {
+    const { delta } = (await request.json()) as { delta: number };
+    const product = backend.farmProducts.find((item) => item.id === Number(params.id));
+    if (!product) {
+      return error(404, 'product_not_found');
+    }
+
+    if (product.stock + delta < 0) {
+      return error(409, 'stock_negative');
+    }
+
+    backend.stockChanges.push({ id: product.id, delta });
+    product.stock += delta;
+    return HttpResponse.json(product);
+  }),
+
+  http.get('*/api/farmer/documents', () => HttpResponse.json(backend.documents)),
+
+  http.post('*/api/farmer/documents', async ({ request }) => {
+    const name = new URL(request.url).searchParams.get('name') ?? 'Документ';
+    const size = (await request.arrayBuffer()).byteLength;
+    const document: FarmDocument = { id: 70 + backend.documents.length, name, contentType: request.headers.get('Content-Type') ?? 'application/pdf', size, uploadedAt: '2026-10-01T09:00:00+03:00' };
+    backend.documents.push(document);
+    if (backend.farm) {
+      backend.farm = { ...backend.farm, documentCount: backend.documents.length };
+    }
+
+    return HttpResponse.json(document, { status: 201 });
+  }),
+
+  http.delete('*/api/farmer/documents/:id', ({ params }) => {
+    backend.documents = backend.documents.filter((document) => document.id !== Number(params.id));
+    if (backend.farm) {
+      backend.farm = { ...backend.farm, documentCount: backend.documents.length };
+    }
+
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get('*/api/admin/farmers/:id/documents', () => HttpResponse.json(backend.documents)),
+
+  http.get('*/api/admin/farmers/:id/documents/:documentId', ({ params }) => {
+    const document = backend.documents.find((item) => item.id === Number(params.documentId));
+    return document ? new HttpResponse('<svg xmlns="http://www.w3.org/2000/svg"/>', { headers: { 'Content-Type': document.contentType } }) : error(404, 'document_not_found');
+  }),
+
+  // Геокодер підказок адрес (Photon, OpenStreetMap): відповідь у форматі GeoJSON, як у справжнього сервісу.
+  http.get('https://photon.komoot.io/api/', ({ request }) => {
+    const q = new URL(request.url).searchParams.get('q') ?? '';
+    backend.geocodeQueries.push(q);
+    const features = q.toLowerCase().startsWith('личак')
+      ? [
+          { geometry: { coordinates: [24.0468, 49.8378] }, properties: { street: 'вулиця Личаківська', housenumber: '24', district: 'Личаківський район', city: 'Львів' } },
+          { geometry: { coordinates: [24.06, 49.836] }, properties: { name: 'вулиця Личаківська', city: 'Львів' } },
+        ]
+      : [];
+    return HttpResponse.json({ type: 'FeatureCollection', features });
   }),
 
   http.post('*/api/auth/code', async ({ request }) => {

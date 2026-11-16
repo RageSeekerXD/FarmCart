@@ -48,7 +48,16 @@ export function ProductDialog({ product, reference, onClose, onSaved }: Props) {
   const [season, setSeason] = useState<number[]>(product?.seasonMonths ?? []);
   const [descriptionUk, setDescriptionUk] = useState(product?.description?.uk ?? '');
   const [descriptionEn, setDescriptionEn] = useState(product?.description?.en ?? '');
+  // Склад, термін придатності й умови зберігання - для сторінки товару; як і опис, обома мовами або жодною.
+  const [facts, setFacts] = useState(() => ({
+    composition: { uk: product?.composition?.uk ?? '', en: product?.composition?.en ?? '' },
+    shelfLife: { uk: product?.shelfLife?.uk ?? '', en: product?.shelfLife?.en ?? '' },
+    storage: { uk: product?.storage?.uk ?? '', en: product?.storage?.en ?? '' },
+  }));
   const [touched, setTouched] = useState(false);
+  const factIncomplete = (key: keyof typeof facts) => (facts[key].uk.trim() === '') !== (facts[key].en.trim() === '');
+  const setFact = (key: keyof typeof facts, lang: 'uk' | 'en', value: string) =>
+    setFacts((current) => ({ ...current, [key]: { ...current[key], [lang]: value } }));
 
   const priceValue = Number(price.replace(',', '.'));
   const stockValue = Number(stock);
@@ -61,6 +70,7 @@ export function ProductDialog({ product, reference, onClose, onSaved }: Props) {
     stock: stock.trim() === '' || !Number.isInteger(stockValue) || stockValue < 0,
     // Опис необов'язковий, але якщо є - обома мовами (як і на сервері, description_incomplete).
     description: (descriptionUk.trim() === '') !== (descriptionEn.trim() === ''),
+    facts: factIncomplete('composition') || factIncomplete('shelfLife') || factIncomplete('storage'),
   };
 
   const submit = (event: FormEvent) => {
@@ -78,6 +88,9 @@ export function ProductDialog({ product, reference, onClose, onSaved }: Props) {
       stock: stockValue,
       seasonMonths: [...season].sort((a, b) => a - b),
       description: { uk: descriptionUk.trim(), en: descriptionEn.trim() },
+      composition: { uk: facts.composition.uk.trim(), en: facts.composition.en.trim() },
+      shelfLife: { uk: facts.shelfLife.uk.trim(), en: facts.shelfLife.en.trim() },
+      storage: { uk: facts.storage.uk.trim(), en: facts.storage.en.trim() },
     };
     save.mutate({ id: product?.id ?? null, draft }, { onSuccess: onSaved });
   };
@@ -195,6 +208,38 @@ export function ProductDialog({ product, reference, onClose, onSaved }: Props) {
                 {touched && invalid.description ? t('errors.description_incomplete') : t('farm.descriptionHint')}
               </FormHelperText>
             </div>
+            <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+              <FormLabel component="legend" sx={{ mb: 1 }}>
+                {t('product.facts')}
+              </FormLabel>
+              <Stack spacing={1.5}>
+                {(['composition', 'shelfLife', 'storage'] as const).map((key) => (
+                  <Stack key={key} direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label={`${t(`product.${key}`)} (${t('farm.inUkrainian')})`}
+                      value={facts[key].uk}
+                      onChange={(event) => setFact(key, 'uk', event.target.value)}
+                      error={touched && factIncomplete(key) && facts[key].uk.trim() === ''}
+                      slotProps={{ htmlInput: { maxLength: 400 } }}
+                    />
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label={`${t(`product.${key}`)} (${t('farm.inEnglish')})`}
+                      value={facts[key].en}
+                      onChange={(event) => setFact(key, 'en', event.target.value)}
+                      error={touched && factIncomplete(key) && facts[key].en.trim() === ''}
+                      slotProps={{ htmlInput: { maxLength: 400, lang: 'en' } }}
+                    />
+                  </Stack>
+                ))}
+              </Stack>
+              <FormHelperText error={touched && invalid.facts} sx={{ mx: 1.75 }}>
+                {touched && invalid.facts ? t('errors.product_details_incomplete') : t('farm.factsHint')}
+              </FormHelperText>
+            </fieldset>
             <div>
               <FormLabel id="product-season">{t('farm.season')}</FormLabel>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>

@@ -23,6 +23,9 @@ public sealed class InMemoryStore
     /// <summary>Фото товарів за ідентифікатором товару (зберігаються в пам'яті, як і решта даних).</summary>
     public Dictionary<int, ProductPhoto> Photos { get; } = [];
 
+    /// <summary>Документи продавців для верифікації за ідентифікатором документа.</summary>
+    public Dictionary<int, FarmDocument> FarmDocuments { get; } = [];
+
     public Dictionary<int, DeliverySlot> Slots { get; } = [];
 
     public Dictionary<string, PromoCode> PromoCodes { get; } = new(StringComparer.OrdinalIgnoreCase);

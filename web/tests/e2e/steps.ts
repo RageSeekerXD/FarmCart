@@ -17,8 +17,17 @@ export async function openAs(browser: Browser, phone: string): Promise<Page> {
   return page;
 }
 
+/**
+ * Підказки адрес (геокодер Photon на даних OpenStreetMap) у наскрізних тестах вимкнено: тести не залежать від
+ * зовнішнього сервісу, а список підказок не перекриває наступні поля форми.
+ */
+export async function withoutGeocoder(page: Page) {
+  await page.route('https://photon.komoot.io/**', (route) => route.fulfill({ json: { type: 'FeatureCollection', features: [] } }));
+}
+
 /** Вхід так, як його робить користувач у режимі розробки: номер, код із підказки, «Увійти». */
 export async function signIn(page: Page, phone: string) {
+  await withoutGeocoder(page);
   await page.goto('/login');
   await page.getByLabel('Номер телефону').fill(phone);
   await page.getByRole('button', { name: 'Отримати код' }).click();

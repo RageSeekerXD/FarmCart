@@ -1,6 +1,20 @@
-import type { Lang } from '../api/types';
+import type { DayOfWeek, Lang } from '../api/types';
 
 const locale = (lang: Lang) => (lang === 'uk' ? 'uk-UA' : 'en-GB');
+
+/** 4 січня 2026 р. - неділя: від неї відлічуються дні тижня в порядку .NET (Sunday = 0). */
+const SUNDAY = Date.UTC(2026, 0, 4);
+const DAY_INDEX: Record<DayOfWeek, number> = { Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6 };
+
+/** Назва дня тижня мовою інтерфейсу: «вівторок» / «Tuesday» або коротко «вт» / «Tue». */
+export function dayName(day: DayOfWeek, lang: Lang, width: 'long' | 'short' = 'long'): string {
+  return new Intl.DateTimeFormat(locale(lang), { weekday: width, timeZone: 'UTC' }).format(new Date(SUNDAY + DAY_INDEX[day] * 86_400_000));
+}
+
+/** Дні доставки ферми одним рядком: «вт, чт, сб»; порожній список - щодня (текст дає виклик). */
+export function deliveryDaysText(days: readonly DayOfWeek[], lang: Lang): string {
+  return [...days].sort((a, b) => ((DAY_INDEX[a] + 6) % 7) - ((DAY_INDEX[b] + 6) % 7)).map((day) => dayName(day, lang, 'short')).join(', ');
+}
 
 const time = (value: string, lang: Lang) =>
   new Intl.DateTimeFormat(locale(lang), { hour: '2-digit', minute: '2-digit' }).format(new Date(value));

@@ -39,7 +39,8 @@ import { useToast } from '../../shared/Toast';
 import { useAuth } from '../auth/AuthContext';
 import { byFarm } from '../cart/CartPage';
 import { useCart } from '../cart/useCart';
-import { recentAddresses, rememberAddress } from './addressBook';
+import { AddressAutocomplete } from '../../shared/AddressAutocomplete';
+import { addressExtras, recentAddresses, rememberAddress } from './addressBook';
 
 const METHODS: readonly PaymentMethod[] = ['Card', 'ApplePay', 'GooglePay', 'Cash'];
 const METHOD_ICON: Record<PaymentMethod, ReactNode> = {
@@ -92,6 +93,22 @@ export function CheckoutPage() {
   const slots = useQuery({ queryKey: ['slots'], queryFn: () => api<Slot[]>('/slots'), staleTime: 0 });
 
   const [address, setAddress] = useState(() => recent[0] ?? '');
+  // Під'їзд, поверх і домофон - кур'єрові не доведеться телефонувати; точка на мапі - з підказки адреси.
+  const [extras, setExtras] = useState(() => (user && recent[0] ? addressExtras(user.id, recent[0]) : null));
+  const [entrance, setEntrance] = useState(extras?.details?.entrance ?? '');
+  const [floor, setFloor] = useState(extras?.details?.floor ?? '');
+  const [intercom, setIntercom] = useState(extras?.details?.intercom ?? '');
+  const point = typeof extras?.lat === 'number' && typeof extras.lon === 'number' ? { lat: extras.lat, lon: extras.lon } : null;
+
+  /** Інша адреса з нещодавніх: разом із нею повертаються її під'їзд, поверх, домофон і точка. */
+  const pickRecent = (item: string) => {
+    const saved = user ? addressExtras(user.id, item) : null;
+    setAddress(item);
+    setExtras(saved);
+    setEntrance(saved?.details?.entrance ?? '');
+    setFloor(saved?.details?.floor ?? '');
+    setIntercom(saved?.details?.intercom ?? '');
+  };
   const [slotId, setSlotId] = useState<number | null>(null);
   const [promoCode, setPromoCode] = useState('');
   const [comment, setComment] = useState('');
@@ -106,7 +123,7 @@ export function CheckoutPage() {
       api<Order>('/orders', { method: 'POST', body: request, headers: { 'Idempotency-Key': idempotencyKey } }),
     onSuccess: (order, request) => {
       if (user) {
-        rememberAddress(user.id, request.address);
+        rememberAddress(user.id, request.address, { details: request.details ?? null, lat: request.lat ?? null, lon: request.lon ?? null });
       }
       queryClient.setQueryData(['cart'], { farmerId: null, lines: [], total: 0 });
       void queryClient.invalidateQueries({ queryKey: ['orders'] });
@@ -167,6 +184,9 @@ export function CheckoutPage() {
       paymentToken: method === 'Card' ? card : (WALLET_TOKEN[method] ?? null),
       promoCode: promoCode.trim() || null,
       comment: comment.trim() || null,
+      details: entrance.trim() || floor.trim() || intercom.trim() ? { entrance: entrance.trim() || null, floor: floor.trim() || null, intercom: intercom.trim() || null } : null,
+      lat: point?.lat ?? null,
+      lon: point?.lon ?? null,
     });
   };
 
@@ -186,16 +206,24 @@ export function CheckoutPage() {
               {t('checkout.delivery')}
             </Typography>
             <Stack spacing={2.5}>
-              <TextField
+              <AddressAutocomplete
                 label={t('checkout.address')}
-                autoComplete="street-address"
                 required
-                fullWidth
                 value={address}
-                onChange={(event) => setAddress(event.target.value)}
+                onChange={(text) => {
+                  setAddress(text);
+                  // Адресу змінено вручну - точка з підказки до неї вже не належить.
+                  setExtras((current) => (current && text.trim() !== address.trim() ? { ...current, lat: null, lon: null } : current));
+                }}
+                onPick={(suggestion) => setExtras((current) => ({ details: current?.details ?? null, lat: suggestion.lat, lon: suggestion.lon }))}
                 error={touched && addressMissing}
                 helperText={touched && addressMissing ? t('errors.address_required') : t('checkout.addressHint')}
               />
+              <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', mt: -0.5 }}>
+                <TextField label={t('checkout.entrance')} size="small" value={entrance} onChange={(event) => setEntrance(event.target.value)} slotProps={{ htmlInput: { maxLength: 40 } }} />
+                <TextField label={t('checkout.floor')} size="small" value={floor} onChange={(event) => setFloor(event.target.value)} slotProps={{ htmlInput: { maxLength: 40, inputMode: 'numeric' } }} />
+                <TextField label={t('checkout.intercom')} size="small" value={intercom} onChange={(event) => setIntercom(event.target.value)} slotProps={{ htmlInput: { maxLength: 40 } }} />
+              </Box>
               {recent.length > 0 && (
                 <Box role="group" aria-label={t('checkout.recentAddresses')} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mt: -1 }}>
                   <Typography variant="caption" color="text.secondary">
@@ -210,7 +238,7 @@ export function CheckoutPage() {
                       color={item === address.trim() ? 'primary' : 'default'}
                       variant={item === address.trim() ? 'filled' : 'outlined'}
                       aria-pressed={item === address.trim()}
-                      onClick={() => setAddress(item)}
+                      onClick={() => pickRecent(item)}
                       sx={{ maxWidth: '100%' }}
                     />
                   ))}

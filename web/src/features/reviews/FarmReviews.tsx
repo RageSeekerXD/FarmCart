@@ -1,5 +1,5 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Rating, Skeleton, Stack, Typography } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
@@ -17,20 +17,30 @@ export function useFarmReviews(farmerId: number, enabled = true) {
   });
 }
 
-interface Props {
-  farmerId: number;
+/** Відгуки покупців, у чиєму замовленні був цей товар. */
+export function useProductReviews(productId: number) {
+  return useQuery({
+    queryKey: ['product-reviews', productId],
+    queryFn: () => api<Review[]>(`/products/${productId}/reviews`),
+    staleTime: 60_000,
+  });
+}
+
+interface ListProps {
+  reviews: UseQueryResult<Review[]>;
   /** Скільки відгуків показати одразу; решта - кнопкою «Показати всі». */
   limit?: number;
+  /** Текст, коли відгуків немає. */
+  empty?: string;
 }
 
 /**
- * Відгуки покупців про ферму (п. 1 покращень): оцінка зірками, підпис автора («Оксана Д.»), дата й коментар.
+ * Список відгуків: оцінка зірками, підпис автора («Оксана Д.»), дата й коментар.
  * Коментар - текст покупця, він не перекладається.
  */
-export function FarmReviews({ farmerId, limit = 3 }: Props) {
+export function ReviewList({ reviews, limit = 3, empty }: ListProps) {
   const { t } = useTranslation();
   const { lang } = useLang();
-  const reviews = useFarmReviews(farmerId);
   const [all, setAll] = useState(false);
 
   if (reviews.isPending) {
@@ -47,7 +57,7 @@ export function FarmReviews({ farmerId, limit = 3 }: Props) {
   }
 
   if (reviews.data.length === 0) {
-    return <Typography color="text.secondary">{t('reviews.empty')}</Typography>;
+    return <Typography color="text.secondary">{empty ?? t('reviews.empty')}</Typography>;
   }
 
   const shown = all ? reviews.data : reviews.data.slice(0, limit);
@@ -80,6 +90,11 @@ export function FarmReviews({ farmerId, limit = 3 }: Props) {
       )}
     </Box>
   );
+}
+
+/** Відгуки покупців про ферму (п. 1 покращень). */
+export function FarmReviews({ farmerId, limit = 3 }: { farmerId: number; limit?: number }) {
+  return <ReviewList reviews={useFarmReviews(farmerId)} limit={limit} />;
 }
 
 /** Відгуки ферми в діалозі - з мапи ферм. */

@@ -88,7 +88,10 @@ describe('Кошик кількох ферм', () => {
     expect(within(cheese).getByText("Молоко коров'яче")).toBeInTheDocument();
     // Підсумок ферми й сума рядка: у цій фермі одна позиція, тож суми однакові.
     expect(within(cheese).getAllByText(/76,00/)).toHaveLength(2);
-    expect(screen.getByText(/ферм у кошику: 2/)).toBeInTheDocument();
+    // Кошик пояснює, що буде дві окремі доставки, і позначає кожну групу.
+    expect(screen.getByText('Окремих доставок: 2')).toBeInTheDocument();
+    expect(screen.getByText('Доставка 1 з 2')).toBeInTheDocument();
+    expect(await screen.findByText('Ферма возить замовлення: вт, сб')).toBeInTheDocument();
     expect(screen.getByTestId('cart-total')).toHaveTextContent(/236,00/);
   });
 });

@@ -35,6 +35,9 @@ describe('UI-05 Оформлення замовлення', () => {
       paymentToken: 'tok_visa',
       promoCode: 'FARM10',
       comment: 'Подзвоніть за 10 хвилин',
+      details: null,
+      lat: null,
+      lon: null,
     });
     expect(backend.checkouts[0]!.key).toMatch(/\S{8,}/);
     expect(await screen.findByRole('link', { name: 'Товарів у кошику: 0' })).toBeInTheDocument();
@@ -181,5 +184,40 @@ describe('Запам’ятовані адреси доставки', () => {
 
     expect(screen.getByLabelText(/Адреса доставки/)).toHaveValue('Винники, вул. Галицька, 3');
     expect(screen.getByRole('button', { name: 'Винники, вул. Галицька, 3', pressed: true })).toBeInTheDocument();
+  });
+});
+
+describe('Адреса з підказками, під’їзд, поверх і домофон', () => {
+  it('підказка адреси дає точку на мапі; під’їзд, поверх і домофон ідуть кур’єрові', async () => {
+    const { user } = await openCheckout();
+
+    await user.type(screen.getByLabelText(/Адреса доставки/), 'Личаківська 24');
+    await user.click(await screen.findByRole('option', { name: 'вулиця Личаківська, 24, Личаківський район, Львів' }));
+    await user.type(screen.getByLabelText('Під’їзд'), '2');
+    await user.type(screen.getByLabelText('Поверх'), '3');
+    await user.type(screen.getByLabelText('Домофон'), '5К');
+    await user.click(screen.getAllByRole('radio', { name: /вільних місць: 3/ })[0]!);
+    await user.click(screen.getByRole('button', { name: /Замовити на/ }));
+
+    await waitFor(() => expect(backend.checkouts).toHaveLength(1));
+    expect(backend.checkouts[0]!.body).toMatchObject({
+      address: 'вулиця Личаківська, 24, Личаківський район, Львів',
+      details: { entrance: '2', floor: '3', intercom: '5К' },
+      lat: 49.8378,
+      lon: 24.0468,
+    });
+  });
+
+  it('нещодавня адреса повертає свій під’їзд, поверх і домофон', async () => {
+    localStorage.setItem('farmcart.addresses.7', JSON.stringify(['Львів, вул. Зелена, 1', 'Винники, вул. Галицька, 3']));
+    localStorage.setItem('farmcart.addressExtras.7', JSON.stringify({ 'Винники, вул. Галицька, 3': { details: { entrance: '1', floor: '4', intercom: '12' }, lat: 49.81, lon: 24.13 } }));
+    const { user } = await openCheckout();
+
+    expect(screen.getByLabelText('Під’їзд')).toHaveValue('');
+    await user.click(screen.getByRole('button', { name: 'Винники, вул. Галицька, 3' }));
+
+    expect(screen.getByLabelText('Під’їзд')).toHaveValue('1');
+    expect(screen.getByLabelText('Поверх')).toHaveValue('4');
+    expect(screen.getByLabelText('Домофон')).toHaveValue('12');
   });
 });

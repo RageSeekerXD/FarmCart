@@ -17,6 +17,12 @@ public static class NotificationKind
 
     /// <summary>Фермеру: покупець скасував замовлення до прийняття.</summary>
     public const string OrderCancelled = "order.cancelled";
+
+    /// <summary>Продавцю: адміністратор верифікував господарство - можна публікувати товари.</summary>
+    public const string FarmVerified = "farm.verified";
+
+    /// <summary>Продавцю: заявку відхилено. Параметр: reason.</summary>
+    public const string FarmRejected = "farm.rejected";
 }
 
 /// <summary>

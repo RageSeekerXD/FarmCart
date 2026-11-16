@@ -95,6 +95,12 @@ public sealed class Order
 
     public required string Address { get; init; }
 
+    /// <summary>Під'їзд, поверх, домофон; null - покупець їх не вказав.</summary>
+    public AddressDetails? Details { get; init; }
+
+    /// <summary>Точка доставки на мапі (для маршруту кур'єра); null - відома лише адреса текстом.</summary>
+    public GeoPoint? DropOff { get; init; }
+
     /// <summary>Слот доставки; змінюється лише перенесенням після невдалої доставки.</summary>
     public required DeliverySlot Slot { get; set; }
 

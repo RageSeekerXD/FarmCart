@@ -1,4 +1,4 @@
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -45,7 +45,7 @@ export function RejectFarmerDialog({ farmer, onClose }: { farmer: FarmerProfile;
   };
 
   return (
-    <Dialog open onClose={onClose} fullWidth maxWidth="xs" aria-labelledby="reject-farmer-title">
+    <Dialog open onClose={onClose} fullWidth maxWidth="sm" aria-labelledby="reject-farmer-title">
       <form onSubmit={submit} noValidate>
         <DialogTitle id="reject-farmer-title">{t('admin.rejectTitle', { name: pick(farmer.name) })}</DialogTitle>
         <DialogContent>
@@ -53,6 +53,21 @@ export function RejectFarmerDialog({ farmer, onClose }: { farmer: FarmerProfile;
             <Typography variant="body2" color="text.secondary">
               {t('admin.rejectHint')}
             </Typography>
+            {/* Типові причини одним натисканням; текст можна доповнити перед відправкою. */}
+            <Box role="group" aria-label={t('admin.rejectPresetsLabel')} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              {(t('admin.rejectPresets', { returnObjects: true }) as string[]).map((preset) => (
+                <Chip
+                  key={preset}
+                  label={preset}
+                  clickable
+                  variant={reason === preset ? 'filled' : 'outlined'}
+                  color={reason === preset ? 'primary' : 'default'}
+                  aria-pressed={reason === preset}
+                  onClick={() => setReason(preset)}
+                  sx={{ height: 'auto', py: 0.5, '& .MuiChip-label': { whiteSpace: 'normal' } }}
+                />
+              ))}
+            </Box>
             <TextField
               label={t('admin.hideReason')}
               required

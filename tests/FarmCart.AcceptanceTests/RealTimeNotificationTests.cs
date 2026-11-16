@@ -34,7 +34,8 @@ public sealed class RealTimeNotificationTests
         Assert.Equal((orderId, "Accepted"), (toBuyer[1].GetProperty("orderId").GetInt32(), toBuyer[1].GetProperty("params").Str("status")));
         Assert.Equal("64", toBuyer[0].GetProperty("params").Str("total"));
         Assert.Contains("прийнято", toBuyer[1].Str("text"));
-        Assert.Equal("order.new", Assert.Single(toFarmer.EnumerateArray()).Str("kind"));
+        // Перше сповіщення фермера - про верифікацію господарства, далі - нове замовлення.
+        Assert.Equal(["farm.verified", "order.new"], toFarmer.EnumerateArray().Select(n => n.Str("kind")));
         Assert.True(toBuyer[1].GetProperty("id").GetInt32() > toBuyer[0].GetProperty("id").GetInt32());
     }
 

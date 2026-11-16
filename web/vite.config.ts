@@ -25,7 +25,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/main.tsx', 'src/features/map/FarmMapView.tsx', 'src/features/farmer/LocationPicker.tsx', 'src/test/**', 'src/**/*.test.{ts,tsx}', 'src/**/*.d.ts', 'src/api/types.ts'],
+      exclude: ['src/main.tsx', 'src/features/map/FarmMapView.tsx', 'src/features/courier/RouteMap.tsx', 'src/features/admin/MiniMap.tsx', 'src/features/farmer/LocationPicker.tsx', 'src/test/**', 'src/**/*.test.{ts,tsx}', 'src/**/*.d.ts', 'src/api/types.ts'],
       reporter: ['text-summary', 'html'],
       reportsDirectory: '../artifacts/web-coverage',
       thresholds: { lines: 70 },

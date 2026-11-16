@@ -83,6 +83,33 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
   throw new ApiError(response.status, body.error, body.message);
 }
 
+/** Файл, доступний лише з токеном (документ продавця для адміністратора): вміст як Blob, помилки - як і в api(). */
+export async function apiBlob(path: string, signal?: AbortSignal): Promise<Blob> {
+  const headers: Record<string, string> = {};
+  const token = session.token;
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${location.origin}/api${path}`, { headers, signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw error;
+    }
+
+    throw new ApiError(0, 'network', 'Network error');
+  }
+
+  if (!response.ok) {
+    const body = await readError(response);
+    throw new ApiError(response.status, body.error, body.message);
+  }
+
+  return response.blob();
+}
+
 async function readError(response: Response): Promise<ApiErrorBody> {
   try {
     const body = (await response.json()) as Partial<ApiErrorBody>;

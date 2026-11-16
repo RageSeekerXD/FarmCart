@@ -88,3 +88,14 @@ describe('Сторінка ферми', () => {
     expect(CYRILLIC.test(document.body.textContent ?? '')).toBe(false);
   });
 });
+
+describe('Сторінка ферми: історія, дні доставки, увесь асортимент', () => {
+  it('показує історію ферми й дні доставки; товари, яких немає, теж є - з позначкою', async () => {
+    await renderApp('/farms/1');
+
+    expect(await screen.findByText('Сімейна органічна ферма з 2009 року')).toBeInTheDocument();
+    expect(screen.getByText('Доставка: вт, сб')).toBeInTheDocument();
+    expect(await screen.findByRole('article', { name: 'Агрус' })).toBeInTheDocument();
+    expect(backend.catalogRequests.at(-1)!.searchParams.get('includeSoldOut')).toBe('true');
+  });
+});

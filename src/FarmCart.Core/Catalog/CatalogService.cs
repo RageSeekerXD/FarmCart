@@ -17,6 +17,8 @@ public enum CatalogSort
 /// <param name="Text">Текст пошуку: шукається в назві товару обома мовами.</param>
 /// <param name="Category">Код категорії з довідника <see cref="Reference.Categories"/>.</param>
 /// <param name="Lang">Мова інтерфейсу покупця («uk» або «en»): нею впорядковуються назви.</param>
+/// <param name="IncludeSoldOut">Показати й товари, яких зараз немає в наявності (вони йдуть останніми).</param>
+/// <param name="DeliveryDay">Лише ферми, що возять замовлення цього дня тижня (або щодня).</param>
 public sealed record CatalogQuery(
     string? Text = null,
     string? Category = null,
@@ -27,7 +29,9 @@ public sealed record CatalogQuery(
     decimal? MinPrice = null,
     decimal? MaxPrice = null,
     CatalogSort Sort = CatalogSort.Name,
-    string Lang = LocalizedText.Ukrainian);
+    string Lang = LocalizedText.Ukrainian,
+    bool IncludeSoldOut = false,
+    DayOfWeek? DeliveryDay = null);
 
 public sealed record CatalogItem(
     int ProductId,
@@ -45,7 +49,12 @@ public sealed record CatalogItem(
     double? DistanceKm,
     LocalizedText? Description,
     IReadOnlyList<int> SeasonMonths,
-    int FarmerReviewCount);
+    int FarmerReviewCount,
+    bool InSeason,
+    IReadOnlyList<DayOfWeek> FarmerDeliveryDays,
+    LocalizedText? Composition,
+    LocalizedText? ShelfLife,
+    LocalizedText? Storage);
 
 /// <summary>Верифікована ферма на мапі покупця (BE-1): відстань рахується від точки покупця, якщо її передано.</summary>
 public sealed record FarmOnMap(
@@ -57,7 +66,9 @@ public sealed record FarmOnMap(
     double? Rating,
     int ReviewCount,
     int ProductCount,
-    double? DistanceKm);
+    double? DistanceKm,
+    LocalizedText? Story,
+    IReadOnlyList<DayOfWeek> DeliveryDays);
 
 /// <summary>US-04 (B-FR-02): пошук, фільтрація й сортування каталогу.</summary>
 public sealed class CatalogService(InMemoryStore store, IClock clock)
@@ -91,13 +102,27 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
         lock (store.Sync)
         {
             var items = store.Products.Values
-                .Where(p => p.Stock > 0 && p.IsInSeason(month))
+                .Where(p => (query.IncludeSoldOut || p.Stock > 0) && p.IsInSeason(month))
                 .Select(p => (Product: p, Farmer: store.Farmers[p.FarmerId]))
                 .Where(x => Matches(x.Product, x.Farmer, query))
-                .Select(x => ToItem(x.Product, x.Farmer, query.From))
+                .Select(x => ToItem(x.Product, x.Farmer, query.From, month))
                 .Where(item => query.MaxDistanceKm is null || item.DistanceKm <= query.MaxDistanceKm);
             var popularity = query.Sort == CatalogSort.Popular ? OrderCounts() : [];
             return [.. Sort(items, query.Sort, query.Lang, popularity)];
+        }
+    }
+
+    /// <summary>
+    /// Картка одного товару (сторінка товару): і тоді, коли його зараз немає в наявності чи не сезон, -
+    /// покупець бачить чесне «немає» замість помилки. Товари неверифікованих ферм не показуються.
+    /// </summary>
+    public CatalogItem Product(int productId, GeoPoint? from = null)
+    {
+        lock (store.Sync)
+        {
+            return store.Products.GetValueOrDefault(productId) is { } product && store.Farmers[product.FarmerId] is { Verified: true } farmer
+                ? ToItem(product, farmer, from, clock.Now.Month)
+                : throw Fail.NotFound("product_not_found", $"Товар #{productId} не знайдено");
         }
     }
 
@@ -123,7 +148,9 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
                     f.Rating,
                     f.ReviewCount,
                     store.Products.Values.Count(p => p.FarmerId == f.Id && p.Stock > 0 && p.IsInSeason(month)),
-                    Distance(from, f)));
+                    Distance(from, f),
+                    f.Story,
+                    [.. f.DeliveryDays.Order()]));
             return [.. from is null ? farms.OrderBy(f => f.Id) : farms.OrderBy(f => f.DistanceKm)];
         }
     }
@@ -142,9 +169,10 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
         && (query.FarmerId is null || product.FarmerId == query.FarmerId)
         && (!query.CertifiedOnly || farmer.Certified)
         && (query.MinPrice is null || product.Price >= query.MinPrice)
-        && (query.MaxPrice is null || product.Price <= query.MaxPrice);
+        && (query.MaxPrice is null || product.Price <= query.MaxPrice)
+        && (query.DeliveryDay is not { } day || farmer.DeliversOn(day));
 
-    private static CatalogItem ToItem(Product product, Farmer farmer, GeoPoint? from) => new(
+    private static CatalogItem ToItem(Product product, Farmer farmer, GeoPoint? from, int month) => new(
         product.Id,
         product.Name,
         product.Category,
@@ -160,7 +188,12 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
         Distance(from, farmer),
         product.Description,
         [.. product.SeasonMonths.Order()],
-        farmer.ReviewCount);
+        farmer.ReviewCount,
+        product.IsInSeason(month),
+        [.. farmer.DeliveryDays.Order()],
+        product.Composition,
+        product.ShelfLife,
+        product.Storage);
 
     private static double? Distance(GeoPoint? from, Farmer farmer) =>
         from is { } point ? Math.Round(point.DistanceKmTo(farmer.Location), 1) : null;
@@ -169,14 +202,16 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
     {
         var order = lang == LocalizedText.English ? EnglishOrder : UkrainianOrder;
         string Name(CatalogItem item) => item.Name.In(lang);
+        // Товари, яких немає в наявності (якщо їх просили показати), - завжди в кінці списку.
+        var available = items.OrderBy(i => i.Stock == 0);
         return sort switch
         {
-            CatalogSort.PriceAsc => items.OrderBy(i => i.Price).ThenBy(Name, order),
-            CatalogSort.PriceDesc => items.OrderByDescending(i => i.Price).ThenBy(Name, order),
-            CatalogSort.Distance => items.OrderBy(i => i.DistanceKm).ThenBy(Name, order),
-            CatalogSort.Rating => items.OrderByDescending(i => i.FarmerRating ?? 0).ThenBy(Name, order),
-            CatalogSort.Popular => items.OrderByDescending(i => popularity.GetValueOrDefault(i.ProductId)).ThenBy(Name, order),
-            _ => items.OrderBy(Name, order),
+            CatalogSort.PriceAsc => available.ThenBy(i => i.Price).ThenBy(Name, order),
+            CatalogSort.PriceDesc => available.ThenByDescending(i => i.Price).ThenBy(Name, order),
+            CatalogSort.Distance => available.ThenBy(i => i.DistanceKm).ThenBy(Name, order),
+            CatalogSort.Rating => available.ThenByDescending(i => i.FarmerRating ?? 0).ThenBy(Name, order),
+            CatalogSort.Popular => available.ThenByDescending(i => popularity.GetValueOrDefault(i.ProductId)).ThenBy(Name, order),
+            _ => available.ThenBy(Name, order),
         };
     }
 }

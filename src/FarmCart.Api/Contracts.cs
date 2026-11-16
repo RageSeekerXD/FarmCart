@@ -62,7 +62,9 @@ public sealed record CatalogRequest(
     decimal? MinPrice,
     decimal? MaxPrice,
     CatalogSort? Sort,
-    string? Lang)
+    string? Lang,
+    bool? IncludeSoldOut,
+    DayOfWeek? DeliveryDay)
 {
     public CatalogQuery ToQuery() => new(
         Q,
@@ -74,7 +76,9 @@ public sealed record CatalogRequest(
         MinPrice,
         MaxPrice,
         Sort ?? CatalogSort.Name,
-        Lang ?? LocalizedText.Ukrainian);
+        Lang ?? LocalizedText.Ukrainian,
+        IncludeSoldOut ?? false,
+        DeliveryDay);
 }
 
 public sealed record UserDto(int Id, string Phone, string Name, IEnumerable<Role> Roles)
@@ -91,9 +95,12 @@ public sealed record FarmerDto(
     bool Verified,
     double? Rating,
     int ReviewCount,
-    string? RejectionReason)
+    string? RejectionReason,
+    LocalizedText? Story,
+    IReadOnlyList<DayOfWeek> DeliveryDays,
+    int DocumentCount)
 {
-    public static FarmerDto From(Farmer farmer) => new(
+    public static FarmerDto From(Farmer farmer, int documentCount = 0) => new(
         farmer.Id,
         farmer.Name,
         farmer.Location.Lat,
@@ -102,7 +109,16 @@ public sealed record FarmerDto(
         farmer.Verified,
         farmer.Rating,
         farmer.ReviewCount,
-        farmer.RejectionReason);
+        farmer.RejectionReason,
+        farmer.Story,
+        [.. farmer.DeliveryDays.Order()],
+        documentCount);
+}
+
+/// <summary>Документ продавця без вмісту: вміст адміністратор отримує окремим запитом.</summary>
+public sealed record FarmDocumentDto(int Id, string Name, string ContentType, int Size, DateTimeOffset UploadedAt)
+{
+    public static FarmDocumentDto From(FarmDocument document) => new(document.Id, document.Name, document.ContentType, document.Size, document.UploadedAt);
 }
 
 /// <summary>Товар у каталозі фермера: знімок доменної сутності, щоб зміни в класі Product не змінювали HTTP-контракт непомітно.</summary>
@@ -117,7 +133,10 @@ public sealed record ProductDto(
     int Stock,
     string? PhotoUrl,
     IReadOnlyList<int> SeasonMonths,
-    LocalizedText? Description)
+    LocalizedText? Description,
+    LocalizedText? Composition,
+    LocalizedText? ShelfLife,
+    LocalizedText? Storage)
 {
     public static ProductDto From(Product product) => new(
         product.Id,
@@ -130,7 +149,10 @@ public sealed record ProductDto(
         product.Stock,
         product.PhotoUrl,
         [.. product.SeasonMonths],
-        product.Description);
+        product.Description,
+        product.Composition,
+        product.ShelfLife,
+        product.Storage);
 }
 
 public sealed record CourierDto(int Id, string Name);
@@ -194,14 +216,31 @@ public sealed record OrderDto(
     IReadOnlyList<StatusChangeDto> History,
     DeliveryProblem? DeliveryProblem,
     string? DeliveryProblemNote,
-    IReadOnlyList<int> CheckoutOrderIds)
+    IReadOnlyList<int> CheckoutOrderIds,
+    AddressDetails? AddressDetails,
+    double? DropOffLat,
+    double? DropOffLon,
+    string? BuyerName,
+    string? BuyerPhone)
 {
-    public static OrderDto ForBuyer(Order order) => From(order, order.DeliveryCode);
+    public static OrderDto ForBuyer(Order order) => From(order, order.DeliveryCode, buyer: null);
 
-    /// <summary>Фермер і кур'єр не бачать коду вручення: його називає покупець при отриманні.</summary>
-    public static OrderDto ForStaff(Order order) => From(order, deliveryCode: null);
+    /// <summary>
+    /// Фермер і кур'єр не бачать коду вручення (його називає покупець при отриманні), зате бачать ім'я й телефон
+    /// покупця: зв'язатися щодо замовлення.
+    /// </summary>
+    public static OrderDto ForStaff(Order order, InMemoryStore store)
+    {
+        User buyer;
+        lock (store.Sync)
+        {
+            buyer = store.Users[order.BuyerId];
+        }
 
-    private static OrderDto From(Order order, string? deliveryCode) => new(
+        return From(order, deliveryCode: null, buyer);
+    }
+
+    private static OrderDto From(Order order, string? deliveryCode, User? buyer) => new(
         order.Id,
         order.Status,
         order.Status.Title(),
@@ -225,5 +264,10 @@ public sealed record OrderDto(
         [.. order.History.Select(h => new StatusChangeDto(h.Status, h.Status.Title(), h.At))],
         order.Problem,
         order.ProblemNote,
-        order.CheckoutOrderIds.Count > 0 ? order.CheckoutOrderIds : [order.Id]);
+        order.CheckoutOrderIds.Count > 0 ? order.CheckoutOrderIds : [order.Id],
+        order.Details,
+        order.DropOff?.Lat,
+        order.DropOff?.Lon,
+        buyer?.Name,
+        buyer?.Phone);
 }

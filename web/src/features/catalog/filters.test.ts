@@ -8,11 +8,11 @@ describe('фільтри каталогу', () => {
   });
 
   it('фільтри читаються з рядка адреси й записуються назад без втрат', () => {
-    const params = new URLSearchParams('q=мед&category=honey&certified=true&minPrice=100&maxPrice=300&sort=PriceAsc&maxKm=20&farmerId=3&favorites=true');
+    const params = new URLSearchParams('q=мед&category=honey&certified=true&minPrice=100&maxPrice=300&sort=PriceAsc&maxKm=20&farmerId=3&favorites=true&soldOut=true&day=Saturday');
 
     const filters = parseFilters(params);
 
-    expect(filters).toEqual({ q: 'мед', category: 'honey', certified: true, minPrice: '100', maxPrice: '300', sort: 'PriceAsc', maxKm: 20, farmerId: 3, favorites: true });
+    expect(filters).toEqual({ q: 'мед', category: 'honey', certified: true, minPrice: '100', maxPrice: '300', sort: 'PriceAsc', maxKm: 20, farmerId: 3, favorites: true, soldOut: true, day: 'Saturday' });
     expect(toSearchParams(filters).toString()).toBe(params.toString());
   });
 
@@ -22,7 +22,7 @@ describe('фільтри каталогу', () => {
   });
 
   it('некоректні значення ігноруються', () => {
-    const filters = parseFilters(new URLSearchParams('sort=Random&maxKm=7&minPrice=abc&maxPrice=-5&certified=yes&farmerId=x&favorites=1'));
+    const filters = parseFilters(new URLSearchParams('sort=Random&maxKm=7&minPrice=abc&maxPrice=-5&certified=yes&farmerId=x&favorites=1&soldOut=1&day=Funday'));
 
     expect(filters).toEqual(DEFAULT_FILTERS);
   });
@@ -40,6 +40,15 @@ describe('фільтри каталогу', () => {
     const query = new URLSearchParams(toApiQuery({ ...DEFAULT_FILTERS, q: ' carrots ', maxKm: 10, favorites: true }, LVIV_CENTER, 'en'));
 
     expect(Object.fromEntries(query)).toEqual({ q: 'carrots', sort: 'Popular', maxKm: '10', lat: '49.8419', lon: '24.0315', lang: 'en' });
+  });
+
+  it('«показати й відсутні» й день доставки йдуть у запит API своїми назвами', () => {
+    const query = new URLSearchParams(toApiQuery({ ...DEFAULT_FILTERS, soldOut: true, day: 'Tuesday' }, LVIV_CENTER, 'uk'));
+
+    expect(query.get('includeSoldOut')).toBe('true');
+    expect(query.get('deliveryDay')).toBe('Tuesday');
+    expect(query.has('soldOut')).toBe(false);
+    expect(query.has('day')).toBe(false);
   });
 
   it('лічильник активних фільтрів не враховує сортування, а враховує обране', () => {

@@ -98,7 +98,7 @@ describe('UI-08 Товари фермера', () => {
     expect(await screen.findByText('Збережено: Мед липовий')).toBeInTheDocument();
     expect(await screen.findByRole('listitem', { name: 'Мед липовий' })).toBeInTheDocument();
     expect(backend.productRequests).toEqual([
-      { method: 'POST', id: null, body: { name: { uk: 'Мед липовий', en: 'Linden honey' }, category: 'honey', unit: 'l', price: 290.5, stock: 20, seasonMonths: [6, 7], description: { uk: '', en: '' } } },
+      { method: 'POST', id: null, body: { name: { uk: 'Мед липовий', en: 'Linden honey' }, category: 'honey', unit: 'l', price: 290.5, stock: 20, seasonMonths: [6, 7], description: { uk: '', en: '' }, composition: { uk: '', en: '' }, shelfLife: { uk: '', en: '' }, storage: { uk: '', en: '' } } },
     ]);
   });
 
@@ -129,10 +129,10 @@ describe('UI-08 Товари фермера', () => {
 
     await waitFor(() =>
       expect(backend.productRequests).toEqual([
-        { method: 'PATCH', id: 4, body: { name: { uk: 'Полуниця', en: 'Strawberries' }, price: 95, stock: 40, seasonMonths: [5, 6], description: { uk: '', en: '' } } },
+        { method: 'PATCH', id: 4, body: { name: { uk: 'Полуниця', en: 'Strawberries' }, price: 95, stock: 40, seasonMonths: [5, 6], description: { uk: '', en: '' }, composition: { uk: '', en: '' }, shelfLife: { uk: '', en: '' }, storage: { uk: '', en: '' } } },
       ]),
     );
-    expect(await within(await screen.findByRole('listitem', { name: 'Полуниця' })).findByText('В наявності: 40')).toBeInTheDocument();
+    expect(await within(await screen.findByRole('listitem', { name: 'Полуниця' })).findByRole('group', { name: 'Залишок: Полуниця, 40' })).toBeInTheDocument();
   });
 
   it('помилка сервера показується у формі мовою інтерфейсу, форму можна скасувати', async () => {

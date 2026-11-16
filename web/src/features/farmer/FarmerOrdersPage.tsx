@@ -1,4 +1,8 @@
+import ApartmentOutlinedIcon from '@mui/icons-material/ApartmentOutlined';
+import CallIcon from '@mui/icons-material/Call';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import ScheduleIcon from '@mui/icons-material/Schedule';
@@ -18,16 +22,85 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Order, OrderStatus } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { formatSlot } from '../../shared/dates';
+import { highlightSx, useHighlightedId, useScrollIntoView } from '../../shared/highlight';
+import { PrintArea, printTableSx } from '../../shared/Print';
 import { enter, pulseDot } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { StatusChip } from '../orders/OrdersPage';
-import { useCouriers, useFarmerOrders, useOrderAction, type OrderAction } from './api';
+import { useAddressDetailsText } from '../../shared/addressDetails';
+import { useCouriers, useFarmerOrders, useFarmerProfile, useOrderAction, type OrderAction } from './api';
+
+/** Пакувальна накладна для друку: що зібрати, кому й куди везти, скільки отримати. */
+function PackingSlip({ order, farmName }: { order: Order; farmName: string }) {
+  const { t } = useTranslation();
+  const { lang, pick } = useLang();
+  const details = useAddressDetailsText()(order.addressDetails);
+  return (
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '2px solid #000', pb: 1, mb: 2 }}>
+        <Typography sx={{ fontSize: 22, fontWeight: 800 }}>{t('farmOrders.slipTitle', { id: order.id })}</Typography>
+        <Typography sx={{ fontSize: 14 }}>FarmCart · {farmName}</Typography>
+      </Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+        <Box>
+          <Typography sx={{ fontWeight: 700 }}>{t('farmOrders.slipRecipient')}</Typography>
+          <Typography>{order.buyerName || t('farmOrders.buyer')}</Typography>
+          <Typography>{order.buyerPhone}</Typography>
+          <Typography>{order.address}</Typography>
+          {details && <Typography>{details}</Typography>}
+        </Box>
+        <Box>
+          <Typography sx={{ fontWeight: 700 }}>{t('checkout.slot')}</Typography>
+          <Typography>{formatSlot(order.slotStart, order.slotEnd, lang)}</Typography>
+          <Typography sx={{ fontWeight: 700, mt: 1 }}>{t('farmOrders.slipPayment')}</Typography>
+          <Typography>
+            {order.paymentStatus === 'PayOnDelivery' ? t('farmOrders.slipCollect', { amount: formatMoney(order.total, lang) }) : t('farmOrders.slipPaid')}
+          </Typography>
+        </Box>
+      </Box>
+      {order.comment && (
+        <Typography sx={{ border: '1px dashed #000', p: 1, mb: 2 }}>
+          <strong>{t('farmOrders.buyerComment')}:</strong> {order.comment}
+        </Typography>
+      )}
+      <Box component="table" sx={printTableSx}>
+        <thead>
+          <tr>
+            <th style={{ width: 28 }}>✓</th>
+            <th>{t('cart.product')}</th>
+            <th>{t('cart.quantity')}</th>
+            <th style={{ textAlign: 'right' }}>{t('cart.sum')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {order.lines.map((line) => (
+            <tr key={line.productId}>
+              <td>☐</td>
+              <td>{pick(line.name)}</td>
+              <td>
+                {line.quantity} × {pick(line.unit)}
+              </td>
+              <td style={{ textAlign: 'right' }}>{formatMoney(line.total, lang)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </Box>
+      <Typography sx={{ textAlign: 'right', fontWeight: 800, fontSize: 16, mt: 1 }}>
+        {t('cart.total')}: {formatMoney(order.total, lang)}
+      </Typography>
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, mt: 5 }}>
+        <Typography sx={{ borderTop: '1px solid #000', pt: 0.5 }}>{t('farmOrders.slipPacked')}</Typography>
+        <Typography sx={{ borderTop: '1px solid #000', pt: 0.5 }}>{t('farmOrders.slipCourier')}</Typography>
+      </Box>
+    </Box>
+  );
+}
 
 /** Групи замовлень для фільтра: нові чекають рішення фермера, «у роботі» - прийняті й ті, що збираються. */
 const FILTERS = ['all', 'new', 'active', 'done'] as const;
@@ -176,9 +249,20 @@ export function FarmerOrdersPage() {
   const { lang, pick } = useLang();
   const toast = useToast();
   const orders = useFarmerOrders();
+  const profile = useFarmerProfile();
   const assemble = useOrderAction();
   const [dialog, setDialog] = useState<DialogState>(null);
   const [filter, setFilter] = useState<Filter>('all');
+  const [printing, setPrinting] = useState<Order | null>(null);
+  const detailsText = useAddressDetailsText();
+  // Перехід зі сповіщення (?order=1001): замовлення видно за будь-якого фільтра, сторінка прокручує до нього.
+  const highlighted = useHighlightedId();
+  const scrollTo = useScrollIntoView();
+  useEffect(() => {
+    if (highlighted !== null) {
+      setFilter('all');
+    }
+  }, [highlighted]);
 
   const done = (order: Order) => {
     setDialog(null);
@@ -229,8 +313,18 @@ export function FarmerOrdersPage() {
               component="li"
               key={order.id}
               aria-label={label}
+              aria-current={order.id === highlighted ? 'true' : undefined}
+              ref={order.id === highlighted ? scrollTo : undefined}
               elevation={1}
-              sx={{ p: { xs: 2, sm: 2.5 }, borderLeft: 4, borderColor: isNew ? 'secondary.main' : 'transparent', transition: 'box-shadow 200ms ease', '&:hover': { boxShadow: 4 }, ...enter(index) }}
+              sx={{
+                p: { xs: 2, sm: 2.5 },
+                borderLeft: 4,
+                borderColor: isNew ? 'secondary.main' : 'transparent',
+                transition: 'box-shadow 200ms ease',
+                '&:hover': { boxShadow: 4 },
+                ...enter(index),
+                ...(order.id === highlighted ? highlightSx : {}),
+              }}
             >
               <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 1.5 }}>
                 <Typography component="h2" variant="h6" sx={{ mr: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -256,12 +350,19 @@ export function FarmerOrdersPage() {
               <Stack spacing={0.5}>
                 <InfoRow icon={<ScheduleIcon />}>{t('orders.deliveryAt', { slot: formatSlot(order.slotStart, order.slotEnd, lang) })}</InfoRow>
                 <InfoRow icon={<PlaceOutlinedIcon />}>{order.address}</InfoRow>
-                {order.comment && (
-                  <InfoRow icon={<ChatBubbleOutlineIcon />}>
-                    {t('checkout.comment')}: {order.comment}
+                {order.addressDetails && <InfoRow icon={<ApartmentOutlinedIcon />}>{detailsText(order.addressDetails)}</InfoRow>}
+                {order.buyerPhone && (
+                  <InfoRow icon={<PersonOutlineIcon />}>
+                    {order.buyerName || t('farmOrders.buyer')} · {order.buyerPhone}
                   </InfoRow>
                 )}
               </Stack>
+              {/* Коментар покупця помітний: прохання нарізати хліб чи код домофону не мають загубитися. */}
+              {order.comment && (
+                <Alert severity="info" icon={<ChatBubbleOutlineIcon fontSize="inherit" />} sx={{ mt: 1.5, py: 0.25 }}>
+                  <strong>{t('farmOrders.buyerComment')}:</strong> {order.comment}
+                </Alert>
+              )}
               <Typography sx={{ fontWeight: 700, mt: 1.5 }}>
                 {formatMoney(order.total, lang)} · {t(`paymentStatus.${order.paymentStatus}`)}
               </Typography>
@@ -299,6 +400,15 @@ export function FarmerOrdersPage() {
                     {t('farmOrders.handover')}
                   </Button>
                 )}
+                <Box sx={{ flex: 1 }} />
+                {order.buyerPhone && (
+                  <Button href={`tel:${order.buyerPhone}`} startIcon={<CallIcon />} aria-label={t('farmOrders.callNamed', { name: order.buyerName || t('farmOrders.buyer'), id: order.id })}>
+                    {t('farmOrders.call')}
+                  </Button>
+                )}
+                <Button startIcon={<PrintOutlinedIcon />} onClick={() => setPrinting(order)} aria-label={t('farmOrders.printNamed', { id: order.id })}>
+                  {t('farmOrders.print')}
+                </Button>
               </Stack>
             </Paper>
           );
@@ -306,6 +416,11 @@ export function FarmerOrdersPage() {
       </Stack>
 
       {dialog && <ActionDialog key={`${dialog.kind}-${dialog.order.id}`} state={dialog} onClose={() => setDialog(null)} onDone={done} />}
+      {printing && (
+        <PrintArea onDone={() => setPrinting(null)}>
+          <PackingSlip order={printing} farmName={profile.data ? pick(profile.data.name) : ''} />
+        </PrintArea>
+      )}
     </Box>
   );
 }

@@ -1,5 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import EditIcon from '@mui/icons-material/Edit';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { alpha, Alert, Box, Button, Chip, CircularProgress, Paper, Stack, Typography } from '@mui/material';
@@ -12,27 +14,13 @@ import { errorMessage, formatMoney, useLang } from '../../i18n';
 import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
-import { categoryLook, LOW_STOCK } from '../catalog/categoryLook';
+import { categoryLook } from '../catalog/categoryLook';
 import { useFarmerProfile, useMyProducts, useReference } from './api';
+import { DocumentsDialog } from './DocumentsDialog';
+import { FarmProfileDialog } from './FarmProfileDialog';
+import { InlineStock } from './InlineStock';
 import { ProductDialog, monthName } from './ProductDialog';
 import { ProductPhoto } from './ProductPhoto';
-
-/** Залишок товару одним поглядом: немає - червоний, мало - помаранчевий, решта - нейтральний. */
-function StockChip({ stock }: { stock: number }) {
-  const { t } = useTranslation();
-  if (stock === 0) {
-    return <Chip size="small" color="error" variant="outlined" label={t('farm.outOfStock')} />;
-  }
-
-  return (
-    <Chip
-      size="small"
-      color={stock <= LOW_STOCK ? 'warning' : 'default'}
-      variant="outlined"
-      label={stock <= LOW_STOCK ? t('farm.lowStock', { count: stock }) : t('catalog.inStock', { count: stock })}
-    />
-  );
-}
 
 /** UI-08: товари фермера. Публікувати можна після верифікації господарства адміністратором. */
 export function FarmerProductsPage() {
@@ -43,6 +31,7 @@ export function FarmerProductsPage() {
   const products = useMyProducts();
   const reference = useReference();
   const [editing, setEditing] = useState<Product | 'new' | null>(null);
+  const [dialog, setDialog] = useState<'profile' | 'documents' | null>(null);
   const queryClient = useQueryClient();
   const reapply = useMutation({
     mutationFn: () => api<FarmerProfile>('/farmer/reapply', { method: 'POST', body: {} }),
@@ -102,9 +91,27 @@ export function FarmerProductsPage() {
               {products.data && <Chip size="small" variant="outlined" label={t('farm.productsCount', { count: products.data.length })} sx={{ bgcolor: 'background.paper' }} />}
             </Stack>
           </Box>
+          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+            <Button size="small" variant="outlined" startIcon={<StorefrontOutlinedIcon />} onClick={() => setDialog('profile')} sx={{ bgcolor: 'background.paper' }}>
+              {t('farm.profileButton')}
+            </Button>
+            <Button size="small" variant="outlined" startIcon={<DescriptionOutlinedIcon />} onClick={() => setDialog('documents')} sx={{ bgcolor: 'background.paper' }}>
+              {t('farm.documentsButton', { count: profile.data.documentCount })}
+            </Button>
+          </Stack>
           {!profile.data.verified && !profile.data.rejectionReason && (
-            <Alert severity="info" sx={{ flexBasis: '100%' }}>
-              {t('farm.pendingHint')}
+            <Alert
+              severity="info"
+              sx={{ flexBasis: '100%' }}
+              action={
+                profile.data.documentCount === 0 && (
+                  <Button color="inherit" size="small" onClick={() => setDialog('documents')}>
+                    {t('farm.documentUpload')}
+                  </Button>
+                )
+              }
+            >
+              {t('farm.pendingHint')} {profile.data.documentCount === 0 && t('farm.uploadDocumentsHint')}
             </Alert>
           )}
           {profile.data.rejectionReason && (
@@ -168,7 +175,7 @@ export function FarmerProductsPage() {
                     {t('catalog.perUnit', { unit: pick(product.unit) })}
                   </Typography>
                 </Typography>
-                <StockChip stock={product.stock} />
+                <InlineStock product={product} />
               </Box>
               <Button
                 variant="outlined"
@@ -184,6 +191,18 @@ export function FarmerProductsPage() {
           );
         })}
       </Stack>
+
+      {dialog === 'profile' && profile.data && (
+        <FarmProfileDialog
+          profile={profile.data}
+          onClose={() => setDialog(null)}
+          onSaved={() => {
+            setDialog(null);
+            toast.show(t('farm.profileSaved'));
+          }}
+        />
+      )}
+      {dialog === 'documents' && <DocumentsDialog onClose={() => setDialog(null)} />}
 
       {editing !== null && reference.data && (
         <ProductDialog

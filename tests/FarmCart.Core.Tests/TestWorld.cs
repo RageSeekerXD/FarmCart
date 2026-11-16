@@ -12,8 +12,8 @@ public sealed class TestWorld
         Notifier = new InMemoryNotifier(Clock);
         Auth = new AuthService(Store, Sms, Clock);
         Audit = new AuditLog(Store, Clock);
-        Farmers = new FarmerService(Store);
-        Admin = new AdminService(Store, Audit, Clock);
+        Farmers = new FarmerService(Store, Clock);
+        Admin = new AdminService(Store, Audit, Clock, Notifier);
         Catalog = new CatalogService(Store, Clock);
         Carts = new CartService(Store);
         Orders = new OrderService(Store, Payments, Notifier, Clock);

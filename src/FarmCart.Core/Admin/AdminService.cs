@@ -26,7 +26,7 @@ public sealed class AuditLog(InMemoryStore store, IClock clock)
 }
 
 /// <summary>Дії адміністратора (B-FR-07, B-FR-12): кожна потрапляє до журналу аудиту.</summary>
-public sealed partial class AdminService(InMemoryStore store, AuditLog audit, IClock clock)
+public sealed partial class AdminService(InMemoryStore store, AuditLog audit, IClock clock, INotifier notifier)
 {
     public Farmer VerifyFarmer(User admin, int farmerId)
     {
@@ -38,6 +38,7 @@ public sealed partial class AdminService(InMemoryStore store, AuditLog audit, IC
             farmer.Verified = true;
             farmer.RejectionReason = null;
             audit.Record(admin, "farmer.verify", $"farmer#{farmer.Id}", $"Верифіковано продавця «{farmer.Name}»");
+            notifier.Push(farmer.UserId, NotificationKind.FarmVerified, $"Господарство «{farmer.Name}» верифіковано: можна публікувати товари");
             return farmer;
         }
     }
@@ -72,7 +73,33 @@ public sealed partial class AdminService(InMemoryStore store, AuditLog audit, IC
 
             farmer.RejectionReason = reason.Trim();
             audit.Record(admin, "farmer.reject", $"farmer#{farmer.Id}", $"«{farmer.Name}»: {farmer.RejectionReason}");
+            notifier.Push(
+                farmer.UserId,
+                NotificationKind.FarmRejected,
+                $"Заявку господарства «{farmer.Name}» відхилено: {farmer.RejectionReason}",
+                parameters: new Dictionary<string, string> { ["reason"] = farmer.RejectionReason });
             return farmer;
+        }
+    }
+
+    /// <summary>Документи продавця для перевірки перед верифікацією.</summary>
+    public IReadOnlyList<FarmDocument> FarmerDocuments(User admin, int farmerId)
+    {
+        admin.Require(Role.Admin);
+        lock (store.Sync)
+        {
+            return [.. store.FarmDocuments.Values.Where(d => d.FarmerId == farmerId).OrderBy(d => d.Id)];
+        }
+    }
+
+    public FarmDocument FarmerDocument(User admin, int farmerId, int documentId)
+    {
+        admin.Require(Role.Admin);
+        lock (store.Sync)
+        {
+            return store.FarmDocuments.GetValueOrDefault(documentId) is { } document && document.FarmerId == farmerId
+                ? document
+                : throw Fail.NotFound("document_not_found", $"Документ #{documentId} не знайдено");
         }
     }
 

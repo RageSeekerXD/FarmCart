@@ -30,6 +30,15 @@ public sealed class Product
     /// <summary>Опис товару двома мовами або null: необов'язковий, але якщо є - обома мовами (BE-9).</summary>
     public LocalizedText? Description { get; set; }
 
+    /// <summary>Склад («овече молоко, сіль») двома мовами або null.</summary>
+    public LocalizedText? Composition { get; set; }
+
+    /// <summary>Термін придатності («30 діб») двома мовами або null.</summary>
+    public LocalizedText? ShelfLife { get; set; }
+
+    /// <summary>Умови зберігання («у розсолі при +2…+6 °C») двома мовами або null.</summary>
+    public LocalizedText? Storage { get; set; }
+
     /// <summary>Місяці сезону (1-12); порожня множина - товар доступний цілий рік.</summary>
     public IReadOnlySet<int> SeasonMonths { get; set; } = new HashSet<int>();
 

@@ -276,6 +276,8 @@ export interface paths {
                     MaxPrice?: number | string;
                     Sort?: components["schemas"]["CatalogSort"];
                     Lang?: string;
+                    IncludeSoldOut?: boolean;
+                    DeliveryDay?: components["schemas"]["DayOfWeek"];
                 };
                 header?: never;
                 path?: never;
@@ -290,6 +292,83 @@ export interface paths {
                     };
                     content: {
                         "application/json": components["schemas"]["CatalogItem"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    lat?: number | string;
+                    lon?: number | string;
+                };
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CatalogItem"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/{id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReviewDto"][];
                     };
                 };
             };
@@ -879,6 +958,118 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["FarmProfileChanges"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FarmerDto"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/farmer/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FarmDocumentDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: {
+                    name?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/farmer/documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
@@ -1497,6 +1688,79 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/farmers/{id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["FarmDocumentDto"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/farmers/{id}/documents/{documentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    documentId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/farmers/{id}/verify": {
         parameters: {
             query?: never;
@@ -1957,6 +2221,11 @@ export interface components {
         AcceptRequest: {
             shortages: null | components["schemas"]["Shortage"][];
         };
+        AddressDetails: {
+            entrance: null | string;
+            floor: null | string;
+            intercom: null | string;
+        };
         AdminReviewDto: {
             /** Format: int32 */
             id: number | string;
@@ -2052,6 +2321,11 @@ export interface components {
             seasonMonths: (number | string)[];
             /** Format: int32 */
             farmerReviewCount: number | string;
+            inSeason: boolean;
+            farmerDeliveryDays: components["schemas"]["DayOfWeek"][];
+            composition: null | components["schemas"]["LocalizedText"];
+            shelfLife: null | components["schemas"]["LocalizedText"];
+            storage: null | components["schemas"]["LocalizedText"];
         };
         /** @enum {unknown} */
         CatalogSort: "Name" | "PriceAsc" | "PriceDesc" | "Distance" | "Rating" | "Popular" | null;
@@ -2063,6 +2337,11 @@ export interface components {
             paymentToken?: null | string;
             promoCode?: null | string;
             comment?: null | string;
+            details?: null | components["schemas"]["AddressDetails"];
+            /** Format: double */
+            lat?: null | number | string;
+            /** Format: double */
+            lon?: null | number | string;
         };
         ConfirmRequest: {
             code: null | string;
@@ -2072,9 +2351,17 @@ export interface components {
             id: number | string;
             name: string;
         };
+        /** @enum {unknown} */
+        DayOfWeek: "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
         DeliveryFailureRequest: {
             problem: components["schemas"]["DeliveryProblem"];
             note: null | string;
+        };
+        DeliveryLine: {
+            name: components["schemas"]["LocalizedText"];
+            unit: components["schemas"]["LocalizedText"];
+            /** Format: int32 */
+            quantity: number | string;
         };
         /** @enum {unknown} */
         DeliveryProblem: "BuyerAbsent" | "AddressNotFound" | "Other" | null;
@@ -2102,11 +2389,36 @@ export interface components {
             /** Format: double */
             amountToCollect: number | string;
             routeUrl: string;
+            farmerContact: string;
+            farmerPhone: string;
+            /** Format: double */
+            pickupLat: number | string;
+            /** Format: double */
+            pickupLon: number | string;
+            buyerName: string;
+            buyerPhone: string;
+            addressDetails: null | components["schemas"]["AddressDetails"];
+            /** Format: double */
+            dropOffLat: null | number | string;
+            /** Format: double */
+            dropOffLon: null | number | string;
+            comment: null | string;
+            lines: components["schemas"]["DeliveryLine"][];
         };
         DemoAccount: {
             phone: string;
             role: components["schemas"]["Role"];
             title: components["schemas"]["LocalizedText"];
+        };
+        FarmDocumentDto: {
+            /** Format: int32 */
+            id: number | string;
+            name: string;
+            contentType: string;
+            /** Format: int32 */
+            size: number | string;
+            /** Format: date-time */
+            uploadedAt: string;
         };
         FarmerDto: {
             /** Format: int32 */
@@ -2123,6 +2435,10 @@ export interface components {
             /** Format: int32 */
             reviewCount: number | string;
             rejectionReason: null | string;
+            story: null | components["schemas"]["LocalizedText"];
+            deliveryDays: components["schemas"]["DayOfWeek"][];
+            /** Format: int32 */
+            documentCount: number | string;
         };
         FarmerRegistration: {
             farmName: components["schemas"]["LocalizedText"];
@@ -2150,6 +2466,12 @@ export interface components {
             productCount: number | string;
             /** Format: double */
             distanceKm: null | number | string;
+            story: null | components["schemas"]["LocalizedText"];
+            deliveryDays: components["schemas"]["DayOfWeek"][];
+        };
+        FarmProfileChanges: {
+            story?: null | components["schemas"]["LocalizedText"];
+            deliveryDays?: null | components["schemas"]["DayOfWeek"][];
         };
         HandOverRequest: {
             /** Format: int32 */
@@ -2212,6 +2534,13 @@ export interface components {
             deliveryProblem: null | components["schemas"]["DeliveryProblem"];
             deliveryProblemNote: null | string;
             checkoutOrderIds: (number | string)[];
+            addressDetails: null | components["schemas"]["AddressDetails"];
+            /** Format: double */
+            dropOffLat: null | number | string;
+            /** Format: double */
+            dropOffLon: null | number | string;
+            buyerName: null | string;
+            buyerPhone: null | string;
         };
         OrderLineDto: {
             /** Format: int32 */
@@ -2242,6 +2571,9 @@ export interface components {
             stock?: null | number | string;
             seasonMonths?: null | (number | string)[];
             description?: null | components["schemas"]["LocalizedText"];
+            composition?: null | components["schemas"]["LocalizedText"];
+            shelfLife?: null | components["schemas"]["LocalizedText"];
+            storage?: null | components["schemas"]["LocalizedText"];
         };
         ProductDraft: {
             name: components["schemas"]["LocalizedText"];
@@ -2254,6 +2586,9 @@ export interface components {
             seasonMonths?: null | (number | string)[];
             photoUrl?: null | string;
             description?: null | components["schemas"]["LocalizedText"];
+            composition?: null | components["schemas"]["LocalizedText"];
+            shelfLife?: null | components["schemas"]["LocalizedText"];
+            storage?: null | components["schemas"]["LocalizedText"];
         };
         ProductDto: {
             /** Format: int32 */
@@ -2271,6 +2606,9 @@ export interface components {
             photoUrl: null | string;
             seasonMonths: (number | string)[];
             description: null | components["schemas"]["LocalizedText"];
+            composition: null | components["schemas"]["LocalizedText"];
+            shelfLife: null | components["schemas"]["LocalizedText"];
+            storage: null | components["schemas"]["LocalizedText"];
         };
         PromoCode: {
             code: string;

@@ -1,8 +1,15 @@
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import GppBadOutlinedIcon from '@mui/icons-material/GppBadOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
+import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import { Badge, Box, IconButton, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
-import { useCallback, useState } from 'react';
+import { alpha, Badge, Box, IconButton, ListItemText, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import { useCallback, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { AppNotification, User } from '../../api/types';
@@ -13,6 +20,18 @@ import { browserPermission, requestBrowserPermission, showBrowserNotification, t
 import { useToast } from '../../shared/Toast';
 import { useAuth } from '../auth/AuthContext';
 import { notificationTarget, notificationText, useNotifications } from './notifications';
+
+/** Піктограма й колір події: у списку одним поглядом видно, що сталося. */
+const KIND_ICON: Record<string, { icon: ReactNode; color: string }> = {
+  'order.new': { icon: <ShoppingBagOutlinedIcon fontSize="small" />, color: 'primary.main' },
+  'order.placed': { icon: <ReceiptLongOutlinedIcon fontSize="small" />, color: 'primary.main' },
+  'order.status': { icon: <LocalShippingOutlinedIcon fontSize="small" />, color: 'info.main' },
+  'delivery.assigned': { icon: <LocalShippingOutlinedIcon fontSize="small" />, color: 'info.main' },
+  'order.cancelled': { icon: <CancelOutlinedIcon fontSize="small" />, color: 'error.main' },
+  'farm.verified': { icon: <VerifiedUserOutlinedIcon fontSize="small" />, color: 'success.main' },
+  'farm.rejected': { icon: <GppBadOutlinedIcon fontSize="small" />, color: 'error.main' },
+};
+const OTHER = { icon: <NotificationsIcon fontSize="small" />, color: 'text.secondary' };
 
 /** UI-12: дзвіночок із лічильником непрочитаних, тост на нову подію, перехід до замовлення зі списку. */
 export function NotificationBell({ user }: { user: User }) {
@@ -122,15 +141,39 @@ export function NotificationBell({ user }: { user: User }) {
             <ListItemText primary={t('notify.empty')} />
           </MenuItem>
         )}
-        {items.map((item) => (
-          <MenuItem key={item.id} onClick={() => open(item)} sx={{ whiteSpace: 'normal', alignItems: 'flex-start' }}>
-            <ListItemText
-              primary={notificationText(item, t, lang)}
-              secondary={formatDateTime(item.at, lang)}
-              slotProps={{ primary: { sx: { fontWeight: item.id > seenId ? 700 : 400 } } }}
-            />
-          </MenuItem>
-        ))}
+        {/* Компактний список: піктограма події, текст, час; непрочитане - жирне з крапкою; натискання веде до замовлення чи статусу перевірки. */}
+        {items.map((item) => {
+          const look = KIND_ICON[item.kind] ?? OTHER;
+          const fresh = item.id > seenId;
+          return (
+            <MenuItem key={item.id} onClick={() => open(item)} sx={{ whiteSpace: 'normal', alignItems: 'flex-start', gap: 1.5, py: 1 }}>
+              <Box
+                aria-hidden
+                sx={{
+                  width: 32,
+                  height: 32,
+                  flexShrink: 0,
+                  mt: 0.25,
+                  borderRadius: '50%',
+                  display: 'grid',
+                  placeItems: 'center',
+                  color: look.color,
+                  bgcolor: (theme) => alpha(theme.palette.text.primary, 0.06),
+                }}
+              >
+                {look.icon}
+              </Box>
+              <ListItemText
+                primary={notificationText(item, t, lang)}
+                secondary={formatDateTime(item.at, lang)}
+                sx={{ my: 0 }}
+                slotProps={{ primary: { sx: { fontWeight: fresh ? 700 : 400, fontSize: '0.9rem', lineHeight: 1.35 } } }}
+              />
+              {fresh && <Box aria-hidden sx={{ width: 8, height: 8, mt: 1, borderRadius: '50%', bgcolor: 'secondary.main', flexShrink: 0 }} />}
+              <ChevronRightIcon aria-hidden fontSize="small" sx={{ color: 'text.secondary', mt: 0.5, flexShrink: 0 }} />
+            </MenuItem>
+          );
+        })}
       </Menu>
     </>
   );

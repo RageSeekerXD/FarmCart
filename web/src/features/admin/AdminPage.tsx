@@ -1,4 +1,5 @@
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import HistoryIcon from '@mui/icons-material/History';
@@ -8,7 +9,7 @@ import MapOutlinedIcon from '@mui/icons-material/MapOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import { Alert, Box, Button, Chip, CircularProgress, IconButton, Link, Paper, Stack, Tab, Tabs, TextField, Tooltip, Typography } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
+import { Suspense, lazy, useState, type FormEvent, type ReactElement, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
 import type { AuditEntry, FarmerProfile, PromoCode, Slot } from '../../api/types';
@@ -17,6 +18,10 @@ import { formatDateTime, formatSlot, localIso } from '../../shared/dates';
 import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { RejectFarmerDialog, SlotDeleteDialog, SlotEditDialog } from './AdminDialogs';
+import { DocumentsViewer } from './DocumentsViewer';
+
+// Мапа місця господарства вантажиться (разом із Leaflet) лише на вкладці верифікації.
+const MiniMap = lazy(() => import('./MiniMap'));
 import { ReviewModeration } from './ReviewModeration';
 import { useToast } from '../../shared/Toast';
 
@@ -45,6 +50,7 @@ function Verification() {
   const { lang, pick } = useLang();
   const toast = useToast();
   const [rejecting, setRejecting] = useState<FarmerProfile | null>(null);
+  const [viewing, setViewing] = useState<FarmerProfile | null>(null);
   const queryClient = useQueryClient();
   const pending = useQuery({ queryKey: ['admin', 'pending'], queryFn: () => api<FarmerProfile[]>('/admin/farmers/pending'), refetchInterval: 15_000 });
   const verify = useMutation({
@@ -64,8 +70,15 @@ function Verification() {
       <Stack component="ul" spacing={1.5} sx={{ listStyle: 'none', p: 0, m: 0 }}>
         {pending.data?.map((farmer, index) => (
           <Paper component="li" key={farmer.id} aria-label={pick(farmer.name)} elevation={1} sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', ...enter(index) }}>
-            <Box aria-hidden sx={{ width: 48, height: 48, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 26, bgcolor: 'background.default' }}>
-              🌾
+            {/* Місце господарства на мапі замість голих координат. */}
+            <Box
+              role="region"
+              aria-label={t('admin.farmLocation', { name: pick(farmer.name) })}
+              sx={{ width: { xs: '100%', sm: 220 }, height: 150, flexShrink: 0, borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider', position: 'relative', zIndex: 0 }}
+            >
+              <Suspense fallback={<Box sx={{ height: '100%', display: 'grid', placeItems: 'center' }}><CircularProgress size={24} aria-label={t('common.loading')} /></Box>}>
+                <MiniMap lat={farmer.lat} lon={farmer.lon} label={pick(farmer.name)} />
+              </Suspense>
             </Box>
             <Box sx={{ flex: '1 1 240px' }}>
               <Typography component="h3" variant="subtitle1" sx={{ fontWeight: 600 }}>
@@ -83,15 +96,28 @@ function Verification() {
                 sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
               >
                 <MapOutlinedIcon sx={{ fontSize: 16 }} />
-                {farmer.lat.toFixed(4)}, {farmer.lon.toFixed(4)}
+                {t('admin.openMapLink')}
               </Link>
-              {farmer.certified && (
-                <Box sx={{ mt: 0.5 }}>
-                  <Chip size="small" color="success" variant="outlined" label={t('catalog.organic')} />
-                </Box>
-              )}
+              <Stack direction="row" spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap', mt: 0.75 }}>
+                {farmer.certified && <Chip size="small" color="success" variant="outlined" label={t('catalog.organic')} />}
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  color={farmer.documentCount > 0 ? 'default' : 'warning'}
+                  icon={<DescriptionOutlinedIcon />}
+                  label={t('admin.documentsCount', { count: farmer.documentCount })}
+                />
+              </Stack>
             </Box>
-            <Stack direction="row" spacing={1}>
+            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+              <Button
+                variant="outlined"
+                startIcon={<DescriptionOutlinedIcon />}
+                onClick={() => setViewing(farmer)}
+                aria-label={t('admin.documentsNamed', { name: pick(farmer.name) })}
+              >
+                {t('admin.documents')}
+              </Button>
               <Button color="error" onClick={() => setRejecting(farmer)} aria-label={t('admin.rejectNamed', { name: pick(farmer.name) })}>
                 {t('admin.reject')}
               </Button>
@@ -108,6 +134,7 @@ function Verification() {
         ))}
       </Stack>
       {rejecting && <RejectFarmerDialog key={rejecting.id} farmer={rejecting} onClose={() => setRejecting(null)} />}
+      {viewing && <DocumentsViewer key={viewing.id} farmer={viewing} onClose={() => setViewing(null)} />}
     </Loading>
   );
 }

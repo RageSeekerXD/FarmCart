@@ -1,4 +1,4 @@
-import type { CatalogSort, Lang } from '../../api/types';
+import type { CatalogSort, DayOfWeek, Lang } from '../../api/types';
 
 /** Фільтри каталогу (UI-02). Зберігаються в рядку адреси, тож пошуком можна поділитися посиланням. */
 export interface CatalogFilters {
@@ -13,6 +13,10 @@ export interface CatalogFilters {
   farmerId: number | null;
   /** Лише обрані товари покупця; фільтрується в браузері, бо обране зберігається там же. */
   favorites: boolean;
+  /** Показати й товари, яких зараз немає в наявності (типово - лише ті, що є). */
+  soldOut: boolean;
+  /** Бажаний день доставки: лише ферми, що возять цього дня (або щодня). */
+  day: DayOfWeek | null;
 }
 
 export interface GeoPoint {
@@ -25,6 +29,8 @@ export const LVIV_CENTER: GeoPoint = { lat: 49.8419, lon: 24.0315 };
 export const DEFAULT_SORT: CatalogSort = 'Popular';
 export const SORTS: readonly CatalogSort[] = ['Popular', 'Distance', 'Rating', 'PriceAsc', 'PriceDesc', 'Name'];
 export const DISTANCES_KM: readonly number[] = [5, 10, 20, 50];
+/** Дні тижня від понеділка. */
+export const WEEK: readonly DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 export const DEFAULT_FILTERS: CatalogFilters = {
   q: '',
@@ -36,6 +42,8 @@ export const DEFAULT_FILTERS: CatalogFilters = {
   maxKm: null,
   farmerId: null,
   favorites: false,
+  soldOut: false,
+  day: null,
 };
 
 function price(value: string | null): string {
@@ -47,6 +55,7 @@ export function parseFilters(params: URLSearchParams): CatalogFilters {
   const sort = params.get('sort') as CatalogSort | null;
   const maxKm = Number(params.get('maxKm'));
   const farmerId = Number(params.get('farmerId'));
+  const day = params.get('day') as DayOfWeek | null;
   return {
     q: params.get('q') ?? '',
     category: params.get('category') ?? '',
@@ -57,6 +66,8 @@ export function parseFilters(params: URLSearchParams): CatalogFilters {
     maxKm: DISTANCES_KM.includes(maxKm) ? maxKm : null,
     farmerId: Number.isInteger(farmerId) && farmerId > 0 ? farmerId : null,
     favorites: params.get('favorites') === 'true',
+    soldOut: params.get('soldOut') === 'true',
+    day: day && WEEK.includes(day) ? day : null,
   };
 }
 
@@ -72,6 +83,8 @@ export function toSearchParams(filters: CatalogFilters): URLSearchParams {
   if (filters.maxKm !== null) params.set('maxKm', String(filters.maxKm));
   if (filters.farmerId !== null) params.set('farmerId', String(filters.farmerId));
   if (filters.favorites) params.set('favorites', 'true');
+  if (filters.soldOut) params.set('soldOut', 'true');
+  if (filters.day) params.set('day', filters.day);
   return params;
 }
 
@@ -80,7 +93,11 @@ export function toSearchParams(filters: CatalogFilters): URLSearchParams {
  * сортування - теж завжди (типове сортування сервера інше). Обране фільтрується в браузері.
  */
 export function toApiQuery(filters: CatalogFilters, from: GeoPoint, lang: Lang): string {
-  const params = toSearchParams({ ...filters, q: filters.q.trim(), favorites: false });
+  const params = new URLSearchParams();
+  const page = toSearchParams({ ...filters, q: filters.q.trim(), favorites: false, soldOut: false, day: null });
+  page.forEach((value, key) => params.set(key, value));
+  if (filters.soldOut) params.set('includeSoldOut', 'true');
+  if (filters.day) params.set('deliveryDay', filters.day);
   params.set('sort', filters.sort);
   params.set('lat', String(from.lat));
   params.set('lon', String(from.lon));

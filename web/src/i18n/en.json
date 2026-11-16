@@ -13,7 +13,9 @@
     "farmerOrders": "Orders",
     "deliveries": "My deliveries",
     "admin": "Administration",
-    "becomeSeller": "Become a seller"
+    "becomeSeller": "Become a seller",
+    "farmerPicking": "Picking",
+    "farmerStats": "Analytics"
   },
   "header": {
     "language": "Interface language",
@@ -109,7 +111,16 @@
     "farmPageNamed": "Farm page: {{name}}",
     "distanceFrom": "Distances from: {{place}}",
     "placeArea": "{{place}} area",
-    "locationReset": "Measure from Lviv city centre"
+    "locationReset": "Measure from Lviv city centre",
+    "chooseAddress": "Enter an address",
+    "chooseAddressTitle": "Where to measure distances from",
+    "chooseAddressHint": "Start typing a street and pick a suggestion - catalogue distances will be measured from that address.",
+    "street": "Street and building",
+    "deliveryDay": "Delivery day",
+    "anyDay": "Any day",
+    "inStockOnly": "In stock only",
+    "soldOut": "Out of stock",
+    "soldOutNamed": "Out of stock: {{name}}"
   },
   "farmPage": {
     "notFound": "Farm not found",
@@ -128,7 +139,8 @@
     "location": "Farm location",
     "openMap": "Open in map",
     "products": "Farm products",
-    "noProducts": "This farm has no products on sale right now."
+    "noProducts": "This farm has no products on sale right now.",
+    "story": "Our story"
   },
   "cart": {
     "title": "Cart",
@@ -148,7 +160,11 @@
     "decrease": "Decrease quantity: {{name}}",
     "items": "Items: {{count}}",
     "restore": "Undo",
-    "manyFarms": "Products from several farms ({{count}}): checkout creates a separate order for each farm, with a single payment."
+    "manyFarms": "Each farm packs its own order and hands it to a courier separately, so your items arrive in the chosen slot as {{count}} separate deliveries - possibly by different couriers. You pay once for everything.",
+    "deliveriesTitle": "Separate deliveries: {{count}}",
+    "oneDelivery": "One delivery in the chosen slot.",
+    "deliveryOf": "Delivery {{index}} of {{count}}",
+    "farmDeliveryDays": "This farm delivers: {{days}}"
   },
   "common": {
     "loading": "Loading…",
@@ -231,7 +247,16 @@
     "not_rejected": "The application was not rejected, so there is nothing to resubmit.",
     "note_required": "Describe what prevented the delivery.",
     "photo_type_invalid": "Upload a JPEG, PNG or WebP photo.",
-    "photo_too_large": "The photo is too large: 2 MB at most."
+    "photo_too_large": "The photo is too large: 2 MB at most.",
+    "product_details_incomplete": "Ingredients, shelf life and storage are needed in both languages or neither.",
+    "product_details_too_long": "Ingredients, shelf life or storage text is too long.",
+    "story_incomplete": "The farm story is needed in both languages or neither.",
+    "story_too_long": "The farm story is too long.",
+    "document_type_invalid": "Upload the document as a PDF, JPEG or PNG.",
+    "document_too_large": "The document must be no larger than 5 MB.",
+    "documents_limit": "You can upload no more than 10 documents.",
+    "document_not_found": "Document not found.",
+    "address_details_too_long": "Entrance, floor and intercom must be no longer than 40 characters each."
   },
   "map": {
     "title": "Farm map",
@@ -278,7 +303,10 @@
     "placed": "Order No. {{id}} placed",
     "recentAddresses": "Recent addresses",
     "splitNote": "Each farm gets its own order ({{count}} orders), paid in a single payment.",
-    "placedMany": "Orders {{ids}} placed"
+    "placedMany": "Orders {{ids}} placed",
+    "entrance": "Entrance",
+    "floor": "Floor",
+    "intercom": "Intercom"
   },
   "orders": {
     "title": "My orders",
@@ -367,7 +395,7 @@
     "lon": "Longitude",
     "certified": "I hold an organic certificate",
     "documents": "Link to documents",
-    "documentsHint": "Optional: certificates or farm documents for the review.",
+    "documentsHint": "Upload scans of your organic certificate, register extract or other farm documents. Only the administrator can see them.",
     "submit": "Submit application",
     "registered": "Farm registered. The application is awaiting verification.",
     "verified": "Verified",
@@ -405,7 +433,31 @@
     "photoRemove": "Remove photo",
     "photoRemoveNamed": "Remove photo: {{name}}",
     "photoSaved": "Photo saved: {{name}}",
-    "photoRemoved": "Photo removed: {{name}}"
+    "photoRemoved": "Photo removed: {{name}}",
+    "stockOf": "Stock: {{name}}, {{count}}",
+    "stockLess": "Decrease stock: {{name}}",
+    "stockMore": "Increase stock: {{name}}",
+    "onSale": "On sale",
+    "onSaleNamed": "On sale: {{name}}",
+    "profileButton": "Farm profile",
+    "profileTitle": "Your farm profile for buyers",
+    "profileSaved": "Farm profile saved",
+    "storyUk": "Farm story in Ukrainian",
+    "storyEn": "Farm story in English",
+    "storyHint": "Tell buyers who you are and how you farm: they see it on your farm and product pages. Both languages or neither.",
+    "deliveryDays": "Days you deliver orders",
+    "deliveryDaysHint": "If no day is selected, buyers see “every day”.",
+    "documentsButton": "Documents ({{count}})",
+    "documentsTitle": "Documents for verification",
+    "noDocuments": "No documents yet: without them verification takes longer.",
+    "documentUpload": "Upload a document",
+    "documentUploaded": "Document uploaded: {{name}}",
+    "documentRemove": "Delete document: {{name}}",
+    "documentFormats": "PDF, JPEG or PNG, up to 5 MB.",
+    "uploadDocumentsHint": "Upload your documents to speed up the check.",
+    "inUkrainian": "in Ukrainian",
+    "inEnglish": "in English",
+    "factsHint": "Optional. Buyers see this on the product page. Both languages or neither."
   },
   "farmOrders": {
     "title": "Incoming orders",
@@ -435,7 +487,20 @@
       "Accepted": "Start packing when you are ready",
       "Assembling": "Hand the packed order over to a courier"
     },
-    "noneInFilter": "No orders in this group."
+    "noneInFilter": "No orders in this group.",
+    "slipTitle": "Packing slip for order No. {{id}}",
+    "slipRecipient": "Recipient",
+    "buyer": "Buyer",
+    "slipPayment": "Payment",
+    "slipCollect": "Collect on delivery: {{amount}}",
+    "slipPaid": "Paid by card",
+    "buyerComment": "Buyer’s note",
+    "slipPacked": "Packed by (signature)",
+    "slipCourier": "Received by courier (signature)",
+    "call": "Call",
+    "callNamed": "Call {{name}} about order No. {{id}}",
+    "print": "Packing slip",
+    "printNamed": "Print the packing slip for order No. {{id}}"
   },
   "courier": {
     "delivery": "Delivery No. {{id}}",
@@ -458,7 +523,26 @@
     "failNote": "Note for the buyer",
     "failNoteHint": "Optional, except for \"Another reason\".",
     "failConfirm": "Report",
-    "failed": "Delivery No. {{id}} marked as not delivered"
+    "failed": "Delivery No. {{id}} marked as not delivered",
+    "hoursMinutes": "{{hours}} h {{minutes}} min",
+    "minutes": "{{minutes}} min",
+    "slotStartsIn": "Slot starts in {{time}}",
+    "slotEndsIn": "Slot ends in {{time}}",
+    "slotEndedAgo": "Slot ended {{time}} ago",
+    "routeIn": "Open the route in",
+    "callFarmer": "Call the farmer: {{name}}",
+    "callBuyer": "Call the buyer: {{name}}",
+    "access": "Entrance, floor, intercom",
+    "itemsToCheck": "Order contents: {{count}} items · checked {{checked}} of {{lines}}",
+    "routeTitle": "Delivery route",
+    "wholeRoute": "Whole route in Google Maps",
+    "routeOrder": "Order of stops",
+    "stopPickup": "Pick up No. {{id}} - {{place}}",
+    "stopDropoff": "Hand over No. {{id}} - {{place}}",
+    "noPoint": "no map point",
+    "codeBoxes": "Delivery code boxes",
+    "codeDigit": "Digit {{n}} of {{of}}",
+    "daysHours": "{{days}} d {{hours}} h"
   },
   "notify": {
     "title": "Notifications",
@@ -475,7 +559,9 @@
     "orderCancelled": "The buyer cancelled order No. {{id}}",
     "browserEnable": "Notify me when this tab is in the background",
     "browserOn": "Browser notifications are on",
-    "browserBlocked": "Browser notifications are blocked in your browser settings"
+    "browserBlocked": "Browser notifications are blocked in your browser settings",
+    "farmVerified": "Your farm has been verified: you can publish products",
+    "farmRejected": "Your application was rejected: {{reason}}"
   },
   "admin": {
     "section": {
@@ -556,7 +642,24 @@
     "activate": "Switch on",
     "activateNamed": "Switch on promo code {{code}}",
     "promoOffToast": "Promo code {{code}} switched off",
-    "promoOnToast": "Promo code {{code}} is active again"
+    "promoOnToast": "Promo code {{code}} is active again",
+    "farmLocation": "Location: {{name}}",
+    "openMapLink": "Open in OpenStreetMap",
+    "documents": "Documents",
+    "documentsNamed": "Documents: {{name}}",
+    "documentsCount": "Documents: {{count}}",
+    "documentsTitle": "Documents: {{name}}",
+    "documentsList": "Document list",
+    "documentPreview": "Preview: {{name}}",
+    "noDocuments": "The seller has not uploaded any documents yet.",
+    "openDocument": "Open in a new tab",
+    "rejectPresetsLabel": "Common reasons",
+    "rejectPresets": [
+      "The documents are unreadable - please upload clear scans",
+      "The organic certificate has expired or cannot be confirmed",
+      "The farm address does not match the documents",
+      "The register extract is missing"
+    ]
   },
   "review": {
     "title": "Rate the farmer",
@@ -581,5 +684,95 @@
     "showAll": "Show all ({{count}})",
     "farmTitle": "Reviews: {{name}}",
     "open": "Reviews ({{count}})"
+  },
+  "address": {
+    "noSuggestions": "Address not found - type it in full",
+    "osmCredit": "Address suggestions: © OpenStreetMap",
+    "entrance": "entrance {{value}}",
+    "floor": "floor {{value}}",
+    "intercom": "intercom {{value}}"
+  },
+  "product": {
+    "notFound": "Product not found",
+    "everyDay": "every day",
+    "composition": "Ingredients",
+    "shelfLife": "Shelf life",
+    "storage": "Storage",
+    "deliveryDays": "Delivery",
+    "outOfSeason": "Out of season right now. Usually on sale: {{season}}.",
+    "facts": "Ingredients and storage",
+    "notSpecified": "not specified by the farmer",
+    "reviews": "Reviews of this product",
+    "noReviews": "No reviews of this product yet.",
+    "farmReviews": "Reviews of {{name}}",
+    "aboutFarm": "About the farm",
+    "toFarm": "Farm page"
+  },
+  "footer": {
+    "delivery": "Delivery and storage",
+    "deliveryText": "Daily across Lviv and the region in two-hour slots. Chilled products travel in cool bags at +2…+6 °C.",
+    "deliveryLink": "Delivery terms",
+    "returns": "Returns",
+    "returnsText": "Spoiled or poor-quality products are replaced or refunded - just write to us within 24 hours of delivery.",
+    "returnsLink": "How to return a product",
+    "support": "Support",
+    "supportHours": "Daily, 8:00 to 21:00",
+    "farmers": "For farmers",
+    "farmersText": "Sell directly to Lviv buyers: registration is free, and once your documents are checked you go straight into the catalogue.",
+    "farmersLink": "Become a seller"
+  },
+  "info": {
+    "title": "For buyers and farmers",
+    "intro": "How delivery works, how to return a product, how to reach us and how to start selling on FarmCart.",
+    "delivery": [
+      "We deliver daily across Lviv and the region in two-hour slots, which you choose at checkout.",
+      "Each farm packs its own order and hands it to a courier on the delivery day; orders from several farms arrive as separate deliveries in the same slot.",
+      "Dairy, meat and eggs travel in cool bags with ice packs at +2…+6 °C.",
+      "Once delivered, put chilled products in the fridge within an hour. Ingredients, shelf life and storage for every product are on its page."
+    ],
+    "returns": [
+      "You can cancel an order free of charge until the farm accepts it.",
+      "If a product is spoiled, of poor quality or missing, write to us within 24 hours of delivery and attach a photo.",
+      "We refund your card within 3 working days or replace the product in your next delivery - whichever suits you."
+    ],
+    "supportChannels": "Call or email us - we reply within an hour during working hours.",
+    "farmers": [
+      "Register your farm: its name, its location on the map and documents (organic certificate, register extract).",
+      "An administrator checks the documents; after that your products appear in the catalogue.",
+      "Orders arrive in your farmer dashboard with a notification; picking lists and packing slips can be printed."
+    ],
+    "questions": "Any other questions? Write to"
+  },
+  "picking": {
+    "title": "Picking list",
+    "subtitle": "How much of each product to prepare for a delivery slot, across all new and accepted orders.",
+    "print": "Print",
+    "printTitle": "Picking list · {{slot}}",
+    "slots": "Delivery slots",
+    "ordersCount": "orders: {{count}}",
+    "tableLabel": "Picking list for {{slot}}",
+    "packed": "Packed",
+    "packedNamed": "Packed: {{name}}",
+    "total": "Total",
+    "orders": "Orders",
+    "empty": "Nothing to pack yet",
+    "emptyHint": "Products from new and accepted orders appear here, grouped by delivery slot."
+  },
+  "stats": {
+    "title": "Analytics",
+    "empty": "No orders yet - analytics appear with your first order.",
+    "revenue": "Revenue (delivered)",
+    "expected": "Expected (in progress)",
+    "averageOrder": "Average order",
+    "lostShare": "Cancelled and rejected",
+    "byDay": "Orders by delivery day",
+    "byDayHint": "Order value excluding cancelled and rejected orders: two weeks back and one week ahead.",
+    "showTable": "As a table",
+    "showChart": "As a chart",
+    "day": "Day",
+    "ordersColumn": "Orders",
+    "sum": "Value",
+    "ordersCount": "orders: {{count}}",
+    "topProducts": "Best-selling products"
   }
 }

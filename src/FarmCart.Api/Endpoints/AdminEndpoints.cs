@@ -8,7 +8,16 @@ internal static class AdminEndpoints
     public static void MapAdminEndpoints(this RouteGroupBuilder api)
     {
         api.MapGet("/admin/farmers/pending", (Caller caller, AdminService admin) =>
-            admin.PendingFarmers(caller.User).Select(FarmerDto.From));
+            admin.PendingFarmers(caller.User).Select(farmer => FarmerDto.From(farmer, admin.FarmerDocuments(caller.User, farmer.Id).Count)));
+        api.MapGet("/admin/farmers/{id:int}/documents", (int id, Caller caller, AdminService admin) =>
+            admin.FarmerDocuments(caller.User, id).Select(FarmDocumentDto.From));
+        api.MapGet("/admin/farmers/{id:int}/documents/{documentId:int}", (int id, int documentId, Caller caller, AdminService admin, HttpResponse response) =>
+        {
+            var document = admin.FarmerDocument(caller.User, id, documentId);
+            // Документи не кешуються: їх бачить лише адміністратор, а браузер міг би віддати їх іншому користувачу.
+            response.Headers.CacheControl = "no-store";
+            return Results.File(document.Data, document.ContentType);
+        });
         api.MapPost("/admin/farmers/{id:int}/verify", (int id, Caller caller, AdminService admin) =>
             FarmerDto.From(admin.VerifyFarmer(caller.User, id)));
         api.MapPost("/admin/slots", (Caller caller, SlotRequest body, AdminService admin) =>

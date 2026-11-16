@@ -4,16 +4,23 @@ import { placeOf, type PlaceName } from './places';
 
 const LOCATION_KEY = 'farmcart.location';
 
-function stored(): GeoPoint | null {
+/** Точка покупця; label - адреса, яку покупець обрав сам (без неї назву дає довідник місць). */
+interface StoredPoint extends GeoPoint {
+  label?: string;
+}
+
+function stored(): StoredPoint | null {
   try {
-    const point = JSON.parse(localStorage.getItem(LOCATION_KEY) ?? 'null') as Partial<GeoPoint> | null;
-    return point && typeof point.lat === 'number' && typeof point.lon === 'number' ? { lat: point.lat, lon: point.lon } : null;
+    const point = JSON.parse(localStorage.getItem(LOCATION_KEY) ?? 'null') as Partial<StoredPoint> | null;
+    return point && typeof point.lat === 'number' && typeof point.lon === 'number'
+      ? { lat: point.lat, lon: point.lon, ...(typeof point.label === 'string' && point.label ? { label: point.label } : {}) }
+      : null;
   } catch {
     return null;
   }
 }
 
-function remember(point: GeoPoint | null) {
+function remember(point: StoredPoint | null) {
   try {
     if (point) {
       localStorage.setItem(LOCATION_KEY, JSON.stringify(point));
@@ -26,12 +33,12 @@ function remember(point: GeoPoint | null) {
 }
 
 /**
- * Точка покупця для відстаней і фільтра «до N км». Типово - центр Львова;
- * власне місцезнаходження береться з браузера лише на прохання користувача.
- * place - назва визначеного місця («Львів, Сихів»), щоб покупець бачив, від чого рахується відстань.
+ * Точка покупця для відстаней і фільтра «до N км». Типово - центр Львова; власне місцезнаходження береться з браузера
+ * лише на прохання користувача, або покупець обирає адресу з підказок. place - назва місця («Львів, Сихів» чи обрана
+ * адреса), щоб було видно, від чого рахується відстань.
  */
 export function useBuyerLocation() {
-  const [mine, setMine] = useState<GeoPoint | null>(stored);
+  const [mine, setMine] = useState<StoredPoint | null>(stored);
   const [denied, setDenied] = useState(false);
   const [locating, setLocating] = useState(false);
 
@@ -58,12 +65,21 @@ export function useBuyerLocation() {
     );
   }, []);
 
+  /** Відлік від обраної адреси (підказка вулиці). */
+  const choose = useCallback((point: GeoPoint, label: string) => {
+    const next = { lat: point.lat, lon: point.lon, label };
+    remember(next);
+    setMine(next);
+    setDenied(false);
+  }, []);
+
   /** Повернутися до центру Львова. */
   const forget = useCallback(() => {
     remember(null);
     setMine(null);
   }, []);
 
-  const place: PlaceName | null = mine ? placeOf(mine) : null;
-  return { point: mine ?? LVIV_CENTER, isMine: mine !== null, place, denied, locating, locate, forget };
+  const place: PlaceName | null = mine ? (mine.label ? { name: { uk: mine.label, en: mine.label }, near: false } : placeOf(mine)) : null;
+  const point: GeoPoint = mine ? { lat: mine.lat, lon: mine.lon } : LVIV_CENTER;
+  return { point, isMine: mine !== null, place, denied, locating, locate, choose, forget };
 }

@@ -1,5 +1,6 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InventoryOutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PlaceIcon from '@mui/icons-material/Place';
 import DoNotDisturbOnOutlinedIcon from '@mui/icons-material/DoNotDisturbOnOutlined';
@@ -28,6 +29,7 @@ import { Link as RouterLink, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { CatalogItem } from '../../api/types';
 import { errorMessage, formatNumber, useLang } from '../../i18n';
+import { deliveryDaysText } from '../../shared/dates';
 import { EmptyState } from '../../shared/pages';
 import { DEFAULT_FILTERS, toApiQuery } from '../catalog/filters';
 import { useLocationText } from '../catalog/LocationLabel';
@@ -67,7 +69,8 @@ export function FarmPage() {
   const farms = useFarms(location.point);
   const farm = farms.data?.find((item) => item.id === farmerId);
 
-  const query = toApiQuery({ ...DEFAULT_FILTERS, farmerId }, location.point, lang);
+  // Увесь асортимент ферми: і те, чого зараз немає в наявності (воно позначене й стоїть наприкінці).
+  const query = toApiQuery({ ...DEFAULT_FILTERS, farmerId, soldOut: true }, location.point, lang);
   const products = useQuery({
     queryKey: ['catalog', query],
     queryFn: ({ signal }) => api<CatalogItem[]>(`/catalog?${query}`, { signal }),
@@ -166,7 +169,23 @@ export function FarmPage() {
               <Chip variant="outlined" label={t('farmPage.distance', { km: formatNumber(farm.distanceKm, lang) })} title={from} />
             )}
             <Chip icon={<InventoryOutlinedIcon />} variant="outlined" label={t('map.products', { count: farm.productCount })} />
+            <Chip
+              icon={<LocalShippingOutlinedIcon />}
+              variant="outlined"
+              label={`${t('product.deliveryDays')}: ${farm.deliveryDays.length === 0 ? t('product.everyDay') : deliveryDaysText(farm.deliveryDays, lang)}`}
+            />
           </Stack>
+
+          {farm.story && (
+            <Box component="section" aria-labelledby="farm-story" sx={{ mb: 2.5 }}>
+              <Typography id="farm-story" component="h2" variant="subtitle1" sx={{ mb: 0.5 }}>
+                {t('farmPage.story')}
+              </Typography>
+              <Typography sx={{ maxWidth: '65ch' }} lang={lang}>
+                {pick(farm.story)}
+              </Typography>
+            </Box>
+          )}
 
           <Typography component="h2" variant="subtitle1" sx={{ mb: 1 }}>
             {t('farmPage.credentials')}

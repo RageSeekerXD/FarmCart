@@ -1,12 +1,40 @@
 namespace FarmCart.Core;
 
+/// <param name="Details">Під'їзд, поверх і код домофону - кур'єрові не доведеться телефонувати.</param>
+/// <param name="Lat">Точка доставки на мапі (з підказки адреси); разом із <paramref name="Lon"/> або жодної.</param>
 public sealed record CheckoutRequest(
     string Address,
     int SlotId,
     PaymentMethod PaymentMethod,
     string? PaymentToken = null,
     string? PromoCode = null,
-    string? Comment = null);
+    string? Comment = null,
+    AddressDetails? Details = null,
+    double? Lat = null,
+    double? Lon = null);
+
+/// <summary>Як потрапити до покупця: під'їзд, поверх, код домофону. Порожні поля - null.</summary>
+public sealed record AddressDetails(string? Entrance, string? Floor, string? Intercom)
+{
+    public const int MaxLength = 40;
+
+    /// <summary>Обрізані значення; усі порожні - null (деталей немає); задовге - помилка.</summary>
+    public static AddressDetails? Normalize(AddressDetails? details)
+    {
+        static string? Clean(string? value) =>
+            string.IsNullOrWhiteSpace(value) ? null
+            : value.Trim().Length > MaxLength ? throw Fail.Validation("address_details_too_long", $"Під'їзд, поверх і домофон - не довше {MaxLength} символів")
+            : value.Trim();
+
+        if (details is null)
+        {
+            return null;
+        }
+
+        var clean = new AddressDetails(Clean(details.Entrance), Clean(details.Floor), Clean(details.Intercom));
+        return clean is { Entrance: null, Floor: null, Intercom: null } ? null : clean;
+    }
+}
 
 public sealed record SlotView(int Id, DateTimeOffset Start, DateTimeOffset End, int Remaining, int Capacity);
 
@@ -50,6 +78,8 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
 
             var lines = SnapshotLines(store.CartOf(buyer.Id));
             var address = RequireAddress(request.Address);
+            var details = AddressDetails.Normalize(request.Details);
+            var dropOff = DropOff(request.Lat, request.Lon);
             var farms = lines.GroupBy(x => x.FarmerId).ToList();
             var slot = FreeSlot(request.SlotId, places: farms.Count);
             var promo = ResolvePromo(request.PromoCode, lines.Sum(x => x.Line.Total));
@@ -65,8 +95,10 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
                 FarmerId = farm.Key,
                 Lines = [.. farm.Select(x => x.Line)],
                 Address = address,
+                Details = details,
+                DropOff = dropOff,
                 Slot = slot,
-                Comment = request.Comment,
+                Comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim(),
                 PromoCode = promo?.Code,
                 DiscountPercent = discountPercent,
                 PaymentMethod = request.PaymentMethod,
@@ -115,6 +147,15 @@ public sealed class OrderService(InMemoryStore store, IPaymentGateway payments, 
     /// <summary>Ідентифікатор платежу для провайдера: повтор із тим самим ключем не спише кошти вдруге.</summary>
     private static string ChargeReference(User buyer, string? idempotencyKey) =>
         idempotencyKey is null ? $"checkout-{Guid.NewGuid():N}" : $"buyer-{buyer.Id}-{idempotencyKey}";
+
+    /// <summary>Точка доставки необов'язкова, але якщо є - обидві координати й у межах Землі.</summary>
+    private static GeoPoint? DropOff(double? lat, double? lon) =>
+        (lat, lon) switch
+        {
+            (null, null) => null,
+            ({ } latitude, { } longitude) when new GeoPoint(latitude, longitude).IsValid => new GeoPoint(latitude, longitude),
+            _ => throw Fail.Validation("location_invalid", "Некоректні координати точки доставки"),
+        };
 
     private static string RequireAddress(string? address) =>
         string.IsNullOrWhiteSpace(address)

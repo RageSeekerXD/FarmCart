@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import type { Courier, FarmerProfile, Order, Product, ProductChanges, ProductDraft, ReferenceData, Shortage } from '../../api/types';
+import type { Courier, FarmDocument, FarmerProfile, FarmProfileChanges, Order, Product, ProductChanges, ProductDraft, ReferenceData, Shortage } from '../../api/types';
 import { POLL_MS } from '../orders/orders';
 
 export function useReference() {
@@ -43,12 +43,73 @@ export function useSaveProduct() {
         return api<Product>('/farmer/products', { method: 'POST', body: draft });
       }
 
-      const changes: ProductChanges = { name: draft.name, price: draft.price, stock: draft.stock, seasonMonths: draft.seasonMonths, description: draft.description };
+      const changes: ProductChanges = {
+        name: draft.name,
+        price: draft.price,
+        stock: draft.stock,
+        seasonMonths: draft.seasonMonths,
+        description: draft.description,
+        composition: draft.composition,
+        shelfLife: draft.shelfLife,
+        storage: draft.storage,
+      };
       return api<Product>(`/farmer/products/${id}`, { method: 'PATCH', body: changes });
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: PRODUCTS });
       void queryClient.invalidateQueries({ queryKey: ['catalog'] });
+    },
+  });
+}
+
+/**
+ * Швидка зміна залишку прямо в списку товарів: +1/−1 чи «немає в наявності» без відкриття форми.
+ * Сервер змінює залишок на delta; відповідь одразу кладеться в кеш списку.
+ */
+export function useChangeStock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, delta }: { id: number; delta: number }) => api<Product>(`/farmer/products/${id}/stock`, { method: 'POST', body: { delta } }),
+    onSuccess: (product) => {
+      queryClient.setQueryData<Product[]>(PRODUCTS, (list) => list?.map((item) => (item.id === product.id ? product : item)));
+      void queryClient.invalidateQueries({ queryKey: ['catalog'] });
+    },
+  });
+}
+
+/** Історія ферми й дні доставки. */
+export function useUpdateFarmProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (changes: FarmProfileChanges) => api<FarmerProfile>('/farmer/profile', { method: 'PATCH', body: changes }),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(['farmer', 'profile'], profile);
+      void queryClient.invalidateQueries({ queryKey: ['farms'] });
+    },
+  });
+}
+
+const DOCUMENTS = ['farmer', 'documents'] as const;
+
+/** Типи й розмір документів для верифікації, які приймає сервер. */
+export const DOCUMENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+export const DOCUMENT_MAX_BYTES = 5 * 1024 * 1024;
+
+export function useFarmDocuments(enabled = true) {
+  return useQuery({ queryKey: DOCUMENTS, queryFn: () => api<FarmDocument[]>('/farmer/documents'), enabled });
+}
+
+/** Завантаження чи видалення скану документа; лічильник документів у профілі оновлюється. */
+export function useFarmDocumentChange() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (change: { file: File } | { removeId: number }) =>
+      'file' in change
+        ? api<FarmDocument | undefined>(`/farmer/documents?name=${encodeURIComponent(change.file.name)}`, { method: 'POST', body: change.file })
+        : api<FarmDocument | undefined>(`/farmer/documents/${change.removeId}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: DOCUMENTS });
+      void queryClient.invalidateQueries({ queryKey: ['farmer', 'profile'] });
     },
   });
 }

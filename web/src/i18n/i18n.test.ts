@@ -5,12 +5,13 @@ import en from './en.json';
 import i18n, { errorMessage, formatMoney, formatNumber, storedLang } from './index';
 import uk from './uk.json';
 
-type Tree = { [key: string]: string | Tree };
+/** Дерево перекладів; списки (пункти умов, типові причини) перевіряються поелементно, як рядки з ключами 0, 1, … */
+type Tree = { [key: string]: string | readonly string[] | Tree };
 
 function flatten(tree: Tree, prefix = ''): Record<string, string> {
   return Object.entries(tree).reduce<Record<string, string>>((all, [key, value]) => {
     const path = prefix ? `${prefix}.${key}` : key;
-    return typeof value === 'string' ? { ...all, [path]: value } : { ...all, ...flatten(value, path) };
+    return typeof value === 'string' ? { ...all, [path]: value } : { ...all, ...flatten(value as Tree, path) };
   }, {});
 }
 

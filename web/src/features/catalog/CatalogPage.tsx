@@ -27,13 +27,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
-import type { CatalogItem, CatalogSort, ReferenceData } from '../../api/types';
+import type { CatalogItem, CatalogSort, DayOfWeek, ReferenceData } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
+import { dayName } from '../../shared/dates';
 import { EASE_SPRING, popIn } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { CategoryPills } from './CategoryPills';
 import { useFavorites } from './favorites';
-import { DISTANCES_KM, SORTS, activeFilterCount, parseFilters, toApiQuery, toSearchParams, withoutFilters, type CatalogFilters } from './filters';
+import { DISTANCES_KM, SORTS, WEEK, activeFilterCount, parseFilters, toApiQuery, toSearchParams, withoutFilters, type CatalogFilters } from './filters';
 import { LocationControl } from './LocationLabel';
 import { ProductGrid, ProductGridSkeleton } from './ProductGrid';
 import { useBuyerLocation } from './useBuyerLocation';
@@ -79,7 +80,9 @@ export function CatalogPage() {
   const theme = useTheme();
   const compact = useMediaQuery(theme.breakpoints.down('sm'));
   const [moreOpen, setMoreOpen] = useState(false);
-  const secondaryCount = [filters.minPrice, filters.maxPrice, filters.maxKm, filters.certified || null].filter((value) => value !== '' && value !== null).length;
+  const secondaryCount = [filters.minPrice, filters.maxPrice, filters.maxKm, filters.day, filters.certified || null, filters.soldOut || null].filter(
+    (value) => value !== '' && value !== null,
+  ).length;
   const filterCount = activeFilterCount(filters);
 
   const change = (patch: Partial<CatalogFilters>) => {
@@ -184,10 +187,30 @@ export function CatalogPage() {
                 </MenuItem>
               ))}
             </TextField>
+            <TextField
+              select
+              label={t('catalog.deliveryDay')}
+              size="small"
+              value={filters.day ?? ''}
+              onChange={(event) => change({ day: event.target.value === '' ? null : (event.target.value as DayOfWeek) })}
+              slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+            >
+              <MenuItem value="">{t('catalog.anyDay')}</MenuItem>
+              {WEEK.map((day) => (
+                <MenuItem key={day} value={day}>
+                  {dayName(day, lang)}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', columnGap: 3, pt: 1 }}>
             <FormControlLabel
               control={<Checkbox checked={filters.certified} onChange={(event) => change({ certified: event.target.checked })} />}
               label={t('catalog.certified')}
-              sx={{ mr: 0 }}
+            />
+            <FormControlLabel
+              control={<Checkbox checked={!filters.soldOut} onChange={(event) => change({ soldOut: !event.target.checked })} />}
+              label={t('catalog.inStockOnly')}
             />
           </Box>
         </Collapse>

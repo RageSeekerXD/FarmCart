@@ -25,4 +25,18 @@ public sealed class Farmer
     public double? Rating { get; set; }
 
     public int ReviewCount { get; set; }
+
+    /// <summary>Історія господарства двома мовами для сторінки ферми; null - фермер її ще не розповів.</summary>
+    public LocalizedText? Story { get; set; }
+
+    /// <summary>Дні тижня, коли ферма возить замовлення; порожня множина - щодня.</summary>
+    public IReadOnlySet<DayOfWeek> DeliveryDays { get; set; } = new HashSet<DayOfWeek>();
+
+    public bool DeliversOn(DayOfWeek day) => DeliveryDays.Count == 0 || DeliveryDays.Contains(day);
+}
+
+/// <summary>Скан документа для верифікації (сертифікат, витяг з реєстру): бачать лише власник і адміністратор.</summary>
+public sealed record FarmDocument(int Id, int FarmerId, string Name, string ContentType, byte[] Data, DateTimeOffset UploadedAt)
+{
+    public int Size => Data.Length;
 }

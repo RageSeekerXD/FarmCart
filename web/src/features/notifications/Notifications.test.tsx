@@ -270,3 +270,44 @@ describe('сповіщення браузера, коли вкладка у фо
     expect(FakeNotification.created).toEqual([]);
   });
 });
+
+describe('Панель сповіщень: перехід до конкретного замовлення й статусу перевірки', () => {
+  it('нове замовлення з панелі відкриває саме це замовлення у вхідних фермера', async () => {
+    backend.asFarmer();
+    backend.addOrder('Delivered');
+    backend.addOrder('Placed');
+    backend.notify('order.new', 1002, { total: '160' });
+    localStorage.setItem('farmcart.role', 'Farmer');
+    const { user } = await renderApp('/farmer/products', { signedIn: true });
+
+    await user.click(await screen.findByRole('button', { name: 'Сповіщення, нових: 1' }));
+    await user.click(await screen.findByRole('menuitem', { name: /Нове замовлення №1002/ }));
+
+    expect(await screen.findByRole('listitem', { name: 'Замовлення №1002' })).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('рішення адміністратора щодо заявки приходить сповіщенням і веде до кабінету фермера', async () => {
+    backend.asFarmer(false);
+    backend.notify('farm.rejected', null, { reason: 'Бракує витягу з ЄДР' });
+    localStorage.setItem('farmcart.role', 'Farmer');
+    const { user } = await renderApp('/farmer/orders', { signedIn: true });
+
+    await user.click(await screen.findByRole('button', { name: 'Сповіщення, нових: 1' }));
+    await user.click(await screen.findByRole('menuitem', { name: /Заявку відхилено: Бракує витягу з ЄДР/ }));
+
+    expect(await screen.findByRole('heading', { name: 'Мої товари' })).toBeInTheDocument();
+  });
+
+  it('верифікація господарства спливає тостом', async () => {
+    backend.asFarmer(false);
+    backend.notify('order.new', 1000, { total: '160' });
+    localStorage.setItem('farmcart.role', 'Farmer');
+    await renderApp('/farmer/products', { signedIn: true });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 1' });
+
+    push('farm.verified', null);
+
+    // Сторінка неверифікованої ферми має власне повідомлення-alert, тож тост шукаємо за текстом.
+    expect(await screen.findByText('Господарство верифіковано: можна публікувати товари')).toBeInTheDocument();
+  });
+});

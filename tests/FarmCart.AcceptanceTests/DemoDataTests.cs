@@ -76,7 +76,7 @@ public sealed partial class DemoDataTests
             orders.EnumerateArray().Select(o => o.Str("status")).Order());
         Assert.Equal("Refunded", orders.EnumerateArray().Single(o => o.Str("status") == "Rejected").Str("paymentStatus"));
         Assert.True(notifications.GetArrayLength() >= 6);
-        Assert.Single(deliveries.EnumerateArray());
+        Assert.Equal(3, deliveries.GetArrayLength());
         Assert.True(farms.EnumerateArray().Count(f => f.GetProperty("rating").ValueKind == System.Text.Json.JsonValueKind.Number) >= 4);
         var green = farms.EnumerateArray().Single(f => f.GetProperty("name").Str("uk") == "Ферма «Зелений Гай»");
         Assert.Equal(System.Text.Json.JsonValueKind.Null, green.GetProperty("rating").ValueKind);

@@ -294,42 +294,43 @@ describe('UI-02 Каталог з фільтрами', () => {
   });
 });
 
-describe('Картка товару', () => {
-  it('назва відкриває картку з описом, сезоном і відгуками ферми; кількість додається в кошик', async () => {
-    backend.addFarmReview(5, 'Морква солодка, як цукерка', 'Оксана Д.');
-    const { user } = await renderApp('/', { signedIn: true });
+describe('Нові фільтри каталогу', () => {
+  it('«Лише в наявності» знято - каталог показує й те, чого немає, з позначкою', async () => {
+    const { user } = await renderApp('/');
+    await screen.findByRole('article', { name: 'Морква' });
+    expect(screen.queryByRole('article', { name: 'Агрус' })).not.toBeInTheDocument();
 
-    await user.click(await screen.findByRole('button', { name: 'Докладніше: Морква' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Морква' });
-    expect(dialog).toHaveTextContent('Солодка морква без гербіцидів');
-    expect(dialog).toHaveTextContent(/Сезон: лип/);
-    expect(await within(dialog).findByText('Морква солодка, як цукерка')).toBeInTheDocument();
-    expect(within(dialog).getByText('Оксана Д.')).toBeInTheDocument();
+    await user.click(screen.getByRole('checkbox', { name: 'Лише в наявності' }));
 
-    await user.click(within(dialog).getByRole('button', { name: 'Більше' }));
-    await user.click(within(dialog).getByRole('button', { name: 'Більше' }));
-    await user.click(within(dialog).getByRole('button', { name: /У кошик: 3 · 48,00/ }));
-
-    expect(await screen.findByText('Додано в кошик: Морква')).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(await screen.findByRole('link', { name: 'Товарів у кошику: 3' })).toBeInTheDocument();
+    const gooseberries = await screen.findByRole('article', { name: 'Агрус' });
+    expect(within(gooseberries).getByRole('button', { name: 'Немає в наявності: Агрус' })).toBeDisabled();
+    expect(lastRequest().get('includeSoldOut')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Скинути фільтри' })).toBeInTheDocument();
   });
 
-  it('назва ферми в картці товару веде на сторінку ферми', async () => {
+  it('день доставки лишає ферми, що возять цього дня', async () => {
     const { user } = await renderApp('/');
+    await screen.findByRole('article', { name: 'Морква' });
 
-    await user.click(await screen.findByRole('button', { name: "Докладніше: Молоко коров'яче" }));
-    await user.click(within(await screen.findByRole('dialog')).getByRole('link', { name: 'Сторінка ферми: Сироварня «Карпатська бринза»' }));
+    await user.click(screen.getByRole('combobox', { name: 'День доставки' }));
+    // Intl пише апостроф у «пʼятниця» як знак-модифікатор, тож порівнюємо без нього.
+    await user.click(await screen.findByRole('option', { name: /^п.ятниця$/ }));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Сироварня «Карпатська бринза»' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole('article', { name: 'Морква' })).not.toBeInTheDocument());
+    expect(screen.getByRole('article', { name: "Молоко коров'яче" })).toBeInTheDocument();
+    expect(lastRequest().get('deliveryDay')).toBe('Friday');
   });
 
-  it('без відгуків картка так і каже', async () => {
+  it('точку відліку можна вказати адресою з підказок', async () => {
     const { user } = await renderApp('/');
+    await screen.findByRole('article', { name: 'Морква' });
 
-    await user.click(await screen.findByRole('button', { name: 'Докладніше: Картопля' }));
+    await user.click(screen.getByRole('button', { name: 'Вказати адресу' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Звідки рахувати відстань до ферм' });
+    await user.type(within(dialog).getByLabelText('Вулиця й будинок'), 'Личаківська');
+    await user.click(await screen.findByRole('option', { name: 'вулиця Личаківська, 24, Личаківський район, Львів' }));
 
-    expect(await within(await screen.findByRole('dialog')).findByText('Відгуків ще немає.')).toBeInTheDocument();
+    expect(await screen.findByText('Відстань від: вулиця Личаківська, 24, Личаківський район, Львів')).toBeInTheDocument();
+    await waitFor(() => expect(lastRequest().get('lat')).toBe('49.8378'));
   });
 });

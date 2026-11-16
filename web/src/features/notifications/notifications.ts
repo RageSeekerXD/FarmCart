@@ -31,6 +31,10 @@ export function notificationText(notification: AppNotification, t: TFunction, la
       return t('notify.deliveryAssigned', { id });
     case 'order.cancelled':
       return t('notify.orderCancelled', { id });
+    case 'farm.verified':
+      return t('notify.farmVerified');
+    case 'farm.rejected':
+      return t('notify.farmRejected', { reason: notification.params.reason ?? '' });
     default:
       return t('notify.other');
   }
@@ -39,11 +43,15 @@ export function notificationText(notification: AppNotification, t: TFunction, la
 /** Куди веде сповіщення і в якій ролі цей екран доступний. */
 export function notificationTarget(notification: AppNotification): { to: string; role: Role } {
   switch (notification.kind) {
+    // Сповіщення про замовлення веде до самого замовлення: сторінка прокручує до нього й підсвічує його.
     case 'order.new':
     case 'order.cancelled':
-      return { to: '/farmer/orders', role: 'Farmer' };
+      return { to: notification.orderId ? `/farmer/orders?order=${notification.orderId}` : '/farmer/orders', role: 'Farmer' };
     case 'delivery.assigned':
-      return { to: '/courier', role: 'Courier' };
+      return { to: notification.orderId ? `/courier?order=${notification.orderId}` : '/courier', role: 'Courier' };
+    case 'farm.verified':
+    case 'farm.rejected':
+      return { to: '/farmer/products', role: 'Farmer' };
     default:
       return { to: notification.orderId ? `/orders/${notification.orderId}` : '/orders', role: 'Buyer' };
   }

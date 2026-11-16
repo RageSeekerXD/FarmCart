@@ -2,6 +2,13 @@ using System.Globalization;
 
 namespace FarmCart.Core;
 
+/// <summary>Позиція доставки: кур'єр звіряє її з тим, що видав фермер.</summary>
+public sealed record DeliveryLine(LocalizedText Name, LocalizedText Unit, int Quantity);
+
+/// <summary>
+/// Доставка в застосунку кур'єра: звідки забрати (ферма, її контакт і координати), кому віддати (ім'я й телефон покупця,
+/// адреса з під'їздом, поверхом і домофоном, точка на мапі, коментар), що саме везти й скільки отримати готівкою.
+/// </summary>
 public sealed record DeliveryTask(
     int OrderId,
     DateTimeOffset SlotStart,
@@ -10,7 +17,18 @@ public sealed record DeliveryTask(
     string Address,
     int Items,
     decimal AmountToCollect,
-    string RouteUrl);
+    string RouteUrl,
+    string FarmerContact,
+    string FarmerPhone,
+    double PickupLat,
+    double PickupLon,
+    string BuyerName,
+    string BuyerPhone,
+    AddressDetails? AddressDetails,
+    double? DropOffLat,
+    double? DropOffLon,
+    string? Comment,
+    IReadOnlyList<DeliveryLine> Lines);
 
 /// <summary>
 /// US-09 (B-FR-11): кур'єр бачить свої доставки з маршрутом і закриває їх лише з кодом вручення. Якщо вручити не вдалося,
@@ -120,6 +138,8 @@ public sealed class DeliveryService(InMemoryStore store, OrderWorkflow workflow,
     private DeliveryTask ToTask(Order order)
     {
         var farmer = store.Farmers[order.FarmerId];
+        var farmerUser = store.Users[farmer.UserId];
+        var buyer = store.Users[order.BuyerId];
         var origin = string.Create(CultureInfo.InvariantCulture, $"{farmer.Location.Lat},{farmer.Location.Lon}");
         return new DeliveryTask(
             order.Id,
@@ -129,6 +149,17 @@ public sealed class DeliveryService(InMemoryStore store, OrderWorkflow workflow,
             order.Address,
             order.Lines.Sum(line => line.Quantity),
             order.PaymentStatus == PaymentStatus.PayOnDelivery ? order.Total : 0m,
-            $"https://www.google.com/maps/dir/?api=1&origin={origin}&destination={Uri.EscapeDataString(order.Address)}");
+            $"https://www.google.com/maps/dir/?api=1&origin={origin}&destination={Uri.EscapeDataString(order.Address)}",
+            farmerUser.Name,
+            farmerUser.Phone,
+            farmer.Location.Lat,
+            farmer.Location.Lon,
+            buyer.Name,
+            buyer.Phone,
+            order.Details,
+            order.DropOff?.Lat,
+            order.DropOff?.Lon,
+            order.Comment,
+            [.. order.Lines.Select(line => new DeliveryLine(line.Name, line.Unit, line.Quantity))]);
     }
 }

@@ -40,6 +40,10 @@ export type StatusChange = Omit<Wire<Schemas['StatusChangeDto']>, 'title'>;
 export type Order = Omit<Wire<Schemas['OrderDto']>, 'statusTitle' | 'paymentTitle' | 'history'> & { history: StatusChange[] };
 
 export type FarmerProfile = Wire<Schemas['FarmerDto']>;
+export type FarmDocument = Wire<Schemas['FarmDocumentDto']>;
+export type DayOfWeek = Schemas['DayOfWeek'];
+export type AddressDetails = Wire<Schemas['AddressDetails']>;
+export type DeliveryLine = Wire<Schemas['DeliveryLine']>;
 export type Product = Wire<Schemas['ProductDto']>;
 export type Courier = Wire<Schemas['CourierDto']>;
 export type DeliveryTask = Wire<Schemas['DeliveryTask']>;
@@ -74,6 +78,11 @@ export interface CheckoutRequest {
   paymentToken: string | null;
   promoCode: string | null;
   comment: string | null;
+  /** Під'їзд, поверх, домофон - для кур'єра. */
+  details?: AddressDetails | null;
+  /** Точка доставки на мапі (з підказки адреси): обидві координати або жодної. */
+  lat?: number | null;
+  lon?: number | null;
 }
 
 export interface FarmRegistration {
@@ -96,9 +105,19 @@ export interface ProductDraft {
   seasonMonths: number[];
   /** Опис обома мовами; обидві порожні - опису немає. */
   description?: LocalizedText | null;
+  /** Склад, термін придатності й умови зберігання - як і опис, обома мовами або жодною. */
+  composition?: LocalizedText | null;
+  shelfLife?: LocalizedText | null;
+  storage?: LocalizedText | null;
 }
 
-export type ProductChanges = Partial<Pick<ProductDraft, 'name' | 'price' | 'stock' | 'seasonMonths' | 'description'>>;
+export type ProductChanges = Partial<Pick<ProductDraft, 'name' | 'price' | 'stock' | 'seasonMonths' | 'description' | 'composition' | 'shelfLife' | 'storage'>>;
+
+/** Профіль ферми: історія (обидві мови порожні - прибрати) і дні доставки (порожньо - щодня). */
+export interface FarmProfileChanges {
+  story?: LocalizedText | null;
+  deliveryDays?: DayOfWeek[] | null;
+}
 
 export interface ApiErrorBody {
   error: string;

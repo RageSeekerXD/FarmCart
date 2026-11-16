@@ -1,16 +1,19 @@
 import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingBasketOutlinedIcon from '@mui/icons-material/ShoppingBasketOutlined';
 import StorefrontIcon from '@mui/icons-material/Storefront';
-import { Alert, Box, Button, CircularProgress, Divider, IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, Chip, CircularProgress, Divider, IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
 import type { CartLine } from '../../api/types';
 import { errorMessage, formatMoney, useLang } from '../../i18n';
+import { deliveryDaysText } from '../../shared/dates';
 import { enter } from '../../shared/motion';
+import { useFarms } from '../map/MapPage';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
 import { cartCount, useAddToCart, useCart, useChangeQuantity, useRemoveFromCart } from './useCart';
@@ -59,6 +62,12 @@ export function CartPage() {
   const busy = remove.isPending || change.isPending;
   const lines = useStableOrder(cart.data?.lines ?? []);
   const groups = byFarm(lines);
+  // Дні доставки ферм: покупець бачить, коли кожна з них возить замовлення.
+  const farms = useFarms(null);
+  const deliveryDays = (farmerId: number) => {
+    const days = farms.data?.find((farm) => farm.id === farmerId)?.deliveryDays;
+    return days === undefined ? null : days.length === 0 ? t('product.everyDay') : deliveryDaysText(days, lang);
+  };
 
   const removeLine = (line: CartLine) => {
     remove.mutate(line.productId, {
@@ -120,20 +129,40 @@ export function CartPage() {
       {cart.data && cart.data.lines.length > 0 && (
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) 320px' }, alignItems: 'start' }}>
           <Paper elevation={1} sx={{ p: { xs: 1.5, sm: 2.5 } }}>
-            {groups.length > 1 && (
-              <Alert severity="info" icon={<StorefrontIcon fontSize="inherit" />} sx={{ mb: 1.5 }}>
+            {/* Скільки доставок вийде з кошика: кожна ферма збирає й передає кур'єру своє замовлення окремо. */}
+            {groups.length > 1 ? (
+              <Alert severity="info" icon={<LocalShippingOutlinedIcon fontSize="inherit" />} sx={{ mb: 1.5 }}>
+                <AlertTitle sx={{ fontWeight: 700 }}>{t('cart.deliveriesTitle', { count: groups.length })}</AlertTitle>
                 {t('cart.manyFarms', { count: groups.length })}
               </Alert>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <LocalShippingOutlinedIcon fontSize="small" />
+                {t('cart.oneDelivery')}
+              </Typography>
             )}
             {groups.map((group) => (
               <Box component="section" key={group.farmerId} aria-label={pick(group.farmerName)} sx={{ '& + &': { mt: 2.5 } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, color: 'text.secondary' }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 0.5, color: 'text.secondary' }}>
                   <StorefrontIcon fontSize="small" />
-                  <Typography variant="subtitle2" sx={{ mr: 'auto' }}>
+                  <Typography variant="subtitle2" sx={{ mr: 'auto', color: 'text.primary' }}>
                     {pick(group.farmerName)}
                   </Typography>
-                  {groups.length > 1 && <Typography variant="body2">{formatMoney(group.subtotal, lang)}</Typography>}
+                  {groups.length > 1 && (
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      icon={<LocalShippingOutlinedIcon />}
+                      label={t('cart.deliveryOf', { index: groups.indexOf(group) + 1, count: groups.length })}
+                    />
+                  )}
+                  {groups.length > 1 && <Typography variant="body2" sx={{ fontWeight: 600 }}>{formatMoney(group.subtotal, lang)}</Typography>}
                 </Box>
+                {deliveryDays(group.farmerId) && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                    {t('cart.farmDeliveryDays', { days: deliveryDays(group.farmerId) })}
+                  </Typography>
+                )}
                 <Stack component="ul" divider={<Divider component="li" aria-hidden />} sx={{ listStyle: 'none', p: 0, m: 0 }}>
                   {group.lines.map((line) => {
                     const index = lines.indexOf(line);

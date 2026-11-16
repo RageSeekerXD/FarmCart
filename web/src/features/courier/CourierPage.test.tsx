@@ -1,7 +1,19 @@
 import { screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CYRILLIC, renderApp } from '../../test/render';
 import { backend, delivery, user as userWith } from '../../test/server';
+
+// Мапу маршруту (Leaflet) автотести не малюють: замість неї - список зупинок у тому самому порядку.
+vi.mock('./RouteMap', () => ({
+  default: ({ stops }: { stops: { kind: string; orderId: number }[] }) => <div data-testid="route-map">{stops.map((stop) => `${stop.kind}:${stop.orderId}`).join(' ')}</div>,
+}));
+
+/** Цифри коду вручення з усіх чотирьох клітинок. */
+const codeValue = () =>
+  within(screen.getByRole('group', { name: 'Клітинки коду вручення' }))
+    .getAllByRole('textbox')
+    .map((input) => (input as HTMLInputElement).value)
+    .join('');
 
 async function asCourier(lang: 'uk' | 'en' = 'uk') {
   backend.user = userWith('Buyer', 'Courier');
@@ -10,7 +22,7 @@ async function asCourier(lang: 'uk' | 'en' = 'uk') {
 }
 
 describe('UI-10 Мої доставки', () => {
-  it('показує доставку з фермою, адресою й посиланням на маршрут', async () => {
+  it('показує доставку з фермою, адресою, під’їздом, коментарем і дзвінками фермеру й покупцю', async () => {
     backend.deliveries = [delivery];
     await asCourier();
 
@@ -18,8 +30,52 @@ describe('UI-10 Мої доставки', () => {
 
     expect(within(card).getByText('Ферма «Зелений Гай»')).toBeInTheDocument();
     expect(within(card).getByText('Львів, вул. Городоцька, 15')).toBeInTheDocument();
+    expect(within(card).getByText('під’їзд 2, поверх 3, домофон 5К')).toBeInTheDocument();
+    expect(within(card).getByText(/Подзвоніть за 10 хвилин/)).toBeInTheDocument();
     expect(within(card).getByText('Замовлення оплачено')).toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: 'Маршрут' })).toHaveAttribute('href', delivery.routeUrl);
+    expect(within(card).getByRole('link', { name: 'Зателефонувати покупцю: Оксана Демченко' })).toHaveAttribute('href', 'tel:+380931112233');
+    expect(within(card).getByRole('link', { name: 'Зателефонувати фермеру: Ферма «Зелений Гай»' })).toHaveAttribute('href', 'tel:+380671110001');
+  });
+
+  it('«Маршрут» пропонує навігатор: Google Maps, Waze чи Apple Maps - від ферми до покупця', async () => {
+    backend.deliveries = [delivery];
+    const { user } = await asCourier();
+    const card = await screen.findByRole('listitem', { name: 'Доставка №1001' });
+
+    await user.click(within(card).getByRole('button', { name: 'Маршрут' }));
+
+    const menu = await screen.findByRole('menu', { name: 'Відкрити маршрут у' });
+    expect(within(menu).getByRole('menuitem', { name: 'Google Maps' })).toHaveAttribute('href', expect.stringContaining('origin=49.816%2C24.13&destination=49.8378%2C24.0468'));
+    expect(within(menu).getByRole('menuitem', { name: 'Waze' })).toHaveAttribute('href', expect.stringContaining('ll=49.8378%2C24.0468'));
+    expect(within(menu).getByRole('menuitem', { name: 'Apple Maps' })).toHaveAttribute('href', expect.stringContaining('saddr=49.816%2C24.13'));
+  });
+
+  it('склад замовлення можна звірити позиція за позицією', async () => {
+    backend.deliveries = [delivery];
+    const { user } = await asCourier();
+    const card = await screen.findByRole('listitem', { name: 'Доставка №1001' });
+
+    await user.click(within(card).getByRole('button', { name: /Склад замовлення: 10 од\. · звірено 0 з 1/ }));
+    await user.click(within(card).getByRole('checkbox', { name: 'Морква — 10 × кг' }));
+
+    expect(within(card).getByRole('button', { name: /звірено 1 з 1/ })).toBeInTheDocument();
+  });
+
+  it('кілька доставок - одна мапа маршруту з порядком «забрати → віддати»', async () => {
+    const second = { ...delivery, orderId: 1002, pickupLat: 49.79, pickupLon: 24.06, dropOffLat: 49.8, dropOffLon: 24.05, pickupFrom: { uk: 'Пекарня «Житній колос»', en: 'Zhytnii Kolos Bakery' } };
+    backend.deliveries = [delivery, second];
+    await asCourier();
+
+    const route = await screen.findByRole('region', { name: 'Маршрут доставок' });
+    const stops = within(within(route).getByRole('list', { name: 'Порядок зупинок' })).getAllByRole('listitem');
+
+    expect(stops.map((stop) => stop.textContent)).toEqual([
+      'Забрати №1001 - Ферма «Зелений Гай»',
+      'Забрати №1002 - Пекарня «Житній колос»',
+      'Віддати №1002 - Львів, вул. Городоцька, 15',
+      'Віддати №1001 - Львів, вул. Городоцька, 15',
+    ]);
+    expect(within(route).getByRole('link', { name: /Увесь маршрут у Google Maps/ })).toHaveAttribute('href', expect.stringContaining('waypoints='));
   });
 
   it('готівку до отримання видно окремо', async () => {
@@ -36,15 +92,19 @@ describe('UI-10 Мої доставки', () => {
     const confirm = screen.getByRole('button', { name: 'Вручено' });
 
     expect(confirm).toBeDisabled();
+    expect(code).toHaveAttribute('inputmode', 'numeric');
+    // Чотири клітинки: після цифри курсор сам переходить далі, літери не вводяться.
     await user.type(code, '00a00');
-    expect(code).toHaveValue('0000');
+    expect(codeValue()).toBe('0000');
     await user.click(confirm);
 
     expect(await screen.findByText('Невірний код вручення. Уточніть код у покупця.')).toBeInTheDocument();
     expect(screen.getByRole('listitem', { name: 'Доставка №1001' })).toBeInTheDocument();
 
-    await user.clear(code);
-    await user.type(code, '4821');
+    // Вставлений код розкладається по клітинках.
+    await user.click(code);
+    await user.paste('4821');
+    expect(codeValue()).toBe('4821');
     await user.click(confirm);
 
     expect(await screen.findByText('Замовлення №1001 вручено')).toBeInTheDocument();
@@ -53,7 +113,8 @@ describe('UI-10 Мої доставки', () => {
   });
 
   it('англійською ферма й підписи англійські; адреса покупця лишається як введено', async () => {
-    backend.deliveries = [{ ...delivery, address: '15 Horodotska St, Lviv' }];
+    // Ім'я, адреса й коментар - те, що ввели люди; тут вони латиницею, щоб перевірити саме підписи інтерфейсу.
+    backend.deliveries = [{ ...delivery, address: '15 Horodotska St, Lviv', buyerName: 'Oksana D.', farmerContact: 'Olena Koval', comment: 'Call ten minutes ahead', addressDetails: { entrance: '2', floor: '3', intercom: '5K' } }];
     await asCourier('en');
 
     const card = await screen.findByRole('listitem', { name: 'Delivery No. 1001' });

@@ -86,6 +86,17 @@ public sealed class ReviewService(InMemoryStore store, AuditLog audit, IClock cl
         }
     }
 
+    /// <summary>Відгуки покупців, у чиєму замовленні був цей товар: справжні враження саме про нього, а не лише про ферму.</summary>
+    public IReadOnlyList<Review> ForProduct(int productId)
+    {
+        lock (store.Sync)
+        {
+            return [.. store.Reviews.Values
+                .Where(r => !r.Hidden && store.Orders.GetValueOrDefault(r.OrderId)?.Lines.Any(line => line.ProductId == productId) == true)
+                .OrderByDescending(r => r.Id)];
+        }
+    }
+
     public Review Hide(User admin, int reviewId, string reason)
     {
         admin.Require(Role.Admin);
