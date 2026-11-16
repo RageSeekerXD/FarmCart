@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/render';
 import { backend } from '../../test/server';
 import type { LocationPickerProps } from './LocationPicker';
@@ -12,6 +13,15 @@ vi.mock('./LocationPicker', () => ({
     </button>
   ),
 }));
+
+/**
+ * Заповнити поле форми товару: клік і вставка тексту. Форма велика (назви, опис, склад і зберігання двома мовами),
+ * тож набір кожної літери окремо на повільній машині CI виходив за межу часу тесту; перевіряємо поведінку форми, а не набір.
+ */
+async function fill(user: ReturnType<typeof userEvent.setup>, field: HTMLElement, text: string) {
+  await user.click(field);
+  await user.paste(text);
+}
 
 async function asFarmer(route: string, { verified = true, lang = 'uk' as 'uk' | 'en' } = {}) {
   backend.asFarmer(verified);
@@ -83,14 +93,14 @@ describe('UI-08 Товари фермера', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Додати товар' }));
     const dialog = await screen.findByRole('dialog', { name: 'Новий товар' });
-    await user.type(within(dialog).getByLabelText(/Назва товару українською/), 'Мед липовий');
-    await user.type(within(dialog).getByLabelText(/Назва товару англійською/), 'Linden honey');
+    await fill(user, within(dialog).getByLabelText(/Назва товару українською/), 'Мед липовий');
+    await fill(user, within(dialog).getByLabelText(/Назва товару англійською/), 'Linden honey');
     await user.click(within(dialog).getByRole('combobox', { name: /Категорія/ }));
     await user.click(await screen.findByRole('option', { name: 'Мед' }));
     await user.click(within(dialog).getByRole('combobox', { name: /Одиниця продажу/ }));
     await user.click(await screen.findByRole('option', { name: 'л' }));
-    await user.type(within(dialog).getByLabelText(/Ціна за одиницю/), '290,5');
-    await user.type(within(dialog).getByLabelText(/Залишок/), '20');
+    await fill(user, within(dialog).getByLabelText(/Ціна за одиницю/), '290,5');
+    await fill(user, within(dialog).getByLabelText(/Залишок/), '20');
     await user.click(within(dialog).getByRole('button', { name: /лип/ }));
     await user.click(within(dialog).getByRole('button', { name: /черв/ }));
     await user.click(within(dialog).getByRole('button', { name: 'Зберегти' }));
@@ -123,7 +133,7 @@ describe('UI-08 Товари фермера', () => {
     expect(within(dialog).getByRole('combobox', { name: /Категорія/ })).toHaveAttribute('aria-disabled', 'true');
     expect(within(dialog).getByRole('button', { name: /черв/ })).toHaveAttribute('aria-pressed', 'true');
     await user.clear(within(dialog).getByLabelText(/Залишок/));
-    await user.type(within(dialog).getByLabelText(/Залишок/), '40');
+    await fill(user, within(dialog).getByLabelText(/Залишок/), '40');
     await user.click(within(dialog).getByRole('button', { name: /лип/ }));
     await user.click(within(dialog).getByRole('button', { name: 'Зберегти' }));
 
@@ -141,7 +151,7 @@ describe('UI-08 Товари фермера', () => {
     await user.click(await screen.findByRole('button', { name: 'Edit product: Carrots' }));
     const dialog = await screen.findByRole('dialog', { name: 'Edit product' });
     await user.clear(within(dialog).getByLabelText(/Price per unit/));
-    await user.type(within(dialog).getByLabelText(/Price per unit/), '99999');
+    await fill(user, within(dialog).getByLabelText(/Price per unit/), '99999');
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
 
     expect(await within(dialog).findByText('The price must be greater than zero.')).toBeInTheDocument();
@@ -174,7 +184,7 @@ describe('UI-09 Вхідні замовлення фермера', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Прийняти: Замовлення №1001' }));
     const dialog = await screen.findByRole('dialog');
-    await user.type(within(dialog).getByLabelText(/Бракує: Морква/), '11');
+    await fill(user, within(dialog).getByLabelText(/Бракує: Морква/), '11');
     await user.click(within(dialog).getByRole('button', { name: 'Прийняти' }));
 
     expect(within(dialog).getByText('Нестача — ціле число від 0 до замовленої кількості.')).toBeInTheDocument();
@@ -191,7 +201,7 @@ describe('UI-09 Вхідні замовлення фермера', () => {
     expect(within(dialog).getByText('Вкажіть причину.')).toBeInTheDocument();
     expect(backend.actions).toHaveLength(0);
 
-    await user.type(within(dialog).getByLabelText(/Причина відхилення/), 'Морква закінчилася');
+    await fill(user, within(dialog).getByLabelText(/Причина відхилення/), 'Морква закінчилася');
     await user.click(within(dialog).getByRole('button', { name: 'Відхилити' }));
 
     await waitFor(() => expect(within(screen.getByRole('listitem', { name: 'Замовлення №1001' })).getByText('Відхилено')).toBeInTheDocument());
@@ -266,19 +276,19 @@ describe('Опис товару', () => {
     const { user } = await asFarmer('/farmer/products');
     await user.click(await screen.findByRole('button', { name: 'Додати товар' }));
     const dialog = await screen.findByRole('dialog', { name: 'Новий товар' });
-    await user.type(within(dialog).getByLabelText(/Назва товару українською/), 'Мед липовий');
-    await user.type(within(dialog).getByLabelText(/Назва товару англійською/), 'Linden honey');
+    await fill(user, within(dialog).getByLabelText(/Назва товару українською/), 'Мед липовий');
+    await fill(user, within(dialog).getByLabelText(/Назва товару англійською/), 'Linden honey');
     await user.click(within(dialog).getByRole('combobox', { name: /Категорія/ }));
     await user.click(await screen.findByRole('option', { name: 'Мед' }));
     await user.click(within(dialog).getByRole('combobox', { name: /Одиниця продажу/ }));
     await user.click(await screen.findByRole('option', { name: 'л' }));
-    await user.type(within(dialog).getByLabelText(/Ціна за одиницю/), '290');
-    await user.type(within(dialog).getByLabelText(/Залишок/), '20');
-    await user.type(within(dialog).getByLabelText('Опис українською'), 'Світлий липовий мед');
+    await fill(user, within(dialog).getByLabelText(/Ціна за одиницю/), '290');
+    await fill(user, within(dialog).getByLabelText(/Залишок/), '20');
+    await fill(user, within(dialog).getByLabelText('Опис українською'), 'Світлий липовий мед');
     await user.click(within(dialog).getByRole('button', { name: 'Зберегти' }));
 
     expect(within(dialog).getByText('Опис потрібен обома мовами або жодною.')).toBeInTheDocument();
-    await user.type(within(dialog).getByLabelText('Опис англійською'), 'Light linden honey');
+    await fill(user, within(dialog).getByLabelText('Опис англійською'), 'Light linden honey');
     await user.click(within(dialog).getByRole('button', { name: 'Зберегти' }));
 
     expect(await screen.findByText('Збережено: Мед липовий')).toBeInTheDocument();
