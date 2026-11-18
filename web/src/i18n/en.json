@@ -98,6 +98,11 @@
     "more": "More",
     "addQuantity": "Add {{count}} · {{total}}",
     "sortPopular": "Most popular",
+    "smartLabel": "Describe what you're looking for",
+    "smartPlaceholder": "For example: cheap certified honey within 20 km",
+    "smartSubmit": "Find with AI",
+    "smartApplied": "AI chose these filters for your request. You can change them below.",
+    "smartNotUnderstood": "AI couldn't turn that into filters. Try naming a product, price or distance.",
     "all": "All",
     "favorites": "Favourites",
     "favoriteAdd": "Add to favourites: {{name}}",
@@ -120,7 +125,8 @@
     "anyDay": "Any day",
     "inStockOnly": "In stock only",
     "soldOut": "Out of stock",
-    "soldOutNamed": "Out of stock: {{name}}"
+    "soldOutNamed": "Out of stock: {{name}}",
+    "boughtTogether": "Often bought together"
   },
   "farmPage": {
     "notFound": "Farm not found",
@@ -178,6 +184,18 @@
     "edit": "Edit"
   },
   "errors": {
+    "ai_unavailable": "AI features are turned off right now.",
+    "ai_failed": "AI isn't responding right now. Please try again later.",
+    "ai_limit": "Too many AI requests this hour. Please try again later.",
+    "ai_invalid": "This request cannot be processed. Check the details and try again.",
+    "smart_search_unavailable": "AI search is turned off. Use the regular search and filters.",
+    "smart_search_failed": "AI search didn't work this time. Try again or use the filters.",
+    "smart_search_limit": "Too many AI searches this hour. Try again later or use the filters.",
+    "smart_search_invalid": "Describe what you're looking for in up to 200 characters.",
+    "translation_unavailable": "Automatic translation is turned off. Fill in the fields manually.",
+    "translation_failed": "The text could not be translated. Try again or fill in the fields manually.",
+    "translation_limit": "Too many translations this hour. Try again later or fill in the fields manually.",
+    "translation_invalid": "Some fields cannot be translated. Check the text and try again.",
     "network": "Cannot reach the server. Check your connection and try again.",
     "server": "The server ran into a problem. Please try again later.",
     "unknown": "The action could not be completed. Please try again.",
@@ -457,7 +475,10 @@
     "uploadDocumentsHint": "Upload your documents to speed up the check.",
     "inUkrainian": "in Ukrainian",
     "inEnglish": "in English",
-    "factsHint": "Optional. Buyers see this on the product page. Both languages or neither."
+    "factsHint": "Optional. Buyers see this on the product page. Both languages or neither.",
+    "translate": "Translate",
+    "translateHint": "Fill in a field in one language, and AI will translate it into the other.",
+    "translateReview": "Translated by AI. Check the text before saving, especially composition, shelf life and storage."
   },
   "farmOrders": {
     "title": "Incoming orders",
@@ -774,5 +795,50 @@
     "sum": "Value",
     "ordersCount": "orders: {{count}}",
     "topProducts": "Best-selling products"
+  },
+  "ai": {
+    "summaryTitle": "Review summary",
+    "summaryLikes": "Buyers like:",
+    "summaryComplaints": "Buyers complain about:",
+    "summaryNote": "Written by AI from buyer reviews.",
+    "basketOpen": "Basket from a recipe",
+    "basketTitle": "Build a basket from a recipe",
+    "basketLabel": "What are you cooking?",
+    "basketPlaceholder": "For example: borscht for six",
+    "basketSubmit": "Suggest products",
+    "basketProducts": "Suggested products",
+    "basketChoose": "Add to basket: {{name}}",
+    "basketEmpty": "AI couldn't find matching products in the catalogue. Try describing the dish differently.",
+    "basketMissing": "Not in the catalogue: {{items}}",
+    "basketReview": "AI suggested these products. Check the items and quantities before adding them.",
+    "photoFill": "Fill in from a photo",
+    "photoHint": "AI suggests the name, category and description. The photo is not saved.",
+    "photoFilled": "AI filled in the empty fields. Check them, and add composition and shelf life yourself.",
+    "photoNotUnderstood": "AI couldn't recognise a product in this photo. Try another photo or fill in the form yourself.",
+    "storyReview": "Translated by AI. Check the text before saving.",
+    "moderationCheck": "Check reviews with AI",
+    "moderationHint": "AI only points out suspicious reviews. You decide what to hide.",
+    "category": {
+      "abuse": "Abuse",
+      "spam": "Spam",
+      "personal_data": "Personal data",
+      "off_topic": "Off topic",
+      "other": "Needs checking"
+    },
+    "documentTitle": "AI pre-check",
+    "documentCheck": "Pre-check with AI",
+    "documentNotice": "This document will be sent to an external AI service only when you press the button.",
+    "documentKind": "Document",
+    "documentHolder": "Issued to",
+    "documentNumber": "Number",
+    "documentIssued": "Issued on",
+    "documentValid": "Valid until",
+    "documentUnreadable": "Could not read",
+    "documentNoConcerns": "AI found nothing to point out.",
+    "documentDecision": "This is only a hint. The verification decision is yours.",
+    "basketAdd": "Add to cart: {{count}}",
+    "basketAdded": "Products added to cart: {{count}}",
+    "moderationResult": "Reviews flagged by AI: {{count}}.",
+    "moderationRemaining": "Still waiting for a check: {{count}}. Run it again."
   }
 }

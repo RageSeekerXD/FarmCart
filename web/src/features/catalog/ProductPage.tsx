@@ -19,9 +19,11 @@ import { useCartActions } from '../cart/useCartActions';
 import { monthName } from '../farmer/ProductDialog';
 import { useFarms } from '../map/MapPage';
 import { FarmReviews, ReviewList, useProductReviews } from '../reviews/FarmReviews';
+import { ReviewSummaryCard } from '../reviews/ReviewSummaryCard';
 import { useReference } from './CatalogPage';
 import { useFavorites } from './favorites';
 import { CartControl, FavoriteButton, ProductMedia, StockLine } from './ProductCard';
+import { RelatedProducts } from './RelatedProducts';
 import { useBuyerLocation } from './useBuyerLocation';
 
 /** Рядок «Склад і зберігання»: назва зліва, значення справа (на телефоні - одне під одним). */
@@ -211,6 +213,7 @@ export function ProductPage() {
           <Typography id="product-reviews" component="h2" variant="h6" sx={{ mb: 1.5 }}>
             {t('product.reviews')}
           </Typography>
+          <ReviewSummaryCard path={`/products/${productId}/reviews/summary`} />
           <ReviewList reviews={reviews} limit={5} empty={t('product.noReviews')} />
           {/* Про товар ще ніхто не писав - покупець бачить хоча б відгуки про саму ферму. */}
           {reviews.data?.length === 0 && (
@@ -225,6 +228,8 @@ export function ProductPage() {
 
         <FarmAbout item={item} deliveryDays={deliveryDays} />
       </Box>
+
+      <RelatedProducts productIds={[item.productId]} />
     </Box>
   );
 }

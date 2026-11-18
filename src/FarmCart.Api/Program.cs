@@ -27,6 +27,11 @@ if (settings.FixedTime is not null && app.Environment.IsProduction())
     throw new InvalidOperationException("FarmCart:FixedTime заборонено в Production: зупинений годинник зламав би строки дії кодів і слоти доставки");
 }
 
+if (settings.FakeAi && app.Environment.IsProduction())
+{
+    throw new InvalidOperationException("FarmCart:FakeAi заборонено в Production: користувачі отримували б імітацію замість відповідей ШІ");
+}
+
 app.UseRequestLog();
 app.UseFarmCartErrors();
 app.UseCardDataGuard();

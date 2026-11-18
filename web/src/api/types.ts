@@ -113,6 +113,46 @@ export interface ProductDraft {
 
 export type ProductChanges = Partial<Pick<ProductDraft, 'name' | 'price' | 'stock' | 'seasonMonths' | 'description' | 'composition' | 'shelfLife' | 'storage'>>;
 
+export type AiStatus = Wire<Schemas['AiStatusDto']>;
+export type ReviewSummaryReply = Wire<Schemas['ReviewSummaryDto']>;
+export type ProductSuggestion = Wire<Schemas['ProductSuggestionDto']>;
+export type PlannedLine = Wire<Schemas['PlannedLine']>;
+export type PlannedBasket = Wire<Schemas['PlannedBasket']>;
+export type ModerationAdvice = Wire<Schemas['ModerationAdvice']>;
+export type ReviewCheckResult = Wire<Schemas['ReviewCheckResult']>;
+export type DocumentCheck = Wire<Schemas['DocumentCheck']>;
+
+/** Поля, які можна перекласти автоматично: тексти товару й історія ферми. */
+export type TranslatableField = 'name' | 'description' | 'composition' | 'shelfLife' | 'storage' | 'story';
+
+/** У запиті - вихідний текст поля, у відповіді - його переклад мовою targetLang. */
+export interface ProductText {
+  field: TranslatableField;
+  targetLang: Lang;
+  text: string;
+}
+
+export interface ProductTranslation {
+  items: ProductText[];
+}
+
+export type ProductTranslationStatus = Wire<Schemas['ProductTranslationStatusDto']>;
+
+export type SmartSearchStatus = Wire<Schemas['SmartSearchStatusDto']>;
+
+/** Фільтри каталогу за запитом покупця; understood = false - у запиті не знайшлося жодного фільтра. */
+export interface SmartSearchResult {
+  understood: boolean;
+  text: string | null;
+  category: string | null;
+  certified: boolean;
+  minPrice: number | null;
+  maxPrice: number | null;
+  maxKm: number | null;
+  sort: CatalogSort | null;
+  deliveryDay: DayOfWeek | null;
+}
+
 /** Профіль ферми: історія (обидві мови порожні - прибрати) і дні доставки (порожньо - щодня). */
 export interface FarmProfileChanges {
   story?: LocalizedText | null;

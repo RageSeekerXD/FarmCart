@@ -157,6 +157,57 @@ public sealed record ProductDto(
 
 public sealed record CourierDto(int Id, string Name);
 
+/// <summary>Чи можна запропонувати фермеру автоматичний переклад полів товару.</summary>
+public sealed record ProductTranslationStatusDto(bool Available);
+
+public sealed record ProductTranslationRequest(IReadOnlyList<ProductText>? Items);
+
+public sealed record ProductTranslationDto(IReadOnlyList<ProductText> Items);
+
+/// <summary>Чи ввімкнено на сервері підказки ШІ.</summary>
+public sealed record AiStatusDto(bool Available);
+
+/// <summary>Підсумок відгуків; <paramref name="Summary"/> = null - відгуків замало або ШІ недоступний.</summary>
+public sealed record ReviewSummaryDto(ReviewSummary? Summary);
+
+/// <summary>Чернетка товару за фото; <paramref name="Understood"/> = false - на фото не вдалося впізнати товар.</summary>
+public sealed record ProductSuggestionDto(bool Understood, LocalizedText? Name, string? Category, LocalizedText? Description)
+{
+    public static ProductSuggestionDto From(ProductSuggestion? suggestion) =>
+        new(suggestion is not null, suggestion?.Name, suggestion?.Category, suggestion?.Description);
+}
+
+public sealed record BasketPlanRequest(string? Request, string? Lang);
+
+/// <summary>Чи можна запропонувати покупцю розумний пошук.</summary>
+public sealed record SmartSearchStatusDto(bool Available);
+
+public sealed record SmartSearchRequest(string? Query);
+
+/// <summary>Фільтри каталогу за запитом покупця; <paramref name="Understood"/> = false - у запиті не знайшлося жодного фільтра.</summary>
+public sealed record SmartSearchDto(
+    bool Understood,
+    string? Text,
+    string? Category,
+    bool Certified,
+    decimal? MinPrice,
+    decimal? MaxPrice,
+    int? MaxKm,
+    CatalogSort? Sort,
+    DayOfWeek? DeliveryDay)
+{
+    public static SmartSearchDto From(SearchIntent intent) => new(
+        !intent.IsEmpty,
+        intent.Text,
+        intent.Category,
+        intent.Certified,
+        intent.MinPrice,
+        intent.MaxPrice,
+        intent.MaxKm,
+        intent.Sort,
+        intent.DeliveryDay);
+}
+
 public sealed record ReviewDto(int Id, int OrderId, int Rating, string? Comment, string Author, DateTimeOffset At)
 {
     public static ReviewDto From(Review review) => new(review.Id, review.OrderId, review.Rating, review.Comment, review.Author, review.At);

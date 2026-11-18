@@ -17,6 +17,9 @@ public sealed class FarmCartOptions
     /// </summary>
     public DateTimeOffset? FixedTime { get; set; }
 
+    /// <summary>Імітувати функції ШІ (переклад товарів, розумний пошук) без зовнішнього сервісу (режим розробки); у Production заборонено.</summary>
+    public bool FakeAi { get; set; }
+
     /// <summary>Тека зібраного веб-клієнта (vite build); за замовчуванням - <c>web/dist</c> поруч із рішенням.</summary>
     public string? WebRoot { get; set; }
 }

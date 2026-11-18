@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
-import type { AdminReview, AppNotification, AuditEntry, Cart, PromoCode, Review, CatalogItem, CheckoutRequest, Courier, DeliveryTask, FarmDocument, FarmOnMap, FarmProfileChanges, FarmRegistration, FarmerProfile, Order, OrderStatus, Product, ProductDraft, ReferenceData, Role, Shortage, Slot, User } from '../api/types';
+import type { AdminReview, AppNotification, AuditEntry, Cart, DocumentCheck, PlannedBasket, ProductSuggestion, PromoCode, Review, ReviewCheckResult, ReviewSummaryReply, CatalogItem, CheckoutRequest, Courier, DeliveryTask, FarmDocument, FarmOnMap, FarmProfileChanges, FarmRegistration, FarmerProfile, Order, OrderStatus, Product, ProductDraft, ProductText, ReferenceData, Role, SmartSearchResult, Shortage, Slot, User } from '../api/types';
 
 // MSW-моки у формі контракту API 2.0 (двомовні поля { uk, en }).
 
@@ -201,6 +201,31 @@ export const backend = {
   actions: [] as { orderId: number; kind: string; body: Record<string, unknown> }[],
   registrations: [] as FarmRegistration[],
   productRequests: [] as { method: string; id: number | null; body: Partial<ProductDraft> }[],
+  /** Чи ввімкнено на сервері автоматичний переклад полів товару. */
+  translationAvailable: false,
+  translationRequests: [] as ProductText[][],
+  /** Код помилки, з якою сервер відхиляє переклад; null - переклад успішний. */
+  translationError: null as string | null,
+  /** Чи ввімкнено на сервері підказки ШІ та що вони відповідають. */
+  aiAvailable: false,
+  aiError: null as string | null,
+  reviewSummaries: {} as Record<string, ReviewSummaryReply['summary']>,
+  related: [] as CatalogItem[],
+  relatedRequests: [] as string[],
+  basketPlan: { lines: [], missing: [] } as PlannedBasket,
+  basketRequests: [] as { request: string; lang: string }[],
+  suggestion: { understood: true, name: { uk: 'Мед липовий', en: 'Linden honey' }, category: 'honey', description: { uk: 'Світлий мед', en: 'Light honey' } } as ProductSuggestion,
+  suggestionUploads: 0,
+  reviewCheck: { flagged: [], remaining: 0 } as ReviewCheckResult,
+  reviewChecks: 0,
+  documentCheck: { kind: { uk: 'Сертифікат', en: 'Certificate' }, holderName: 'Ферма «Сокільники»', number: 'UA-77', issuedOn: null, validUntil: '2027-01-01', concerns: [{ uk: 'Назва не збігається', en: 'The name differs' }] } as DocumentCheck,
+  documentChecks: [] as number[],
+  /** Чи ввімкнено на сервері розумний пошук каталогу. */
+  smartSearchAvailable: false,
+  smartSearchRequests: [] as string[],
+  smartSearchResult: { understood: true, text: null, category: 'dairy', certified: false, minPrice: null, maxPrice: null, maxKm: null, sort: null, deliveryDay: null } as SmartSearchResult,
+  /** Код помилки, з якою сервер відхиляє розумний пошук; null - пошук успішний. */
+  smartSearchError: null as string | null,
   /** Користувач - фермер із двома товарами (якщо верифікований). */
   asFarmer(verified = true) {
     this.user = user('Buyer', 'Farmer');
@@ -229,6 +254,25 @@ export const backend = {
     this.actions = [];
     this.registrations = [];
     this.productRequests = [];
+    this.translationAvailable = false;
+    this.translationRequests = [];
+    this.translationError = null;
+    this.aiAvailable = false;
+    this.aiError = null;
+    this.reviewSummaries = {};
+    this.related = [];
+    this.relatedRequests = [];
+    this.basketPlan = { lines: [], missing: [] };
+    this.basketRequests = [];
+    this.suggestion = { understood: true, name: { uk: 'Мед липовий', en: 'Linden honey' }, category: 'honey', description: { uk: 'Світлий мед', en: 'Light honey' } };
+    this.suggestionUploads = 0;
+    this.reviewCheck = { flagged: [], remaining: 0 };
+    this.reviewChecks = 0;
+    this.documentChecks = [];
+    this.smartSearchAvailable = false;
+    this.smartSearchRequests = [];
+    this.smartSearchResult = { understood: true, text: null, category: 'dairy', certified: false, minPrice: null, maxPrice: null, maxKm: null, sort: null, deliveryDay: null };
+    this.smartSearchError = null;
     this.orders = [];
 
     this.checkouts = [];
@@ -457,6 +501,16 @@ export const handlers = [
 
   http.get('*/api/farmer/products', () => (backend.farm ? HttpResponse.json(backend.farmProducts) : error(403, 'not_a_farmer'))),
 
+  http.get('*/api/farmer/products/translation', () => HttpResponse.json({ available: backend.translationAvailable })),
+
+  http.post('*/api/farmer/products/translation', async ({ request }) => {
+    const { items } = (await request.json()) as { items: ProductText[] };
+    backend.translationRequests.push(items);
+    return backend.translationError
+      ? error(503, backend.translationError)
+      : HttpResponse.json({ items: items.map((item) => ({ ...item, text: `${item.targetLang}: ${item.text}` })) });
+  }),
+
   http.post('*/api/farmer/products', async ({ request }) => {
     const body = (await request.json()) as ProductDraft;
     backend.productRequests.push({ method: 'POST', id: null, body });
@@ -683,6 +737,45 @@ export const handlers = [
           item.price <= max,
       ),
     );
+  }),
+
+  http.get('*/api/ai/status', () => HttpResponse.json({ available: backend.aiAvailable })),
+
+  http.get('*/api/farmers/:id/reviews/summary', ({ params }) => HttpResponse.json({ summary: backend.reviewSummaries[`farm:${String(params.id)}`] ?? null })),
+
+  http.get('*/api/products/:id/reviews/summary', ({ params }) => HttpResponse.json({ summary: backend.reviewSummaries[`product:${String(params.id)}`] ?? null })),
+
+  http.get('*/api/catalog/related', ({ request }) => {
+    backend.relatedRequests.push(new URL(request.url).searchParams.get('ids') ?? '');
+    return HttpResponse.json(backend.related);
+  }),
+
+  http.post('*/api/catalog/basket-plan', async ({ request }) => {
+    backend.basketRequests.push((await request.json()) as { request: string; lang: string });
+    return backend.aiError ? error(503, backend.aiError) : HttpResponse.json(backend.basketPlan);
+  }),
+
+  http.post('*/api/farmer/products/suggestion', () => {
+    backend.suggestionUploads += 1;
+    return backend.aiError ? error(503, backend.aiError) : HttpResponse.json(backend.suggestion);
+  }),
+
+  http.post('*/api/admin/reviews/check', () => {
+    backend.reviewChecks += 1;
+    return backend.aiError ? error(503, backend.aiError) : HttpResponse.json(backend.reviewCheck);
+  }),
+
+  http.post('*/api/admin/farmers/:id/documents/:documentId/check', ({ params }) => {
+    backend.documentChecks.push(Number(params.documentId));
+    return backend.aiError ? error(503, backend.aiError) : HttpResponse.json(backend.documentCheck);
+  }),
+
+  http.get('*/api/catalog/smart-search', () => HttpResponse.json({ available: backend.smartSearchAvailable })),
+
+  http.post('*/api/catalog/smart-search', async ({ request }) => {
+    const { query } = (await request.json()) as { query: string };
+    backend.smartSearchRequests.push(query);
+    return backend.smartSearchError ? error(503, backend.smartSearchError) : HttpResponse.json(backend.smartSearchResult);
   }),
 
   http.get('*/api/catalog/:id', ({ params }) => {

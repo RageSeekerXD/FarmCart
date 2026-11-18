@@ -7,6 +7,7 @@ import type { Review } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
 import { formatDateTime } from '../../shared/dates';
 import { enter } from '../../shared/motion';
+import { ReviewSummaryCard } from './ReviewSummaryCard';
 
 export function useFarmReviews(farmerId: number, enabled = true) {
   return useQuery({
@@ -94,7 +95,12 @@ export function ReviewList({ reviews, limit = 3, empty }: ListProps) {
 
 /** Відгуки покупців про ферму (п. 1 покращень). */
 export function FarmReviews({ farmerId, limit = 3 }: { farmerId: number; limit?: number }) {
-  return <ReviewList reviews={useFarmReviews(farmerId)} limit={limit} />;
+  return (
+    <>
+      <ReviewSummaryCard path={`/farmers/${farmerId}/reviews/summary`} />
+      <ReviewList reviews={useFarmReviews(farmerId)} limit={limit} />
+    </>
+  );
 }
 
 /** Відгуки ферми в діалозі - з мапи ферм. */

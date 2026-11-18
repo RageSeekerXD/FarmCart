@@ -10,6 +10,7 @@ public enum ErrorKind
     Conflict,
     PaymentDeclined,
     TooManyAttempts,
+    Unavailable,
 }
 
 /// <summary>Порушення бізнес-правила: машинний код і повідомлення для користувача.</summary>
@@ -36,4 +37,6 @@ public static class Fail
     public static DomainException PaymentDeclined(string code, string message) => new(ErrorKind.PaymentDeclined, code, message);
 
     public static DomainException TooManyAttempts(string code, string message) => new(ErrorKind.TooManyAttempts, code, message);
+
+    public static DomainException Unavailable(string code, string message) => new(ErrorKind.Unavailable, code, message);
 }

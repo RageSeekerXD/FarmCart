@@ -1,4 +1,6 @@
+using Anthropic;
 using FarmCart.Core;
+using Microsoft.Extensions.Options;
 
 namespace FarmCart.Api;
 
@@ -32,6 +34,33 @@ public static class ServiceRegistration
         services.AddSingleton<FulfillmentService>();
         services.AddSingleton<DeliveryService>();
         services.AddSingleton<ReviewService>();
+        services.AddSingleton<IProductTranslator>(sp => ChooseAi<IProductTranslator>(
+            sp, configuration, new EchoProductTranslator(), new UnavailableProductTranslator(), claude => new ClaudeProductTranslator(claude)));
+        services.AddSingleton<ProductTranslationService>();
+        services.AddSingleton<ICatalogSearchInterpreter>(sp => ChooseAi<ICatalogSearchInterpreter>(
+            sp, configuration, new KeywordCatalogSearchInterpreter(), new UnavailableCatalogSearchInterpreter(), claude => new ClaudeCatalogSearchInterpreter(claude)));
+        services.AddSingleton<SmartSearchService>();
+        services.AddSingleton<IFarmCartAi>(sp => ChooseAi<IFarmCartAi>(
+            sp, configuration, new FakeFarmCartAi(), new UnavailableFarmCartAi(), claude => new ClaudeFarmCartAi(claude)));
+        services.AddSingleton<AiAssistantService>();
         return services;
+    }
+
+    /// <summary>Без ключа API функції ШІ вимкнено, а решта застосунку працює як звичайно.</summary>
+    private static T ChooseAi<T>(IServiceProvider services, IConfiguration configuration, T fake, T off, Func<ClaudeJsonClient, T> real)
+    {
+        if (services.GetRequiredService<IOptions<FarmCartOptions>>().Value.FakeAi)
+        {
+            return fake;
+        }
+
+        var apiKey = configuration[ClaudeJsonClient.ApiKeySetting];
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            return off;
+        }
+
+        var client = new AnthropicClient { ApiKey = apiKey, Timeout = TimeSpan.FromSeconds(30), MaxRetries = 1 };
+        return real(new ClaudeJsonClient(client, services.GetRequiredService<ILogger<ClaudeJsonClient>>()));
     }
 }

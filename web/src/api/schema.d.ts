@@ -255,6 +255,193 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AiStatusDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/related": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    ids?: string;
+                    lat?: number | string;
+                    lon?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CatalogItem"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/basket-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BasketPlanRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlannedBasket"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/farmers/{id}/reviews/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReviewSummaryDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/products/{id}/reviews/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReviewSummaryDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/catalog": {
         parameters: {
             query?: never;
@@ -298,6 +485,64 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/catalog/smart-search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SmartSearchStatusDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SmartSearchRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SmartSearchDto"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -1224,6 +1469,99 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/farmer/products/suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProductSuggestionDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/farmer/products/translation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProductTranslationStatusDto"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["ProductTranslationRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProductTranslationDto"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/farmer/products/{id}": {
         parameters: {
             query?: never;
@@ -1761,6 +2099,79 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/admin/farmers/{id}/documents/{documentId}/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                    documentId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DocumentCheck"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/reviews/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReviewCheckResult"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/admin/farmers/{id}/verify": {
         parameters: {
             query?: never;
@@ -2243,6 +2654,9 @@ export interface components {
             hidden: boolean;
             hiddenReason: null | string;
         };
+        AiStatusDto: {
+            available: boolean;
+        };
         AnonymousTypeOfReviewDto: {
             review: components["schemas"]["ReviewDto"];
         };
@@ -2267,6 +2681,10 @@ export interface components {
             action: string;
             target: string;
             details: string;
+        };
+        BasketPlanRequest: {
+            request: null | string;
+            lang: null | string;
         };
         CartItemRequest: {
             /** Format: int32 */
@@ -2410,6 +2828,14 @@ export interface components {
             role: components["schemas"]["Role"];
             title: components["schemas"]["LocalizedText"];
         };
+        DocumentCheck: {
+            kind: null | components["schemas"]["LocalizedText"];
+            holderName: null | string;
+            number: null | string;
+            issuedOn: null | string;
+            validUntil: null | string;
+            concerns: components["schemas"]["LocalizedText"][];
+        };
         FarmDocumentDto: {
             /** Format: int32 */
             id: number | string;
@@ -2481,6 +2907,12 @@ export interface components {
             uk: string;
             en: string;
             isComplete?: boolean;
+        };
+        ModerationAdvice: {
+            /** Format: int32 */
+            reviewId: number | string;
+            category: string;
+            reason: components["schemas"]["LocalizedText"];
         };
         ModerationRequest: {
             reason: string;
@@ -2563,6 +2995,15 @@ export interface components {
         PhoneRequest: {
             phone: string;
         };
+        PlannedBasket: {
+            lines: components["schemas"]["PlannedLine"][];
+            missing: string[];
+        };
+        PlannedLine: {
+            item: components["schemas"]["CatalogItem"];
+            /** Format: int32 */
+            quantity: number | string;
+        };
         ProductChanges: {
             name?: null | components["schemas"]["LocalizedText"];
             /** Format: double */
@@ -2610,6 +3051,26 @@ export interface components {
             shelfLife: null | components["schemas"]["LocalizedText"];
             storage: null | components["schemas"]["LocalizedText"];
         };
+        ProductSuggestionDto: {
+            understood: boolean;
+            name: null | components["schemas"]["LocalizedText"];
+            category: null | string;
+            description: null | components["schemas"]["LocalizedText"];
+        };
+        ProductText: {
+            field: string;
+            targetLang: string;
+            text: string;
+        };
+        ProductTranslationDto: {
+            items: components["schemas"]["ProductText"][];
+        };
+        ProductTranslationRequest: {
+            items: null | components["schemas"]["ProductText"][];
+        };
+        ProductTranslationStatusDto: {
+            available: boolean;
+        };
         PromoCode: {
             code: string;
             /** Format: int32 */
@@ -2656,6 +3117,11 @@ export interface components {
             /** Format: int32 */
             slotId: number | string;
         };
+        ReviewCheckResult: {
+            flagged: components["schemas"]["ModerationAdvice"][];
+            /** Format: int32 */
+            remaining: number | string;
+        };
         ReviewDto: {
             /** Format: int32 */
             id: number | string;
@@ -2672,6 +3138,13 @@ export interface components {
             /** Format: int32 */
             rating: number | string;
             comment: null | string;
+        };
+        ReviewSummary: {
+            likes: null | components["schemas"]["LocalizedText"];
+            complaints: null | components["schemas"]["LocalizedText"];
+        };
+        ReviewSummaryDto: {
+            summary: null | components["schemas"]["ReviewSummary"];
         };
         /** @enum {unknown} */
         Role: "Buyer" | "Farmer" | "Courier" | "Admin";
@@ -2700,6 +3173,26 @@ export interface components {
             remaining: number | string;
             /** Format: int32 */
             capacity: number | string;
+        };
+        SmartSearchDto: {
+            understood: boolean;
+            text: null | string;
+            category: null | string;
+            certified: boolean;
+            /** Format: double */
+            minPrice: null | number | string;
+            /** Format: double */
+            maxPrice: null | number | string;
+            /** Format: int32 */
+            maxKm: null | number | string;
+            sort: null | components["schemas"]["CatalogSort"];
+            deliveryDay: null | components["schemas"]["DayOfWeek"];
+        };
+        SmartSearchRequest: {
+            query: null | string;
+        };
+        SmartSearchStatusDto: {
+            available: boolean;
         };
         StatusChangeDto: {
             status: components["schemas"]["OrderStatus"];

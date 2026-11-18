@@ -1,4 +1,4 @@
-import type { CatalogSort, DayOfWeek, Lang } from '../../api/types';
+import type { CatalogSort, DayOfWeek, Lang, SmartSearchResult } from '../../api/types';
 
 /** Фільтри каталогу (UI-02). Зберігаються в рядку адреси, тож пошуком можна поділитися посиланням. */
 export interface CatalogFilters {
@@ -113,4 +113,19 @@ export function activeFilterCount(filters: CatalogFilters): number {
 /** Фільтри скинуто, а обране сортування лишається. */
 export function withoutFilters(filters: CatalogFilters): CatalogFilters {
   return { ...DEFAULT_FILTERS, sort: filters.sort };
+}
+
+/** Новий розумний пошук замінює попередні фільтри; сортування змінюється, лише якщо покупець про нього просив. */
+export function filtersFromSmartSearch(result: SmartSearchResult, current: CatalogFilters): CatalogFilters {
+  return {
+    ...withoutFilters(current),
+    q: result.text ?? '',
+    category: result.category ?? '',
+    certified: result.certified,
+    minPrice: result.minPrice === null ? '' : String(result.minPrice),
+    maxPrice: result.maxPrice === null ? '' : String(result.maxPrice),
+    maxKm: result.maxKm,
+    sort: result.sort ?? current.sort,
+    day: result.deliveryDay,
+  };
 }

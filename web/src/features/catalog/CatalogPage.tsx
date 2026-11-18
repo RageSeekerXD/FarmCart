@@ -27,16 +27,18 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../../api/client';
-import type { CatalogItem, CatalogSort, DayOfWeek, ReferenceData } from '../../api/types';
+import type { CatalogItem, CatalogSort, DayOfWeek, ReferenceData, SmartSearchResult } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
 import { dayName } from '../../shared/dates';
 import { EASE_SPRING, popIn } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
+import { BasketPlanner } from './BasketPlanner';
 import { CategoryPills } from './CategoryPills';
 import { useFavorites } from './favorites';
-import { DISTANCES_KM, SORTS, WEEK, activeFilterCount, parseFilters, toApiQuery, toSearchParams, withoutFilters, type CatalogFilters } from './filters';
+import { DISTANCES_KM, SORTS, WEEK, activeFilterCount, filtersFromSmartSearch, parseFilters, toApiQuery, toSearchParams, withoutFilters, type CatalogFilters } from './filters';
 import { LocationControl } from './LocationLabel';
 import { ProductGrid, ProductGridSkeleton } from './ProductGrid';
+import { SmartSearch } from './SmartSearch';
 import { useBuyerLocation } from './useBuyerLocation';
 
 const SORT_LABEL: Record<CatalogSort, string> = {
@@ -89,15 +91,23 @@ export function CatalogPage() {
     setParams(toSearchParams({ ...filters, ...patch }), { replace: true });
   };
   const reset = () => setParams(toSearchParams(withoutFilters(filters)), { replace: true });
+  const applySmartSearch = (result: SmartSearchResult) => {
+    const next = toSearchParams(filtersFromSmartSearch(result, filters));
+    setParams(next, { replace: true });
+    return next.toString();
+  };
 
   return (
     <Box>
-      <Typography component="h1" variant="h4" sx={{ fontSize: { xs: '1.6rem', sm: '2.1rem' } }}>
-        {t('catalog.title')}
-      </Typography>
-      <Typography color="text.secondary" sx={{ mb: 1.5 }}>
-        {t('catalog.subtitle')}
-      </Typography>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1.5 }}>
+        <Box>
+          <Typography component="h1" variant="h4" sx={{ fontSize: { xs: '1.6rem', sm: '2.1rem' } }}>
+            {t('catalog.title')}
+          </Typography>
+          <Typography color="text.secondary">{t('catalog.subtitle')}</Typography>
+        </Box>
+        <BasketPlanner />
+      </Box>
 
       <CategoryPills
         categories={reference.data?.categories ?? []}
@@ -107,6 +117,7 @@ export function CatalogPage() {
       />
 
       <Paper component="section" elevation={1} aria-label={t('catalog.filters')} sx={{ p: 2, mb: 2 }}>
+        <SmartSearch current={params.toString()} onResult={applySmartSearch} />
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr', md: '3fr 1fr' }, alignItems: 'start' }}>
           <TextField
             label={t('catalog.search')}

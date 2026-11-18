@@ -61,6 +61,13 @@ internal static class FarmerEndpoints
             var product = farmers.AddProduct(caller.User, body);
             return Results.Created($"/api/farmer/products/{product.Id}", ProductDto.From(product));
         });
+        // Фото надсилається «як є» і лише допомагає заповнити форму: на сервері воно не зберігається.
+        api.MapPost("/farmer/products/suggestion", async (Caller caller, HttpRequest request, AiAssistantService ai, CancellationToken cancellation) =>
+            ProductSuggestionDto.From(await ai.SuggestProductAsync(caller.User, await ReadLimitedAsync(request.Body, FarmerService.PhotoMaxBytes), cancellation)));
+        api.MapGet("/farmer/products/translation", (Caller caller, ProductTranslationService translation) =>
+            new ProductTranslationStatusDto(translation.IsAvailable(caller.User)));
+        api.MapPost("/farmer/products/translation", async (Caller caller, ProductTranslationRequest body, ProductTranslationService translation, CancellationToken cancellation) =>
+            new ProductTranslationDto(await translation.TranslateAsync(caller.User, body.Items, cancellation)));
         api.MapPatch("/farmer/products/{id:int}", (int id, Caller caller, ProductChanges body, FarmerService farmers) =>
             ProductDto.From(farmers.UpdateProduct(caller.User, id, body)));
         api.MapPost("/farmer/products/{id:int}/stock", (int id, Caller caller, StockChange body, FarmerService farmers) =>

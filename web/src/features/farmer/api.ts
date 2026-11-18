@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
-import type { Courier, FarmDocument, FarmerProfile, FarmProfileChanges, Order, Product, ProductChanges, ProductDraft, ReferenceData, Shortage } from '../../api/types';
+import type { Courier, FarmDocument, FarmerProfile, FarmProfileChanges, Order, Product, ProductChanges, ProductDraft, ProductSuggestion, ProductText, ProductTranslation, ProductTranslationStatus, ReferenceData, Shortage } from '../../api/types';
 import { POLL_MS } from '../orders/orders';
 
 export function useReference() {
@@ -32,6 +32,31 @@ const PRODUCTS = ['farmer', 'products'] as const;
 
 export function useMyProducts() {
   return useQuery({ queryKey: PRODUCTS, queryFn: () => api<Product[]>('/farmer/products') });
+}
+
+/** Чи ввімкнено на сервері автоматичний переклад: якщо ні, форма товару не показує кнопку. */
+export function useTranslationStatus() {
+  return useQuery({
+    queryKey: ['farmer', 'translation'],
+    queryFn: () => api<ProductTranslationStatus>('/farmer/products/translation'),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+}
+
+/** Чернетка товару за фото: фото не зберігається, а лише допомагає заповнити форму. */
+export function useProductSuggestion() {
+  return useMutation({
+    mutationFn: (photo: File) => api<ProductSuggestion>('/farmer/products/suggestion', { method: 'POST', body: photo }),
+  });
+}
+
+/** Переклад заповнених полів товару іншою мовою; збереження товару лишається за фермером. */
+export function useTranslateProduct() {
+  return useMutation({
+    mutationFn: (items: ProductText[]) =>
+      api<ProductTranslation>('/farmer/products/translation', { method: 'POST', body: { items } }),
+  });
 }
 
 /** Зберігає товар: новий - POST, наявний - PATCH (назва, ціна, залишок, сезон). */

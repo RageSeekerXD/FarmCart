@@ -6,9 +6,33 @@ namespace FarmCart.Api;
 /// <summary>Застосунок покупця: каталог і слоти (US-04), кошик, оформлення й скасування (US-05, US-06), відгуки (US-10).</summary>
 internal static class BuyerEndpoints
 {
+    private const int RelatedIdsLimit = 30;
+
+    /// <summary>Ідентифікатори товарів через кому; некоректні значення пропускаються.</summary>
+    private static int[] ParseIds(string? ids) =>
+        [.. (ids ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(id => int.TryParse(id, out var value) ? value : 0)
+            .Where(id => id > 0)
+            .Distinct()
+            .Take(RelatedIdsLimit)];
+
     public static void MapBuyerEndpoints(this RouteGroupBuilder api)
     {
+        api.MapGet("/ai/status", (AiAssistantService ai) => new AiStatusDto(ai.IsAvailable));
+        api.MapGet("/catalog/related", (string? ids, double? lat, double? lon, CatalogService catalog) =>
+            catalog.BoughtTogether(ParseIds(ids), lat is { } latitude && lon is { } longitude ? new GeoPoint(latitude, longitude) : null));
+        // Кошик за рецептом платний, тому доступний лише після входу; додає товари до кошика сам покупець.
+        api.MapPost("/catalog/basket-plan", async (Caller caller, BasketPlanRequest body, AiAssistantService ai, CancellationToken cancellation) =>
+            await ai.PlanBasketAsync(caller.User, body.Request, body.Lang, cancellation));
+        api.MapGet("/farmers/{id:int}/reviews/summary", async (int id, AiAssistantService ai, CancellationToken cancellation) =>
+            new ReviewSummaryDto(await ai.FarmSummaryAsync(id, cancellation)));
+        api.MapGet("/products/{id:int}/reviews/summary", async (int id, AiAssistantService ai, CancellationToken cancellation) =>
+            new ReviewSummaryDto(await ai.ProductSummaryAsync(id, cancellation)));
         api.MapGet("/catalog", ([AsParameters] CatalogRequest request, CatalogService catalog) => catalog.Search(request.ToQuery()));
+        api.MapGet("/catalog/smart-search", (SmartSearchService search) => new SmartSearchStatusDto(search.IsAvailable));
+        // Кожен запит платний, тому розумний пошук доступний лише після входу, на відміну від самого каталогу.
+        api.MapPost("/catalog/smart-search", async (Caller caller, SmartSearchRequest body, SmartSearchService search, CancellationToken cancellation) =>
+            SmartSearchDto.From(await search.InterpretAsync(caller.User, body.Query, cancellation)));
         api.MapGet("/catalog/{id:int}", (int id, double? lat, double? lon, CatalogService catalog) =>
             catalog.Product(id, lat is { } latitude && lon is { } longitude ? new GeoPoint(latitude, longitude) : null));
         api.MapGet("/products/{id:int}/reviews", (int id, ReviewService reviews) => reviews.ForProduct(id).Select(ReviewDto.From));

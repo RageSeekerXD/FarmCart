@@ -5,7 +5,8 @@ import type { DayOfWeek, FarmerProfile } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
 import { dayName } from '../../shared/dates';
 import { WEEK } from '../catalog/filters';
-import { useUpdateFarmProfile } from './api';
+import { useTranslateProduct, useTranslationStatus, useUpdateFarmProfile } from './api';
+import { missingTranslations } from './ProductDialog';
 
 /**
  * Профіль ферми для покупців: історія господарства обома мовами (сторінка ферми й товару) і дні, коли ферма возить
@@ -15,6 +16,8 @@ export function FarmProfileDialog({ profile, onClose, onSaved }: { profile: Farm
   const { t } = useTranslation();
   const { lang } = useLang();
   const save = useUpdateFarmProfile();
+  const translationStatus = useTranslationStatus();
+  const translate = useTranslateProduct();
   const [storyUk, setStoryUk] = useState(profile.story?.uk ?? '');
   const [storyEn, setStoryEn] = useState(profile.story?.en ?? '');
   const [days, setDays] = useState<DayOfWeek[]>(profile.deliveryDays);
@@ -32,6 +35,15 @@ export function FarmProfileDialog({ profile, onClose, onSaved }: { profile: Farm
   };
 
   const toggle = (day: DayOfWeek) => setDays((current) => (current.includes(day) ? current.filter((item) => item !== day) : [...current, day]));
+
+  const missing = missingTranslations({ story: { uk: storyUk, en: storyEn } });
+
+  /** Переклад заповнює лише порожнє поле: поки сервер відповідав, фермер міг ввести текст сам. */
+  const translateStory = () =>
+    translate.mutate(missing, {
+      onSuccess: ({ items }) =>
+        items.forEach(({ targetLang, text }) => (targetLang === 'uk' ? setStoryUk : setStoryEn)((current) => (current.trim() === '' ? text : current))),
+    });
 
   return (
     <Dialog open onClose={onClose} fullWidth maxWidth="sm" aria-labelledby="farm-profile-title">
@@ -70,9 +82,16 @@ export function FarmProfileDialog({ profile, onClose, onSaved }: { profile: Farm
               <FormHelperText>{t('farm.deliveryDaysHint')}</FormHelperText>
             </Box>
             {save.isError && <Alert severity="error">{errorMessage(save.error)}</Alert>}
+            {translate.isError && <Alert severity="error">{errorMessage(translate.error)}</Alert>}
+            {translate.isSuccess && <Alert severity="info">{t('ai.storyReview')}</Alert>}
           </Stack>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+        <DialogActions sx={{ px: 3, pb: 2, flexWrap: 'wrap', rowGap: 1 }}>
+          {translationStatus.data?.available && (
+            <Button variant="outlined" onClick={translateStory} disabled={missing.length === 0} loading={translate.isPending} sx={{ mr: 'auto' }}>
+              {t('farm.translate')}
+            </Button>
+          )}
           <Button onClick={onClose}>{t('common.cancel')}</Button>
           <Button type="submit" variant="contained" loading={save.isPending}>
             {t('common.save')}

@@ -2,6 +2,32 @@
 
 ## Не випущено
 
+### Підказки ШІ для покупців, фермерів і адміністраторів
+
+- `GET /api/ai/status` - чи ввімкнено ШІ. Нові помилки: `ai_invalid`, `ai_limit`, `ai_unavailable`, `ai_failed`.
+- Підсумок відгуків: `GET /api/farmers/{id}/reviews/summary`, `GET /api/products/{id}/reviews/summary`.
+- Кошик за рецептом: `POST /api/catalog/basket-plan` (після входу); товари до кошика додає сам покупець.
+- Чернетка товару за фото: `POST /api/farmer/products/suggestion`; переклад історії ферми - поле `story` у перекладі товару.
+- Модерація: `POST /api/admin/reviews/check`; перевірка документа: `POST /api/admin/farmers/{id}/documents/{documentId}/check`
+  (записи `review.ai_check` і `document.ai_check` у журналі аудиту).
+- Часто купують разом (без ШІ): `GET /api/catalog/related?ids=1,2` на сторінці товару й у кошику.
+
+### Розумний пошук у каталозі
+
+- `GET /api/catalog/smart-search` - чи ввімкнено пошук; `POST /api/catalog/smart-search` (`{ "query": "..." }`, після входу,
+  до 60 запитів на годину) повертає фільтри каталогу за запитом покупця. Нові помилки: `smart_search_invalid`,
+  `smart_search_limit`, `smart_search_unavailable`, `smart_search_failed`.
+- Каталог: поле «Опишіть, що шукаєте» застосовує підібрані фільтри; товари показує звичайний каталог, а фільтри можна змінити.
+- `FarmCart:FakeAi` вмикає імітацію всіх функцій ШІ в режимі розробки.
+
+### Автоматичний переклад у формі товару
+
+- `GET /api/farmer/products/translation` - чи ввімкнено переклад; `POST /api/farmer/products/translation` - переклад
+  полів товару (`name`, `description`, `composition`, `shelfLife`, `storage`) для верифікованого фермера, до 30 запитів
+  на годину. Нові помилки: `translation_invalid`, `translation_limit`, `translation_unavailable`, `translation_failed`.
+- Форма товару: кнопка «Перекласти» заповнює лише порожні поля й просить перевірити текст перед збереженням.
+- Переклад виконує Claude, якщо на сервері задано `ANTHROPIC_API_KEY`; без ключа кнопки немає.
+
 ### Друга хвиля покращень: сторінка товару, кабінети фермера, кур'єра й адміністратора
 
 Зміни HTTP-контракту (усі додані, наявні поля не змінювалися):

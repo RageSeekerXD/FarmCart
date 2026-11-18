@@ -76,8 +76,10 @@ describe('UI-12 Сповіщення в реальному часі', () => {
 
   it('тост події має заголовок і кнопку «Відкрити», що веде до замовлення', async () => {
     backend.addOrder('Placed');
+    // Давнє сповіщення показує, що стрічку завантажено: подія, що прийшла раніше за стрічку, тосту не дає.
+    backend.notify('order.placed', 1001, { total: '160' });
     const { user } = await renderApp('/', { signedIn: true });
-    await screen.findByRole('button', { name: 'Сповіщення, нових: 0' });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 1' });
 
     backend.moveOrder(1001, 'Accepted');
     push('order.status', 1001, { status: 'Accepted' });
@@ -261,8 +263,10 @@ describe('сповіщення браузера, коли вкладка у фо
   it('на видимій вкладці досить тосту - системного сповіщення немає', async () => {
     FakeNotification.permission = 'granted';
     backend.addOrder('Placed');
+    // Давнє сповіщення показує, що стрічку завантажено: подія, що прийшла раніше за стрічку, тосту не дає.
+    backend.notify('order.placed', 1001, { total: '160' });
     await renderApp('/', { signedIn: true });
-    await screen.findByRole('button', { name: 'Сповіщення, нових: 0' });
+    await screen.findByRole('button', { name: 'Сповіщення, нових: 1' });
 
     push('order.status', 1001, { status: 'Accepted' });
 

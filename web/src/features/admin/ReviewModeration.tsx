@@ -1,3 +1,4 @@
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import RateReviewOutlinedIcon from '@mui/icons-material/RateReviewOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -21,12 +22,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/client';
-import type { AdminReview } from '../../api/types';
+import type { AdminReview, ReviewCheckResult } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
 import { formatDateTime } from '../../shared/dates';
 import { enter } from '../../shared/motion';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
+import { useAiAvailable } from '../ai/useAi';
 
 const QUEUE = ['admin', 'reviews'] as const;
 
@@ -47,11 +49,11 @@ function useModerate() {
 }
 
 /** Причина обов'язкова (B-FR-12): вона потрапляє в журнал аудиту. */
-function HideDialog({ review, onClose }: { review: AdminReview; onClose: () => void }) {
+function HideDialog({ review, suggestedReason, onClose }: { review: AdminReview; suggestedReason: string; onClose: () => void }) {
   const { t } = useTranslation();
   const toast = useToast();
   const moderate = useModerate();
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState(suggestedReason);
   const [touched, setTouched] = useState(false);
   const missing = reason.trim() === '';
 
@@ -115,6 +117,9 @@ export function ReviewModeration() {
   const reviews = useQuery({ queryKey: QUEUE, queryFn: () => api<AdminReview[]>('/admin/reviews') });
   const restore = useModerate();
   const [hiding, setHiding] = useState<AdminReview | null>(null);
+  const aiAvailable = useAiAvailable();
+  const check = useMutation({ mutationFn: () => api<ReviewCheckResult>('/admin/reviews/check', { method: 'POST', body: {} }) });
+  const adviceFor = (review: AdminReview) => (review.hidden ? undefined : check.data?.flagged.find((advice) => advice.reviewId === review.id));
 
   if (reviews.isError) {
     return <Alert severity="error">{errorMessage(reviews.error)}</Alert>;
@@ -130,6 +135,25 @@ export function ReviewModeration() {
 
   return (
     <>
+      {aiAvailable && (
+        <Box aria-live="polite" sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
+            <Button variant="outlined" startIcon={<AutoAwesomeIcon />} loading={check.isPending} onClick={() => check.mutate()}>
+              {t('ai.moderationCheck')}
+            </Button>
+            <Typography variant="body2" color="text.secondary">
+              {check.data
+                ? `${t('ai.moderationResult', { count: check.data.flagged.length })}${check.data.remaining > 0 ? ` ${t('ai.moderationRemaining', { count: check.data.remaining })}` : ''}`
+                : t('ai.moderationHint')}
+            </Typography>
+          </Box>
+          {check.isError && (
+            <Alert severity="error" sx={{ mt: 1 }}>
+              {errorMessage(check.error)}
+            </Alert>
+          )}
+        </Box>
+      )}
       <Stack component="ul" spacing={1.5} aria-label={t('admin.section.reviews')} sx={{ listStyle: 'none', p: 0, m: 0 }}>
         {reviews.data.map((review, index) => (
           <Paper
@@ -178,10 +202,22 @@ export function ReviewModeration() {
                 {t('admin.hiddenBecause', { reason: review.hiddenReason })}
               </Typography>
             )}
+            {adviceFor(review) && (
+              <Alert severity="warning" sx={{ mt: 1 }}>
+                <strong>{t(`ai.category.${adviceFor(review)!.category}`)}:</strong> {pick(adviceFor(review)!.reason)}
+              </Alert>
+            )}
           </Paper>
         ))}
       </Stack>
-      {hiding && <HideDialog key={hiding.id} review={hiding} onClose={() => setHiding(null)} />}
+      {hiding && (
+        <HideDialog
+          key={hiding.id}
+          review={hiding}
+          suggestedReason={adviceFor(hiding) ? pick(adviceFor(hiding)!.reason) : ''}
+          onClose={() => setHiding(null)}
+        />
+      )}
     </>
   );
 }

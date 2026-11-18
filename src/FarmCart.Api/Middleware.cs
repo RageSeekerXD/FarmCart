@@ -73,6 +73,7 @@ public static partial class Middleware
         ErrorKind.NotFound => StatusCodes.Status404NotFound,
         ErrorKind.Conflict => StatusCodes.Status409Conflict,
         ErrorKind.TooManyAttempts => StatusCodes.Status429TooManyRequests,
+        ErrorKind.Unavailable => StatusCodes.Status503ServiceUnavailable,
         _ => StatusCodes.Status500InternalServerError,
     };
 

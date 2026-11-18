@@ -23,6 +23,15 @@ public sealed class FarmCartApp(bool seedDemoData = false, DateTimeOffset? start
     /// <summary>За замовчуванням 1 жовтня 2026 р., 09:00 за Києвом.</summary>
     public ManualClock Clock { get; } = new(start ?? new DateTimeOffset(2026, 10, 1, 9, 0, 0, TimeSpan.FromHours(3)));
 
+    /// <summary>Замість зовнішнього сервісу перекладу: тести не витрачають ключ API, навіть якщо він заданий на машині.</summary>
+    public ScriptedTranslator Translator { get; } = new();
+
+    /// <summary>Замість зовнішнього сервісу розумного пошуку.</summary>
+    public ScriptedSearchInterpreter SearchInterpreter { get; } = new();
+
+    /// <summary>Замість зовнішнього сервісу підказок ШІ.</summary>
+    public ScriptedFarmCartAi FarmCartAi { get; } = new();
+
     public InMemoryStore Store => Services.GetRequiredService<InMemoryStore>();
 
     public InMemorySmsGateway Sms => Services.GetRequiredService<InMemorySmsGateway>();
@@ -79,7 +88,13 @@ public sealed class FarmCartApp(bool seedDemoData = false, DateTimeOffset? start
         builder.UseSetting("FarmCart:SeedDemoData", seedDemoData ? "true" : "false");
         builder.UseSetting("FarmCart:ExposeSmsCodes", seedDemoData ? "true" : "false");
         builder.ConfigureLogging(logging => logging.ClearProviders());
-        builder.ConfigureServices(services => services.AddSingleton<IClock>(Clock));
+        builder.ConfigureServices(services =>
+        {
+            services.AddSingleton<IClock>(Clock);
+            services.AddSingleton<IProductTranslator>(Translator);
+            services.AddSingleton<ICatalogSearchInterpreter>(SearchInterpreter);
+            services.AddSingleton<IFarmCartAi>(FarmCartAi);
+        });
     }
 }
 

@@ -16,6 +16,7 @@ import { enter } from '../../shared/motion';
 import { useFarms } from '../map/MapPage';
 import { EmptyState } from '../../shared/pages';
 import { useToast } from '../../shared/Toast';
+import { RelatedProducts } from '../catalog/RelatedProducts';
 import { cartCount, useAddToCart, useCart, useChangeQuantity, useRemoveFromCart } from './useCart';
 
 /**
@@ -225,6 +226,8 @@ export function CartPage() {
           </Paper>
         </Box>
       )}
+
+      {cart.data && cart.data.lines.length > 0 && <RelatedProducts productIds={lines.map((line) => line.productId)} />}
     </Box>
   );
 }

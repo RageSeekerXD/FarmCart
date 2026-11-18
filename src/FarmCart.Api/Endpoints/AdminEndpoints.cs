@@ -18,6 +18,11 @@ internal static class AdminEndpoints
             response.Headers.CacheControl = "no-store";
             return Results.File(document.Data, document.ContentType);
         });
+        // Документ іде до ШІ лише тоді, коли адміністратор сам просить перевірити саме його.
+        api.MapPost("/admin/farmers/{id:int}/documents/{documentId:int}/check", async (int id, int documentId, Caller caller, AiAssistantService ai, CancellationToken cancellation) =>
+            await ai.CheckDocumentAsync(caller.User, id, documentId, cancellation));
+        api.MapPost("/admin/reviews/check", async (Caller caller, AiAssistantService ai, CancellationToken cancellation) =>
+            await ai.CheckReviewsAsync(caller.User, cancellation));
         api.MapPost("/admin/farmers/{id:int}/verify", (int id, Caller caller, AdminService admin) =>
             FarmerDto.From(admin.VerifyFarmer(caller.User, id)));
         api.MapPost("/admin/slots", (Caller caller, SlotRequest body, AdminService admin) =>

@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Anthropic" Version="13.10.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.*" />
   </ItemGroup>
 

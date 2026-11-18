@@ -1,13 +1,15 @@
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Alert, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItemButton, ListItemIcon, ListItemText, Typography } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, apiBlob } from '../../api/client';
-import type { FarmDocument, FarmerProfile } from '../../api/types';
+import type { DocumentCheck, FarmDocument, FarmerProfile } from '../../api/types';
 import { errorMessage, useLang } from '../../i18n';
 import { formatDateTime } from '../../shared/dates';
+import { useAiAvailable } from '../ai/useAi';
 import { formatSize } from '../farmer/DocumentsDialog';
 
 /** Вміст документа як адреса blob: - його можна показати в img чи iframe; адреса звільняється, щойно документ закрито. */
@@ -35,6 +37,85 @@ function useDocumentUrl(farmerId: number, document: FarmDocument | null) {
 }
 
 /**
+ * Попередня перевірка ШІ: документ надсилається зовнішньому сервісу лише після натискання кнопки.
+ * Це підказка: рішення про верифікацію завжди приймає адміністратор.
+ */
+function DocumentAiCheck({ farmerId, document }: { farmerId: number; document: FarmDocument }) {
+  const { t } = useTranslation();
+  const { pick } = useLang();
+  const [results, setResults] = useState<Record<number, DocumentCheck>>({});
+  const check = useMutation({
+    mutationFn: (documentId: number) => api<DocumentCheck>(`/admin/farmers/${farmerId}/documents/${documentId}/check`, { method: 'POST', body: {} }),
+    onSuccess: (result, documentId) => setResults((current) => ({ ...current, [documentId]: result })),
+  });
+  const result = results[document.id];
+  const facts: [string, string | null][] = result
+    ? [
+        [t('ai.documentKind'), result.kind ? pick(result.kind) : null],
+        [t('ai.documentHolder'), result.holderName],
+        [t('ai.documentNumber'), result.number],
+        [t('ai.documentIssued'), result.issuedOn],
+        [t('ai.documentValid'), result.validUntil],
+      ]
+    : [];
+
+  return (
+    <Box component="section" aria-label={t('ai.documentTitle')} aria-live="polite" sx={{ mt: 2, p: 1.5, border: 1, borderColor: 'divider', borderRadius: 2 }}>
+      {!result && (
+        <>
+          <Button variant="outlined" startIcon={<AutoAwesomeIcon />} loading={check.isPending} onClick={() => check.mutate(document.id)}>
+            {t('ai.documentCheck')}
+          </Button>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.75 }}>
+            {t('ai.documentNotice')}
+          </Typography>
+        </>
+      )}
+      {check.isError && check.variables === document.id && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {errorMessage(check.error)}
+        </Alert>
+      )}
+      {result && (
+        <>
+          <Typography component="h3" variant="subtitle2" sx={{ mb: 0.5 }}>
+            {t('ai.documentTitle')}
+          </Typography>
+          <Box component="dl" sx={{ m: 0, display: 'grid', gridTemplateColumns: 'auto 1fr', columnGap: 2, rowGap: 0.25 }}>
+            {facts.map(([label, value]) => (
+              <Box key={label} sx={{ display: 'contents' }}>
+                <Typography component="dt" variant="body2" color="text.secondary">
+                  {label}
+                </Typography>
+                <Typography component="dd" variant="body2" sx={{ m: 0, overflowWrap: 'anywhere' }}>
+                  {value ?? t('ai.documentUnreadable')}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+          {result.concerns.length > 0 ? (
+            <Alert severity="warning" sx={{ mt: 1 }}>
+              <Box component="ul" sx={{ m: 0, pl: 2 }}>
+                {result.concerns.map((concern) => (
+                  <li key={concern.en}>{pick(concern)}</li>
+                ))}
+              </Box>
+            </Alert>
+          ) : (
+            <Alert severity="success" sx={{ mt: 1 }}>
+              {t('ai.documentNoConcerns')}
+            </Alert>
+          )}
+          <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.75 }}>
+            {t('ai.documentDecision')}
+          </Typography>
+        </>
+      )}
+    </Box>
+  );
+}
+
+/**
  * Скани документів продавця під час верифікації: список ліворуч, перегляд праворуч - зображення як є, PDF у вбудованому
  * переглядачі браузера. Документи бачить лише адміністратор; браузер їх не кешує.
  */
@@ -48,6 +129,7 @@ export function DocumentsViewer({ farmer, onClose }: { farmer: FarmerProfile; on
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const selected = documents.data?.find((item) => item.id === selectedId) ?? documents.data?.[0] ?? null;
   const preview = useDocumentUrl(farmer.id, selected);
+  const aiAvailable = useAiAvailable();
 
   return (
     <Dialog open onClose={onClose} fullWidth maxWidth="md" aria-labelledby="farm-docs-title">
@@ -84,6 +166,7 @@ export function DocumentsViewer({ farmer, onClose }: { farmer: FarmerProfile; on
             </Box>
           </Box>
         )}
+        {aiAvailable && selected && <DocumentAiCheck farmerId={farmer.id} document={selected} />}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
         {selected && preview.url && (

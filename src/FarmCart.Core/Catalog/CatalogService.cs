@@ -126,6 +126,33 @@ public sealed class CatalogService(InMemoryStore store, IClock clock)
         }
     }
 
+    /// <summary>
+    /// «Часто купують разом»: товари з тих самих покупок, спершу найчастіші. Покупка - це весь кошик: він ділиться
+    /// на замовлення за фермами, тож товари різних ферм теж рахуються разом; скасовані замовлення не враховуються.
+    /// Лише те, що зараз можна купити; рахуються тільки підсумки, без даних про покупців.
+    /// </summary>
+    public IReadOnlyList<CatalogItem> BoughtTogether(IReadOnlyCollection<int> productIds, GeoPoint? from = null, int limit = 4)
+    {
+        var month = clock.Now.Month;
+        lock (store.Sync)
+        {
+            return [.. store.Orders.Values
+                .Where(order => order.Status != OrderStatus.Cancelled)
+                .GroupBy(order => order.CheckoutOrderIds.FirstOrDefault(order.Id))
+                .Select(checkout => checkout.SelectMany(order => order.Lines).Select(line => line.ProductId).Distinct().ToList())
+                .Where(checkout => checkout.Any(productIds.Contains))
+                .SelectMany(checkout => checkout)
+                .Where(id => !productIds.Contains(id))
+                .CountBy(id => id)
+                .Select(pair => (Count: pair.Value, Product: store.Products.GetValueOrDefault(pair.Key)))
+                .Where(pair => pair.Product is { Stock: > 0 } product && product.IsInSeason(month) && store.Farmers[product.FarmerId].Verified)
+                .OrderByDescending(pair => pair.Count)
+                .ThenBy(pair => pair.Product!.Id)
+                .Take(limit)
+                .Select(pair => ToItem(pair.Product!, store.Farmers[pair.Product!.FarmerId], from, month))];
+        }
+    }
+
     /// <summary>BE-1: верифіковані ферми для мапи; з точкою покупця - від найближчої.</summary>
     public IReadOnlyList<FarmOnMap> Farms(GeoPoint? from = null)
     {
