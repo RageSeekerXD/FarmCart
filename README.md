@@ -1,156 +1,195 @@
-# FarmCart 2.0 - ядро платформи замовлення продуктів від локальних фермерів
+# FarmCart
 
-Лабораторна робота № 2 з дисципліни «Методології розробки програмного забезпечення»: командна розробка
-за стратегією екстремального програмування (XP). Продукт - проєкт B «FarmCart» з ЛР1 (вимоги B-FR-01…B-FR-13).
+[![CI](https://github.com/RageSeekerXD/FarmCart/actions/workflows/ci.yml/badge.svg)](https://github.com/RageSeekerXD/FarmCart/actions/workflows/ci.yml)
 
-Лабораторна робота № 3 - рефакторинг коду релізу 1.0 (реліз 1.1): збагачена модель замовлення, декомпозиція
-довгих методів, усунення дублювання, типізовані налаштування, маршрути за застосунками-клієнтами, DTO замість
-доменних сутностей, демонстраційний сценарій із тестовими швами. Виправлено дефекти DEF-03 (демонстрація
-працювала лише в серпні-жовтні) і DEF-04 (неатомарне повернення коштів). Журнали кроків - у `docs/evidence/lab3`.
+FarmCart is a marketplace for ordering food from local farms around Lviv, Ukraine. Buyers find seasonal products from
+verified farms, pay online or in cash and track their delivery; farmers run their catalogue and orders; couriers deliver
+and confirm handover with a code; administrators verify sellers and moderate the platform.
 
-Реліз 1 охоплює серверну частину (REST API) для застосунків покупця, фермера, кур'єра й адміністратора:
-вхід за кодом із SMS, верифікацію продавців, каталог фермера, пошук із фільтрами, кошик, оформлення з
-промокодом, оплату токеном платіжного провайдера, обробку замовлення фермером, відстеження статусів із
-push-сповіщеннями, вручення кур'єром за кодом, відгуки й журнал аудиту.
+The project is built by a team of two for the course "Software Development Methodologies" (master's programme,
+Lviv Polytechnic National University): Extreme Programming with TDD, pair programming and continuous integration.
 
-## Вимоги до середовища
+## Features
 
-- .NET SDK 10.0 (перевірено з 10.0.401): `dotnet --list-sdks`.
-- Windows PowerShell 5.1 або PowerShell 7 - для скриптів `ci.cmd` і `demo.cmd`.
+- **Buyers:** sign-in with an SMS code, bilingual catalogue (Ukrainian/English) with filters, a map of farms and distance
+  search, favourites, product and farm pages with reviews, a cart with products from several farms paid in one checkout,
+  delivery slots, promo codes, card / Apple Pay / Google Pay tokens or cash, real-time order tracking, cancellation,
+  "order again", rescheduling after a failed delivery, reviews.
+- **Farmers:** registration and verification documents, products in two languages with photos and seasonality,
+  stock and on-sale toggles, incoming orders (accept, partially accept, reject), picking lists and printable waybills,
+  sales analytics.
+- **Couriers:** deliveries with contacts and entrance details, a route map, navigation links, handover with a 4-digit
+  code, failed-delivery reports.
+- **Administrators:** seller verification with document review, delivery slots, promo codes, review moderation,
+  audit log.
+- **AI features (Claude):** product translation, smart search, review summaries, a product draft from a photo,
+  a basket for a recipe, moderation help and a document pre-check - see [AI features](#ai-features).
 
-## Запуск
+## Releases
 
-| Дія | Команда |
-|---|---|
-| Безперервна інтеграція: стандарт кодування, збірка без попереджень, усі тести, покриття ≥ 70 % | `ci.cmd` |
-| Протокол роботи програми: сервер із демонстраційними даними + наскрізний сценарій | `demo.cmd` (результат у `docs/protocol`) |
-| Лише тести | `dotnet test -c Release` |
-| API з демонстраційними даними | `dotnet run --project src/FarmCart.Api -c Release`, далі http://localhost:5080/api/health |
-
-Якщо Windows Smart App Control блокує щойно зібрану DLL (помилка `0x800711C7`), запускайте конфігурацію
-Release (скрипти роблять це самі) або перезберіть рішення.
-
-## Веб-інтерфейс (реліз 2.0)
-
-План релізу - `docs/plan-release-2.md`, журнал змін - `CHANGELOG.md`, докази (журнал CI, наскрізні тести, знімки екранів
-обома мовами) - `docs/evidence/ui/`. Клієнт у теці `web/`: React 19 + TypeScript + Vite, MUI, TanStack Query,
-react-i18next (українська й англійська). Потрібен Node.js 22 LTS.
-
-| Дія | Команда |
-|---|---|
-| Розробка: API на :5080 і клієнт на :5173 (Vite проксує `/api`, `/img`, `/hubs`) | `dotnet run --project src/FarmCart.Api -c Release` і `npm run dev` у `web/` |
-| Як у продукті: API віддає зібраний клієнт | `npm run build` у `web/`, далі `dotnet run ...` і http://localhost:5080 |
-| Перевірки клієнта (їх запускає і `ci.cmd`) | `npm run lint`, `npm run typecheck`, `npm run coverage`, `npm run build` |
-| Наскрізні тести (Playwright; спершу `dotnet build -c Release`, `npm run build` і один раз `npx playwright install chromium`) | `npm run e2e` у `web/` |
-
-Готово: каркас і CI (ітерація 0), двомовні дані каталогу BE-9, демонстраційні дані BE-8 (з історією замовлень, без фото),
-список ферм BE-1, статика BE-5, вхід UI-01, каталог UI-02, мапа ферм UI-03, кошик UI-04, оформлення UI-05,
-мої замовлення й трекер UI-06, кабінет фермера UI-08 і UI-09 (з `GET /api/farmer/profile`), доставки кур'єра UI-10.
-Сповіщення в реальному часі: структуровані сповіщення BE-2, хаб SignalR `/hubs/notifications` BE-3, події для ролей BE-4,
-дзвіночок і тости UI-12; без зв'язку з хабом клієнт переходить на резервне опитування. Також відгук UI-07, кабінет адміністратора UI-11, зафіксований час BE-7 і наскрізні тести Playwright.
-Типи відповідей API клієнт бере зі схеми OpenAPI: `npm run api:schema` у `web/` при запущеному сервері.
-Знімки екранів оновлює `npm run evidence`. Не зроблено: фото товарів (картки показують іконку категорії).
-
-**Зміна HTTP-контракту 2.0.** Назви товарів, одиниць і господарств - об'єкти `{ "uk": "...", "en": "..." }`
-(каталог, кошик, рядки замовлення, доставки); категорія й одиниця - коди з `GET /api/reference`
-(`vegetables`, `kg`, ...), невідомий код відхиляється; `GET /api/catalog` шукає обома мовами й приймає `lang=uk|en`
-для сортування назв; `POST /api/farmers` приймає `farmName` двома мовами; новий `GET /api/farmers` - ферми для мапи.
-
-**Межі двомовності.** Перекладаються дані, якими керує система. Текст користувачів (відгуки, коментарі, адреси,
-причини відхилення) показується як введено. Повідомлення помилок API лишаються українськими: клієнт перекладає
-помилку за її кодом (`error`).
-
-**Обмеження.** Сховище в пам'яті: після перезапуску сервера лишаються тільки демонстраційні дані.
-
-### Функції ШІ
-
-**Переклад товару.** У формі товару кнопка «Перекласти» заповнює порожню мову полів, які фермер заповнив лише однією
-мовою (назва, опис, склад, термін придатності, зберігання). Уже введений текст не змінюється, а переклад зберігається
-лише після перевірки фермером. До 30 запитів на годину для фермера.
-
-**Розумний пошук.** Покупець після входу описує товар своїми словами («недорогий сертифікований мед до 20 км»), а ШІ
-підбирає звичайні фільтри каталогу: товари показує той самий каталог, і кожен фільтр можна змінити. До 60 запитів на годину.
-
-| Функція | Хто користується | Як працює |
+| Version | Date | Content |
 |---|---|---|
-| Підсумок відгуків | усі відвідувачі | від 3 відгуків із текстом; результат кешується, доки відгуки не зміняться |
-| Переклад історії ферми | фермер | кнопка «Перекласти» в профілі ферми заповнює порожню мову |
-| Чернетка товару за фото | фермер | заповнює лише порожні назву, категорію й опис; фото не зберігається; до 20 запитів на годину |
-| Кошик за рецептом | покупець після входу | лише наявні товари; до кошика їх додає сам покупець; до 20 запитів на годину |
-| Допомога модератору | адміністратор | позначає підозрілі відгуки й підставляє причину; приховує адміністратор; до 20 перевірок на годину |
-| Попередня перевірка документа | адміністратор | документ іде до ШІ лише після натискання кнопки, дія записується в журнал аудиту; рішення приймає адміністратор |
+| 1.0.0 | 2026-10-16 | Core platform: REST API for all four roles, 11 user stories (lab 2, XP) |
+| 1.1.0 | 2026-10-31 | Refactoring of release 1.0 under tests, defects DEF-03 and DEF-04 fixed (lab 3) |
+| 2.0.0 | 2026-11-12 | Web client for all roles, bilingual catalogue data, real-time notifications (SignalR) |
+| unreleased | 2026-11-18 | Storefront and dashboard improvements, multi-farm cart, product photos, AI features |
 
-Усі ці функції виконує Claude на сервері; без ключа API їх не видно, а застосунок працює як раніше.
+Details are in [CHANGELOG.md](CHANGELOG.md) (in Ukrainian). The release 2.0 plan is in
+[docs/plan-release-2.md](docs/plan-release-2.md); evidence of every lab (TDD cycles, defects, refactoring steps,
+CI logs, screenshots) is in [docs/evidence](docs/evidence).
 
-**Часто купують разом.** Сторінка товару й кошик пропонують товари з тих самих покупок. Це підрахунок замовлень без ШІ,
-тому він працює й без ключа; блок з'являється, коли є покупки з кількох товарів.
+## Tech stack
 
-| Режим | Як увімкнути |
+| Part | Technologies |
 |---|---|
-| Справжній ШІ (платний) | змінна середовища `ANTHROPIC_API_KEY` на сервері; ключ не зберігайте в `appsettings` чи репозиторії |
-| Імітація без ключа й витрат (лише розробка) | `dotnet run --project src/FarmCart.Api -c Release -- --FarmCart:FakeAi=true` |
+| Server | .NET 10, C# 14, ASP.NET Core Minimal API, SignalR, OpenAPI, Anthropic .NET SDK |
+| Web client | React 19, TypeScript, Vite, MUI, TanStack Query, react-i18next, react-leaflet (OpenStreetMap) |
+| Tests | xUnit, `WebApplicationFactory` acceptance tests, Vitest + Testing Library + MSW, Playwright |
+| Quality | `dotnet format`, .NET analyzers (warnings as errors), ESLint, `tsc`, line coverage ≥ 70 %, GitHub Actions |
 
-## Структура рішення
+Storage is in memory with demo data loaded at start-up; SMS, payments and push notifications are test doubles behind
+interfaces, so the system runs without external accounts.
 
-| Шлях | Призначення |
+## Requirements
+
+- .NET SDK 10.0 (tested with 10.0.401): `dotnet --list-sdks`
+- Node.js 22 LTS for the web client
+- Windows PowerShell 5.1 or PowerShell 7 for `ci.cmd` and `demo.cmd`
+
+## Getting started
+
+| Task | Command |
 |---|---|
-| `src/FarmCart.Core` | Доменна логіка: сервіси історій користувачів, сховище в пам'яті, тестові двійники зовнішніх сервісів |
-| `src/FarmCart.Api` | ASP.NET Core Minimal API, проміжне ПЗ (журнал запитів, помилки, захист від номерів карток), демонстраційні дані |
-| `tests/FarmCart.Core.Tests` | Модульні тести (xUnit), написані за TDD |
-| `tests/FarmCart.AcceptanceTests` | Приймальні тести замовника: по класу на історію, через HTTP API (`WebApplicationFactory`); демонстраційний сценарій для кожного місяця року |
-| `tools/FarmCart.Demo` | Демонстраційний клієнт, що проходить сценарій релізу й друкує протокол |
-| `ci.ps1` / `ci.cmd` | Скрипт безперервної інтеграції |
-| `coverage.runsettings` | Покриття Microsoft Code Coverage з динамічною інструментацією (без переписування збірок на диску) |
-| `demo.ps1` / `demo.cmd` | Отримання протоколу роботи програми |
-| `docs/evidence` | Артефакти XP: цикли TDD, дефекти, рефакторинг, журнали CI |
+| Continuous integration: code style, warning-free build, all .NET and web tests, coverage | `ci.cmd` |
+| API with demo data | `dotnet run --project src/FarmCart.Api -c Release`, then http://localhost:5080/api/health |
+| Development: API on :5080 and web client on :5173 (Vite proxies `/api`, `/img`, `/hubs`) | the command above plus `npm run dev` in `web/` |
+| Production-like: the API serves the built client | `npm run build` in `web/`, then `dotnet run ...` and http://localhost:5080 |
+| .NET tests only | `dotnet test -c Release` |
+| Web client checks (also run by `ci.cmd`) | `npm run lint`, `npm run typecheck`, `npm run coverage`, `npm run build` in `web/` |
+| End-to-end tests (first `dotnet build -c Release`, `npm run build` and once `npx playwright install chromium`) | `npm run e2e` in `web/` |
+| Program run log: server with demo data plus the end-to-end demo scenario | `demo.cmd` (output in `docs/protocol`) |
+| API types for the client from the OpenAPI schema (server running) | `npm run api:schema` in `web/` |
+| Refresh screenshots in `docs/evidence/ui` | `npm run evidence` in `web/` |
 
-## Основні маршрути API
+If Windows Smart App Control blocks a freshly built DLL (error `0x800711C7`), use the Release configuration
+(the scripts already do) or rebuild the solution.
 
-| Метод і шлях | Історія | Хто викликає |
+At the latest commit the suite has 271 unit and 209 acceptance tests (.NET), 276 component tests (Vitest)
+and 8 end-to-end tests (Playwright), all passing.
+
+## Demo accounts (development mode)
+
+| Phone | Role |
+|---|---|
+| +380500000001 | administrator |
+| +380671110001 | farmer, "Зелений Гай" |
+| +380671110002 | cheese dairy "Карпатська бринза" |
+| +380671110003 | apiary "Медовий шлях" |
+| +380671110004 | "Еко-ферма «Сокільники»" (not verified yet) |
+| +380631230001 | courier |
+| +380931112233 | buyer with history: one order in every status |
+
+In development mode the sign-in page has a "Demo accounts" block for one-click sign-in as a buyer, farmer, courier or
+administrator, and the "Switch demo account" button in the header switches between them (`GET /api/demo/accounts`;
+the list is empty outside demo mode).
+
+SMS codes are not sent: with `FarmCart:ExposeSmsCodes = true` (`appsettings.Development.json`) `POST /api/auth/code`
+returns the code in `devCode`; this setting is rejected in Production. Sandbox payment tokens: `tok_visa`,
+`tok_mastercard`, `tok_applepay`, `tok_googlepay` succeed, `tok_declined` is declined by the bank. Promo code `FARM10`
+gives 10 % off orders from 300 UAH.
+
+The demo scenario buys only year-round products (carrots, potatoes, honey), so `demo.cmd` passes on any day of the
+year. Seasonality is shown by apples (August-March) and strawberries (May-July): the scenario checks the catalogue
+against the farmer's seasons for the server's current month (`GET /api/health` returns `time`).
+
+## AI features
+
+All AI features run on the server with Claude (`claude-opus-5-5`) through the official Anthropic SDK. Without an API key
+they are hidden and the application works as before. Every reply must match a JSON schema and is checked on the
+server; user text is passed as data, never as instructions; paid calls are rate-limited or cached; a person makes
+every final decision.
+
+| Feature | Who uses it | How it works |
 |---|---|---|
-| `POST /api/auth/code`, `POST /api/auth/verify` | US-01 | усі |
-| `POST /api/farmers`, `GET/POST /api/farmer/products`, `PATCH /api/farmer/products/{id}` | US-02, US-03 | фермер |
-| `GET /api/catalog?category=&certified=&lat=&lon=&maxKm=&minPrice=&maxPrice=&sort=` | US-04 | покупець |
-| `GET/POST /api/catalog/smart-search` - чи ввімкнено розумний пошук і фільтри за запитом покупця (`POST` - після входу) | AI-3 | покупець |
-| `GET /api/ai/status`, `GET /api/farmers/{id}/reviews/summary`, `GET /api/products/{id}/reviews/summary` | AI-5 | усі |
-| `POST /api/catalog/basket-plan` - кошик за рецептом; `GET /api/catalog/related?ids=` - часто купують разом | AI-7, REL | покупець |
-| `POST /api/farmer/products/suggestion` (тіло - фото) - чернетка товару | AI-6 | фермер |
-| `POST /api/admin/reviews/check`, `POST /api/admin/farmers/{id}/documents/{documentId}/check` | AI-8, AI-9 | адміністратор |
-| `GET /api/cart`, `POST /api/cart/items`, `GET /api/slots`, `POST /api/orders` (`Idempotency-Key`) - кошик будь-яких ферм, по замовленню на ферму | US-05, US-06 | покупець |
-| `POST /api/orders/{id}/cancel` - скасування, доки фермер не прийняв замовлення | CANCEL | покупець |
-| `POST /api/orders/{id}/reorder` - «Замовити знову», `POST /api/orders/{id}/reschedule` - новий час після невдалої доставки | REORDER, DLV | покупець |
-| `PUT/DELETE /api/farmer/products/{id}/photo` (тіло - файл JPEG/PNG/WebP до 2 МБ), `POST /api/farmer/reapply`; фото - `GET /img/products/{id}` | PHOTO, ADM | фермер |
-| `POST /api/courier/deliveries/{id}/fail` - не вдалося вручити (причина й коментар) | DLV | кур'єр |
-| `GET /api/admin/reviews`, `POST /api/admin/reviews/{id}/hide`, `.../restore` | REV | адміністратор |
-| `POST /api/admin/farmers/{id}/reject`, `PATCH/DELETE /api/admin/slots/{id}`, `POST /api/admin/promocodes/{code}/activate`, `.../deactivate` | ADM | адміністратор |
-| `GET/POST /api/farmer/products/translation` - чи ввімкнено переклад і переклад полів товару | AI-1 | фермер |
-| `GET /api/farmer/orders`, `POST /api/farmer/orders/{id}/accept`, `.../reject` | US-07 | фермер |
-| `.../assemble`, `.../handover`, `GET /api/me/notifications` | US-08 | фермер, покупець |
-| `GET /api/courier/deliveries`, `POST /api/courier/deliveries/{id}/confirm` | US-09 | кур'єр |
-| `POST /api/orders/{id}/review`, `GET /api/farmers/{id}/reviews` | US-10 | покупець |
-| `GET /api/admin/farmers/pending`, `POST /api/admin/...`, `GET /api/admin/audit` | US-02, B-FR-12 | адміністратор |
+| Product translation | farmer | "Translate" fills the empty language of name, description, composition, shelf life and storage; the farmer reviews before saving; up to 30 requests per hour |
+| Farm story translation | farmer | the same button in the farm profile |
+| Smart search | signed-in buyer | a request in plain words ("cheap certified honey within 20 km") becomes ordinary catalogue filters that the buyer can change; up to 60 requests per hour |
+| Review summary | everyone | from 3 written reviews; cached until the reviews change |
+| Product draft from a photo | farmer | fills only an empty name, category and description; the photo is not stored; up to 20 requests per hour |
+| Basket for a recipe | signed-in buyer | only products in stock, never more than the stock; the buyer adds them to the cart; up to 20 requests per hour |
+| Moderation help | administrator | flags suspicious reviews with a reason; the administrator decides; up to 20 checks per hour |
+| Document pre-check | administrator | the document goes to the AI only on request, the action is written to the audit log; the administrator decides |
 
-## Демонстраційні облікові записи (режим розробки)
+**Frequently bought together** on the product page and in the cart counts products from the same purchases.
+It does not use AI, so it works without a key.
 
-| Телефон | Роль |
+| Mode | How to enable |
 |---|---|
-| +380500000001 | адміністратор |
-| +380671110001 | фермер «Зелений Гай» |
-| +380671110002 | сироварня «Карпатська бринза» |
-| +380671110003 | пасіка «Медовий шлях» |
-| +380671110004 | «Еко-ферма «Сокільники»» (ще не верифікована) |
-| +380631230001 | кур'єр |
-| +380931112233 | покупець з історією: по одному замовленню в кожному статусі |
+| Real AI (paid) | set the `ANTHROPIC_API_KEY` environment variable on the server; never put the key in `appsettings` or the repository |
+| Simulation without a key or costs (development only) | `dotnet run --project src/FarmCart.Api -c Release -- --FarmCart:FakeAi=true` |
 
-У режимі розробки на сторінці входу є блок «Демонстраційні акаунти»: вхід одним натисканням як покупець, фермер,
-кур'єр чи адміністратор. Після входу ту саму четвірку відкриває кнопка «Змінити демо-акаунт» у шапці -
-так зручно показати всі ролі поспіль (`GET /api/demo/accounts`; поза демонстраційним режимом список порожній).
+So far the Claude calls have been tested only against stubbed HTTP responses; they have not yet run with a real key.
 
-У режимі розробки (`FarmCart:ExposeSmsCodes = true` в `appsettings.Development.json`) `POST /api/auth/code`
-повертає код у полі `devCode`, бо SMS не надсилаються; у Production цей параметр заборонено.
-Платіжні токени пісочниці: `tok_visa`, `tok_mastercard`, `tok_applepay`, `tok_googlepay` - успіх;
-`tok_declined` - відмова банку. Промокод `FARM10`: -10 % від 300 грн.
+## Solution structure
 
-Демонстраційний сценарій купує лише цілорічні товари (морква, картопля, мед), тому `demo.cmd` проходить
-у будь-який день року. Сезонність показують яблука (серпень-березень) і полуниця (травень-липень): сценарій
-звіряє каталог із сезонами фермера для поточного місяця сервера (`GET /api/health` повертає `time`).
+| Path | Purpose |
+|---|---|
+| `src/FarmCart.Core` | Domain logic: user-story services, AI services, in-memory store, test doubles of external services |
+| `src/FarmCart.Api` | ASP.NET Core Minimal API, SignalR hub, middleware (request log, errors, card-number guard), Claude clients, demo data |
+| `web/` | React web client for all four roles, component and end-to-end tests |
+| `tests/FarmCart.Core.Tests` | Unit tests (xUnit), written test-first |
+| `tests/FarmCart.AcceptanceTests` | Customer acceptance tests over the HTTP API (`WebApplicationFactory`), one class per story; the demo scenario for every month of the year |
+| `tools/FarmCart.Demo` | Demo client that walks through the release scenario and prints a run log |
+| `ci.ps1` / `ci.cmd` | Continuous integration script |
+| `demo.ps1` / `demo.cmd` | Produces the program run log |
+| `coverage.runsettings` | Microsoft Code Coverage with dynamic instrumentation |
+| `docs/` | Release plan, run logs and evidence of each lab |
+
+## Main API routes
+
+| Method and path | Story | Caller |
+|---|---|---|
+| `POST /api/auth/code`, `POST /api/auth/verify` | US-01 | everyone |
+| `POST /api/farmers`, `GET/POST /api/farmer/products`, `PATCH /api/farmer/products/{id}` | US-02, US-03 | farmer |
+| `GET /api/catalog?category=&certified=&lat=&lon=&maxKm=&minPrice=&maxPrice=&sort=&lang=` | US-04 | buyer |
+| `GET /api/farmers` - verified farms for the map; `GET /api/reference` - category and unit codes | BE-1, BE-9 | everyone |
+| `GET /api/cart`, `POST /api/cart/items`, `GET /api/slots`, `POST /api/orders` (`Idempotency-Key`) - a cart from any farms, one order per farm | US-05, US-06 | buyer |
+| `POST /api/orders/{id}/cancel` - cancel until the farmer accepts the order | CANCEL | buyer |
+| `POST /api/orders/{id}/reorder` - order again; `POST /api/orders/{id}/reschedule` - new slot after a failed delivery | REORDER, DLV | buyer |
+| `GET /api/farmer/orders`, `POST /api/farmer/orders/{id}/accept`, `.../reject` | US-07 | farmer |
+| `.../assemble`, `.../handover`, `GET /api/me/notifications`, hub `/hubs/notifications` | US-08 | farmer, buyer |
+| `GET /api/courier/deliveries`, `POST /api/courier/deliveries/{id}/confirm`, `.../fail` | US-09, DLV | courier |
+| `POST /api/orders/{id}/review`, `GET /api/farmers/{id}/reviews`, `GET /api/products/{id}/reviews` | US-10 | buyer |
+| `PUT/DELETE /api/farmer/products/{id}/photo` (JPEG/PNG/WebP up to 2 MB), `POST /api/farmer/reapply`; photos at `GET /img/products/{id}` | PHOTO, ADM | farmer |
+| `GET /api/admin/farmers/pending`, `POST /api/admin/farmers/{id}/reject`, `GET /api/admin/audit` | US-02, ADM | administrator |
+| `PATCH/DELETE /api/admin/slots/{id}`, `POST /api/admin/promocodes/{code}/activate`, `.../deactivate` | ADM | administrator |
+| `GET /api/admin/reviews`, `POST /api/admin/reviews/{id}/hide`, `.../restore` | REV | administrator |
+| `GET/POST /api/farmer/products/translation` - product translation | AI-1 | farmer |
+| `GET/POST /api/catalog/smart-search` - smart search (`POST` after sign-in) | AI-3 | buyer |
+| `GET /api/ai/status`, `GET /api/farmers/{id}/reviews/summary`, `GET /api/products/{id}/reviews/summary` | AI-5 | everyone |
+| `POST /api/farmer/products/suggestion` (body: photo) - product draft | AI-6 | farmer |
+| `POST /api/catalog/basket-plan` - basket for a recipe; `GET /api/catalog/related?ids=` - frequently bought together | AI-7, REL | buyer |
+| `POST /api/admin/reviews/check`, `POST /api/admin/farmers/{id}/documents/{documentId}/check` | AI-8, AI-9 | administrator |
+
+## Bilingual data
+
+Since 2.0 product, unit and farm names are objects `{ "uk": "...", "en": "..." }`; category and unit are codes from
+`GET /api/reference` (`vegetables`, `kg`, ...). Data managed by the system is translated; text written by users
+(reviews, comments, addresses, rejection reasons) is shown as entered. API error messages stay in Ukrainian, and the
+client translates an error by its code (`error`).
+
+## Limitations
+
+- In-memory storage: after a restart only the demo data remains.
+- SMS, payments and push notifications are test doubles; real providers are planned for release 3.0.
+- Support contacts in the footer are placeholders (`support@farmcart.example`).
+- Address suggestions use the Photon geocoder (OpenStreetMap): only the typed address text is sent, from three characters.
+
+## Course labs
+
+| Lab | Topic | Result |
+|---|---|---|
+| 1 | Choosing a development methodology for different classes and types of projects | requirements for FarmCart and a scored comparison of methodologies |
+| 2 | Team development with Extreme Programming | release 1.0: planning game, TDD, pair programming, CI |
+| 3 | Refactoring the developed code | release 1.1: code metrics, 9 refactorings, 2 defects fixed; then release 2.0 and AI features |
+| 4 | Project management with Atlassian Jira and Redmine | the whole project history tracked in both tools and compared |
