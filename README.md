@@ -27,12 +27,14 @@ Lviv Polytechnic National University): Extreme Programming with TDD, pair progra
 
 ## Releases
 
+Current version: **2.1.0** (tag `v2.1.0`).
+
 | Version | Date | Content |
 |---|---|---|
 | 1.0.0 | 2026-10-16 | Core platform: REST API for all four roles, 11 user stories (lab 2, XP) |
 | 1.1.0 | 2026-10-31 | Refactoring of release 1.0 under tests, defects DEF-03 and DEF-04 fixed (lab 3) |
 | 2.0.0 | 2026-11-12 | Web client for all roles, bilingual catalogue data, real-time notifications (SignalR) |
-| unreleased | 2026-11-18 | Storefront and dashboard improvements, multi-farm cart, product photos, AI features |
+| 2.1.0 | 2026-11-23 | Storefront and dashboard improvements, multi-farm cart, order cancellation, product photos, AI features |
 
 Details are in [CHANGELOG.md](CHANGELOG.md) (in Ukrainian). The release 2.0 plan is in
 [docs/plan-release-2.md](docs/plan-release-2.md); evidence of every lab (TDD cycles, defects, refactoring steps,
@@ -74,8 +76,8 @@ interfaces, so the system runs without external accounts.
 If Windows Smart App Control blocks a freshly built DLL (error `0x800711C7`), use the Release configuration
 (the scripts already do) or rebuild the solution.
 
-At the latest commit the suite has 271 unit and 209 acceptance tests (.NET), 276 component tests (Vitest)
-and 8 end-to-end tests (Playwright), all passing.
+Release 2.1.0 passes CI with 271 unit and 209 acceptance tests (.NET, line coverage 91.5 %), 276 component tests
+(Vitest) and 8 end-to-end tests (Playwright).
 
 ## Demo accounts (development mode)
 
@@ -191,5 +193,5 @@ client translates an error by its code (`error`).
 |---|---|---|
 | 1 | Choosing a development methodology for different classes and types of projects | requirements for FarmCart and a scored comparison of methodologies |
 | 2 | Team development with Extreme Programming | release 1.0: planning game, TDD, pair programming, CI |
-| 3 | Refactoring the developed code | release 1.1: code metrics, 9 refactorings, 2 defects fixed; then release 2.0 and AI features |
+| 3 | Refactoring the developed code | release 1.1: code metrics, 9 refactorings, 2 defects fixed; then releases 2.0.0 (web client) and 2.1.0 (storefront, dashboards, AI features) |
 | 4 | Project management with Atlassian Jira and Redmine | the whole project history tracked in both tools and compared |

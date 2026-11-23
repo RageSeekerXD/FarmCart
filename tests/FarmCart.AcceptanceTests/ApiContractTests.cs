@@ -14,7 +14,7 @@ public sealed class ApiContractTests
 
         var health = await app.CreateClient().GetJson("/api/health");
 
-        Assert.Equal(("ok", "2.0.0"), (health.Str("status"), health.Str("version")));
+        Assert.Equal(("ok", "2.1.0"), (health.Str("status"), health.Str("version")));
         Assert.Equal(app.Clock.Now, health.GetProperty("time").GetDateTimeOffset());
     }
 
